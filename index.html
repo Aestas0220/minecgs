@@ -1442,12 +1442,21 @@
           var p = Math.min(Math.max(y / heroH, 0), 1);
 
           /* 波场裁切到内容面板滑界之下：面板顶边 = heroH - y（1:1 上移）。
-             面板还没到的地方，波场一条线也不许露出来 */
+             面板还没到的地方，波场一条线也不许露出来；
+             裁切轮廓带面板同款圆角（--corner-xl 28px，两处必须一致），
+             否则圆角弧外的三角区会漏出线条（出框）；滑界扫过视口顶
+             后 30px 内仍保持圆角裁切，圆角完全离屏才解除 */
           if (waveCanvas) {
-            var ct = Math.max(heroH - y, 0);
-            if (Math.abs(ct - clipTop) > 0.5) {
-              waveCanvas.style.clipPath = ct > 0 ? "inset(" + ct.toFixed(1) + "px 0 0 0)" : "none";
-              clipTop = ct;
+            var raw = heroH - y;
+            if (Math.abs(raw - clipTop) > 0.5) {
+              if (raw > 0) {
+                waveCanvas.style.clipPath = "inset(" + raw.toFixed(1) + "px 0 0 0 round 28px 28px 0 0)";
+              } else if (raw > -30) {
+                waveCanvas.style.clipPath = "inset(0 0 0 0 round 28px 28px 0 0)";
+              } else {
+                waveCanvas.style.clipPath = "none";
+              }
+              clipTop = raw;
             }
           }
 
