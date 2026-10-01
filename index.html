@@ -573,7 +573,8 @@
       transition: var(--theme-shift);
     }
 
-    /* 滚动监听：上浮淡入（绝不对玻璃元素祖先使用 opacity/will-change:opacity） */
+    /* 滚动监听：上浮淡入 / 离开收回（可重复触发，两个方向都带动画；
+       绝不对玻璃元素祖先使用 opacity/will-change:opacity） */
     .reveal {
       opacity: 0;
       transform: translate3d(0, 42px, 0);
@@ -594,6 +595,8 @@
                   background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
                   box-shadow 420ms var(--ease-standard);
     }
+    /* 退场不带入场的 stagger 延迟 —— 收回要比出场干脆（放最后覆盖 data-delay） */
+    .reveal:not(.is-visible) { transition-delay: 0ms; }
 
     /* ============================================================
        内容面板（Sheet）：圆角顶边 + 上投影的不透明面板，滚动时
@@ -1379,10 +1382,10 @@
       if ("IntersectionObserver" in window && !reduceMotion) {
         var revealIO = new IntersectionObserver(function (entries) {
           entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("is-visible");
-              revealIO.unobserve(entry.target);
-            }
+            /* 可重复触发：进入视区 → 上浮淡入；离开视区 → 收回消失。
+               每一次滑动到这个位置都重放动画，反向滑动相应消失 ——
+               不 unobserve，让进出两个方向都能反复触发 */
+            entry.target.classList.toggle("is-visible", entry.isIntersecting);
           });
         }, { threshold: 0.18, rootMargin: "0px 0px -8% 0px" });
         revealEls.forEach(function (el) { revealIO.observe(el); });
