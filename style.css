@@ -511,13 +511,15 @@
     }
     /* 退场"模糊消隐"的预模糊分层（GoogleChromeLabs ui-element-samples
        · animated-blur 技法，Apache-2.0，页脚开源致谢）：
-       · 模糊半径按档递增的静态模糊副本，退场时在清晰层上依次淡入，
-         视觉等效于模糊半径连续递增 —— 但逐帧只改 opacity
+       · 模糊半径按档递增的静态模糊副本（σ 12/32/64），退场时在清晰层上
+         依次淡入，视觉等效于模糊半径连续递增 —— 逐帧只改 opacity
        · 关键坑（Chrome 官方实测）：模糊副本自身绝不能升层 ——
-         升层后 GPU 会按帧对未模糊纹理重跑卷积，比逐帧动画 filter
-         还慢；正确做法是"升层父容器、模糊烘焙进父层纹理缓存一次"
-       · 副本 scale 1.13：把模糊边缘光晕（halo）推出视口，防止
-         过渡中段出现"中心糊、四周清晰"的边框感 */
+         升层后 GPU 会按帧对未模糊纹理重跑卷积；正确做法是"升层父容器、
+         模糊烘焙进父层纹理缓存一次"（模糊在 pad 上，stage 只动 opacity）
+       · pad 补白对齐（第三十五轮）：模糊烘在负向外扩 --bpad 的 pad 层上，
+         光晕衰减区推到 hero 裁剪区之外；内层 .hero__bg 与基准图同盒同位
+         （含 scale 1.08）—— 副本零缩放零错位（旧 scale(1.13) 放大副本
+         导致交叉淡化起步即跳变，已废弃） */
     .hero__blur-stage {
       position: absolute;
       inset: 0;
@@ -525,14 +527,20 @@
       opacity: 0;
       will-change: opacity;
     }
-    .hero__bg--blur1 {
-      filter: blur(9px);
-      transform: scale(1.13);
+    .hero__blur-pad {
+      position: absolute;
+      inset: calc(-1 * var(--bpad));
+      filter: blur(var(--brad));
     }
-    .hero__bg--blur2 {
-      filter: blur(24px);
-      transform: scale(1.13);
+    .hero__blur-pad .hero__bg {
+      position: absolute;
+      inset: var(--bpad);
+      width: auto;
+      height: auto;
     }
+    .hero__blur-pad--b1 { --bpad: 48px; --brad: 12px; }
+    .hero__blur-pad--b2 { --bpad: 120px; --brad: 32px; }
+    .hero__blur-pad--b3 { --bpad: 200px; --brad: 64px; }
     /* 可读性遮罩（scrim）：全部 stop 同一暖黑、只变 alpha，向内全透明收尾 ——
        遮罩是"分离层"不是"遮蔽层"，绝不留色带与硬边；
        不再向 --md-surface 过渡（那条表面色带就是旧版生硬边缘的来源） */
@@ -592,8 +600,11 @@
       display: flex;
       justify-content: center;
       width: 100%;
-      filter: blur(13px);
     }
+    /* 双级残影：g1 轻糊接管清晰字、g2 重糊收尾（第三十五轮，
+       σ 16/40 —— 旧 13px 单级对 68px 大字仍可辨认） */
+    .hero__stage-ghostblur--g1 { filter: blur(16px); }
+    .hero__stage-ghostblur--g2 { filter: blur(40px); }
     .hero__cover {
       width: min(920px, 100%);
       text-align: center;
@@ -1006,9 +1017,11 @@
       .nav-cluster { margin-left: auto; }                /* 导航簇保持右对齐 */
       .nav__link { min-width: 52px; padding: 0 12px; }   /* 鹅卵石按钮收紧 */
       .section-kicker h2 { font-size: 28px; line-height: 36px; }            /* headline-medium */
-      .hero__bg--blur1 { filter: blur(6px); }            /* 移动端模糊档收窄（审美取值） */
-      .hero__bg--blur2 { filter: blur(16px); }
-      .hero__stage-ghostblur { filter: blur(9px); }
+      .hero__blur-pad--b1 { --brad: 8px; }               /* 移动端模糊档收窄（审美取值） */
+      .hero__blur-pad--b2 { --brad: 20px; }
+      .hero__blur-pad--b3 { --brad: 40px; }
+      .hero__stage-ghostblur--g1 { filter: blur(11px); }
+      .hero__stage-ghostblur--g2 { filter: blur(26px); }
     }
     @media (max-width: 600px) {
       .hero { min-height: 560px; }

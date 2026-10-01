@@ -52,9 +52,11 @@
            遮罩不单独残留 —— 旧版"图片隐去后色带悬空"的根源就在此 -->
       <div class="hero__visual" id="heroVisual" aria-hidden="true">
         <div class="hero__bg"></div>
-        <!-- 退场预模糊分层：静态模糊副本，JS 以 opacity 交叉淡化（零逐帧滤镜） -->
-        <div class="hero__blur-stage" id="heroBlur1"><div class="hero__bg hero__bg--blur1"></div></div>
-        <div class="hero__blur-stage" id="heroBlur2"><div class="hero__bg hero__bg--blur2"></div></div>
+        <!-- 退场预模糊分层：静态模糊副本（pad 补白零错位对齐），
+             JS 以 opacity 交叉淡化（零逐帧滤镜） -->
+        <div class="hero__blur-stage" id="heroBlur1"><div class="hero__blur-pad hero__blur-pad--b1"><div class="hero__bg"></div></div></div>
+        <div class="hero__blur-stage" id="heroBlur2"><div class="hero__blur-pad hero__blur-pad--b2"><div class="hero__bg"></div></div></div>
+        <div class="hero__blur-stage" id="heroBlur3"><div class="hero__blur-pad hero__blur-pad--b3"><div class="hero__bg"></div></div></div>
         <div class="hero__veil"></div>
         <div class="hero__grain"></div>
       </div>
@@ -75,10 +77,13 @@
             <a class="btn btn--tonal sl label-large" href="#join">加入我们</a>
           </div>
         </article>
-        <!-- 文字退场预模糊残影容器：JS 注入封面克隆（静态模糊），
-             退场时淡入形成"渐进模糊"观感 -->
-        <div class="hero__stage-ghost" id="heroGhost" aria-hidden="true">
-          <div class="hero__stage-ghostblur" id="heroGhostBlur"></div>
+        <!-- 文字退场双级预模糊残影：JS 注入封面克隆（静态模糊），
+             清晰字快退后 g1 轻糊接管、g2 重糊收尾（第三十五轮） -->
+        <div class="hero__stage-ghost" id="heroGhost1" aria-hidden="true">
+          <div class="hero__stage-ghostblur hero__stage-ghostblur--g1" id="heroGhostBlur1"></div>
+        </div>
+        <div class="hero__stage-ghost" id="heroGhost2" aria-hidden="true">
+          <div class="hero__stage-ghostblur hero__stage-ghostblur--g2" id="heroGhostBlur2"></div>
         </div>
       </div>
 

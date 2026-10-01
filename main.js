@@ -490,37 +490,46 @@
       var heroVisual = document.getElementById("heroVisual");
       var heroStage = document.getElementById("heroStage");
       var heroSection = document.getElementById("hero");
+      var heroPanelEl = document.getElementById("heroPanel");   /* 清晰封面字（快退层） */
       var heroBlur1 = document.getElementById("heroBlur1");
       var heroBlur2 = document.getElementById("heroBlur2");
-      var heroGhost = document.getElementById("heroGhost");
+      var heroBlur3 = document.getElementById("heroBlur3");
+      var heroGhost1 = document.getElementById("heroGhost1");
+      var heroGhost2 = document.getElementById("heroGhost2");
       var scrollHint = document.querySelector(".scroll-hint");
       var ticking = false;
       var heroH = 0;             /* 缓存 hero 高度 —— 滚动热路径禁读 offsetHeight（强制布局） */
       var visOpacity = -1, visScale = -1;
-      var visB1 = -1, visB2 = -1;            /* 预模糊背景层交叉淡化 */
-      var stageOpacity = -1, stageLift = -1, stageGhost = -1;
+      var visB1 = -1, visB2 = -1, visB3 = -1;  /* 预模糊背景层交叉淡化 */
+      var stageOpacity = -1, stageLift = -1, stageCover = -1;
+      var stageG1 = -1, stageG2 = -1;
       var hintOpacity = -1;
       var brandChip = topBar ? topBar.querySelector(".brand") : null;
       var brandShown = false;
 
-      /* 文字退场预模糊残影：克隆封面为静态模糊副本（模糊值恒定 →
-         只烘焙一次），退场时与清晰版交叉淡化。克隆去 id / 去焦点 /
-         aria-hidden —— 纯视觉副本，不进无障碍树、不抢交互 */
+      /* 文字退场预模糊残影（双级 g1/g2）：克隆封面为静态模糊副本
+        （模糊值恒定 → 只烘焙一次），退场时与清晰版交叉淡化。
+         克隆去 id / 去焦点 / aria-hidden —— 纯视觉副本，
+         不进无障碍树、不抢交互 */
       (function buildHeroGhost() {
-        var host = document.getElementById("heroGhostBlur");
         var src = document.getElementById("heroPanel");
-        if (!host || !src) { return; }
-        var ghost = src.cloneNode(true);
-        ghost.removeAttribute("id");
-        ghost.setAttribute("aria-hidden", "true");
-        var ided = ghost.querySelectorAll("[id]");
-        for (var gi = 0; gi < ided.length; gi++) { ided[gi].removeAttribute("id"); }
-        var focusables = ghost.querySelectorAll("a, button, input, [tabindex]");
-        for (var fi = 0; fi < focusables.length; fi++) {
-          focusables[fi].setAttribute("tabindex", "-1");
-          focusables[fi].setAttribute("aria-hidden", "true");
+        if (!src) { return; }
+        var hosts = [document.getElementById("heroGhostBlur1"), document.getElementById("heroGhostBlur2")];
+        for (var h = 0; h < hosts.length; h++) {
+          var host = hosts[h];
+          if (!host) { continue; }
+          var ghost = src.cloneNode(true);
+          ghost.removeAttribute("id");
+          ghost.setAttribute("aria-hidden", "true");
+          var ided = ghost.querySelectorAll("[id]");
+          for (var gi = 0; gi < ided.length; gi++) { ided[gi].removeAttribute("id"); }
+          var focusables = ghost.querySelectorAll("a, button, input, [tabindex]");
+          for (var fi = 0; fi < focusables.length; fi++) {
+            focusables[fi].setAttribute("tabindex", "-1");
+            focusables[fi].setAttribute("aria-hidden", "true");
+          }
+          host.appendChild(ghost);
         }
-        host.appendChild(ghost);
       })();
 
       function updateParallax() {
@@ -556,19 +565,27 @@
                 visScale = vs;
               }
               /* 预模糊层交叉淡化（动画只碰 opacity）：
-                 blur1 在 e 0.05→0.60 淡入，blur2 在 0.45→1.00 淡入，
-                 叠在清晰层上 = 模糊半径连续递增的观感 */
-              var b1 = (e - 0.05) / 0.55;
+                 b1 e 0.05→0.50、b2 0.30→0.70、b3 0.55→1.00 依次淡入，
+                 σ 12/32/64 递进 —— 叠在清晰层上 = 模糊半径连续递增
+                 的观感，尾段图像完全糊化（第三十五轮：旧 9/24px 双档
+                 对大字太弱、尾段仍可辨） */
+              var b1 = (e - 0.05) / 0.45;
               b1 = b1 < 0 ? 0 : (b1 > 1 ? 1 : b1);
               if (Math.abs(b1 - visB1) > 0.01) {
                 if (heroBlur1) { heroBlur1.style.opacity = b1.toFixed(3); }
                 visB1 = b1;
               }
-              var b2 = (e - 0.45) / 0.55;
+              var b2 = (e - 0.30) / 0.40;
               b2 = b2 < 0 ? 0 : (b2 > 1 ? 1 : b2);
               if (Math.abs(b2 - visB2) > 0.01) {
                 if (heroBlur2) { heroBlur2.style.opacity = b2.toFixed(3); }
                 visB2 = b2;
+              }
+              var b3 = (e - 0.55) / 0.45;
+              b3 = b3 < 0 ? 0 : (b3 > 1 ? 1 : b3);
+              if (Math.abs(b3 - visB3) > 0.01) {
+                if (heroBlur3) { heroBlur3.style.opacity = b3.toFixed(3); }
+                visB3 = b3;
               }
             }
             if (heroStage) {
@@ -579,11 +596,24 @@
                 heroStage.style.transform = "translate3d(0," + sl.toFixed(1) + "px,0)";
                 stageLift = sl;
               }
-              var go = e / 0.75;                   /* 残影淡入 = 文字渐进模糊 */
-              go = go < 0 ? 0 : (go > 1 ? 1 : go);
-              if (Math.abs(go - stageGhost) > 0.01) {
-                if (heroGhost) { heroGhost.style.opacity = go.toFixed(3); }
-                stageGhost = go;
+              /* 清晰封面字快退（e 0→0.25）：把"可读窗口"压到最短，
+                 由 g1/g2 双级残影逐级接管模糊（第三十五轮） */
+              var co = Math.max(1 - e / 0.25, 0);
+              if (Math.abs(co - stageCover) > 0.01) {
+                if (heroPanelEl) { heroPanelEl.style.opacity = co.toFixed(3); }
+                stageCover = co;
+              }
+              var g1 = e / 0.30;                   /* g1 轻糊接管 */
+              g1 = g1 < 0 ? 0 : (g1 > 1 ? 1 : g1);
+              if (Math.abs(g1 - stageG1) > 0.01) {
+                if (heroGhost1) { heroGhost1.style.opacity = g1.toFixed(3); }
+                stageG1 = g1;
+              }
+              var g2 = (e - 0.20) / 0.40;          /* g2 重糊收尾 */
+              g2 = g2 < 0 ? 0 : (g2 > 1 ? 1 : g2);
+              if (Math.abs(g2 - stageG2) > 0.01) {
+                if (heroGhost2) { heroGhost2.style.opacity = g2.toFixed(3); }
+                stageG2 = g2;
               }
             }
             if (scrollHint) {
@@ -639,8 +669,6 @@
         var ctx = canvas.getContext("2d");
         var dpr = 1;                     /* resize() 按面积预算 + 档位实算 */
         var cssW = 0, cssH = 0;
-        var clipEl = canvas.parentNode;  /* .wave-clip：sticky 画布的定位参照（= 面板盒子） */
-        var sheetH = 0;                  /* 面板高：换算画布 sticky 实际顶边用 */
 
         var mouse = { x: -9999, y: -9999, tx: -9999, ty: -9999, inside: false, power: 0 };
         var scrollDrift = 0;
@@ -750,7 +778,6 @@
           canvas.style.width = cssW + "px";
           canvas.style.height = cssH + "px";
           canvas.style.marginBottom = -cssH + "px";  /* sticky 画布不占文档流（与 CSS 负 margin 一致） */
-          sheetH = clipEl ? (clipEl.offsetHeight || 0) : 0;
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
           /* 密度：约每 7.5px 一条细竖线（窄屏 10px，上限 320 条兼顾性能），
@@ -826,13 +853,6 @@
           }, 140);
         }, { passive: true });
 
-        /* 面板高度漂移（图片/字体/iframe 落位）→ 只更新 sheetH 缓存，
-           不重建画布（重建即清空）；画布 sticky 顶边换算依赖它 */
-        if (window.ResizeObserver && clipEl) {
-          new window.ResizeObserver(function () {
-            sheetH = clipEl.offsetHeight || 0;
-          }).observe(clipEl);
-        }
         window.addEventListener("scroll", function () {
           /* 波线背景以 0.12 倍速漂移 —— 与前景卡片形成层级视差。
              背景运动与滚动/触点持续绑定（同一手势同时驱动页面滑动与
@@ -956,16 +976,15 @@
           var i, s, k;
           var ySpan = cssH + WAVE_PAD * 2;
 
-          /* 画布 sticky 顶边的视口坐标 cTop：正常钉在视口顶（0）；
-             面板顶边还在视口内时随面板（heroH - scrollY）；页面尽头
-             sticky 被面板下缘回推时取下界。鼠标/涟漪是视口坐标，
-             换算到画布本地 y 才能与线条对准 */
+          /* 画布 sticky 顶边的视口坐标 cTop：面板顶边还在视口内时随面板
+             （heroH - scrollY），面板顶边升出视口后恒钉视口顶（0）。
+             关键事实（第三十五轮实测修正）：画布 margin-bottom:-cssH 使
+             sticky 元素 margin box 高度为 0 —— 浏览器永不把它向回推，
+             页面尽头（footer 露出、加入区）同样钉在视口顶；旧版按
+             "被面板下缘回推 footerH"计算 clamp，页底透镜判定整体偏移
+             footer 高度。鼠标/涟漪是视口坐标，换算到画布本地 y 对准 */
           var sheetTopVp = heroH - (window.scrollY || 0);
           var cTop = sheetTopVp > 0 ? sheetTopVp : 0;
-          if (sheetH) {
-            var cTopMax = sheetTopVp + sheetH - cssH;
-            if (cTopMax < cTop) { cTop = cTopMax; }
-          }
 
           /* 1) 粗网格求位移场：每 3 条线 × 每 2 个采样求值一次
              + 关键线弯曲锚混插到每线（相邻关键线 smootherstep） */
