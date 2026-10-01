@@ -1209,4 +1209,78 @@
       document.querySelectorAll('a[aria-disabled="true"]').forEach(function (el) {
         el.addEventListener("click", function (e) { e.preventDefault(); });
       });
+
+      /* ============================================================
+         8. 下载确认弹窗（MD3 Basic dialog · 3 秒冷静期倒计时）
+         流程：点击下载按钮 → showModal 免责弹窗 → 确认按钮 3 秒禁用
+              （aria-live 报秒）→ 到时启用 → 确认后才触发 mrpack 直链下载。
+         关闭途径：取消按钮 / Esc（native cancel）/ 点击遮罩。
+         ============================================================ */
+      var dlBtn = document.getElementById("downloadBtn");
+      var dlDlg = document.getElementById("dlDialog");
+      var dlConfirm = document.getElementById("dlDlgConfirm");
+      var dlCancel = document.getElementById("dlDlgCancel");
+      var dlCountdown = document.getElementById("dlDlgCountdown");
+      var dlTimer = null;
+
+      function dlStartCountdown() {
+        var left = 3;
+        dlConfirm.disabled = true;
+        dlConfirm.setAttribute("aria-disabled", "true");
+        dlCountdown.textContent = "请阅读以上须知，" + left + " 秒后可确认";
+        window.clearInterval(dlTimer);
+        dlTimer = window.setInterval(function () {
+          left -= 1;
+          if (left > 0) {
+            dlCountdown.textContent = "请阅读以上须知，" + left + " 秒后可确认";
+          } else {
+            window.clearInterval(dlTimer);
+            dlTimer = null;
+            dlConfirm.disabled = false;
+            dlConfirm.removeAttribute("aria-disabled");
+            dlCountdown.textContent = "倒计时结束，现在可以确认下载";
+          }
+        }, 1000);
+      }
+
+      function dlClose() {
+        if (!dlDlg || !dlDlg.open) return;
+        window.clearInterval(dlTimer);
+        dlTimer = null;
+        if (reduceMotion) { dlDlg.close(); return; }
+        dlDlg.classList.add("is-closing");
+        window.setTimeout(function () {
+          dlDlg.classList.remove("is-closing");
+          dlDlg.close();
+        }, 200); /* 退场 = --dur-short（emphasized accelerate） */
+      }
+
+      if (dlBtn && dlDlg && dlConfirm && dlCancel && dlCountdown) {
+        dlBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          dlDlg.showModal();
+          dlStartCountdown();
+        });
+        dlCancel.addEventListener("click", dlClose);
+        /* Esc / 系统返回：走 native cancel，统一进退场流程 */
+        dlDlg.addEventListener("cancel", function (e) {
+          e.preventDefault();
+          dlClose();
+        });
+        /* 遮罩点击（事件目标即 dialog 本体）等同取消 */
+        dlDlg.addEventListener("click", function (e) {
+          if (e.target === dlDlg) dlClose();
+        });
+        dlConfirm.addEventListener("click", function () {
+          if (dlConfirm.disabled) return;
+          dlClose();
+          /* 临时锚点复刻原始直链下载（保留 download 文件名） */
+          var a = document.createElement("a");
+          a.href = dlBtn.getAttribute("href");
+          a.setAttribute("download", dlBtn.getAttribute("download") || "");
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        });
+      }
     })();

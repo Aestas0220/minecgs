@@ -197,6 +197,26 @@
     </div>
   </footer>
 
+  <!-- 下载确认弹窗（MD3 Basic dialog）：免责提示 + 3 秒冷静期倒计时，
+       确认后才触发 minecgs-modpack.mrpack 直链下载 -->
+  <dialog class="dlg" id="dlDialog" aria-labelledby="dlDlgTitle" aria-describedby="dlDlgBody">
+    <div class="dlg__container">
+      <!-- 图标：MD3 Dialog「Icon」变体，24dp，警告语义用 error 角色 -->
+      <svg class="dlg__icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"></path>
+      </svg>
+      <h2 class="dlg__headline headline-small" id="dlDlgTitle">下载前须知</h2>
+      <div class="dlg__content">
+        <p class="dlg__supporting body-medium" id="dlDlgBody">本进服包仅供课余时间游玩。因上课时间游玩、在校园内违规使用电子产品等行为所导致的一切后果，概不负责。</p>
+        <p class="dlg__countdown label-medium" id="dlDlgCountdown" aria-live="polite">请阅读以上须知，3 秒后可确认</p>
+      </div>
+      <div class="dlg__actions">
+        <button class="btn btn--text sl label-large" type="button" id="dlDlgCancel">取消</button>
+        <button class="btn btn--filled sl label-large" type="button" id="dlDlgConfirm" disabled>我已知晓，下载mrpack</button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- 开源库 libs.js：simplex-noise（MIT）+ Material Color Utilities（Apache-2.0） -->
   <script src="libs.js"></script>
   <!-- 站点逻辑 main.js：波场渲染 + 主题切换 + 页面交互 -->
