@@ -1537,14 +1537,13 @@
            |∂offset/∂x0| < 1 → 波前有序推进、线条永不交叉（网格模拟验证）
          · 三层噪声叠加（振幅 48/18/5）：聚散成疏密带；
            密度差映射亮度 —— 聚拢处成亮带、稀疏处隐没，密度带即体积感
-         · 波前成组收拢（替代旧"重点线"）：每 GROUP=8 条线为一束，
-           束内间距在每条线的两端（画面上下缘）平滑收窄至 S_END=0.42×，
-           数根彼此靠近的线自然形成密集带作视觉层次 —— 不再有单根
-           发亮的刻意强调线；sEnd(u) 用 smootherstep（C2 连续），
-           收窄全程渐进、束与束之间均匀排布、无跳脱感
-         · 每线轻微随机弯曲 + 角度扰动（bend 双八度 7px/3px +
-           tilt 静态倾角 ±0.014）：打破波前间斜率/角度的高度相似，
-           扰动对 x0 平滑（|∂/∂x0| 小）→ 不破坏波前结构、不引入交叉；
+         · 关键线人格混插（水波曲面错觉的骨架）：零星 KEYS=8 根"关键线"
+           随机落在全页（位置抖动 ±35% 槽宽），每根有独立的随机倾角与
+           弯曲曲线（角度、曲率各不相同）；其余线条在相邻关键线之间用
+           smootherstep 混插人格 —— 线条间曲线平滑插值过渡，形成凹凸
+           曲面的错觉，像水波；疏密呼吸贯穿全页（含中段），无端部收拢
+         · 关键线弯曲沿 y 低频双八度（10px/4px，特征高约 450/230px）+
+           静态倾角混插：整体走向一致、局部形态自然多样；
            bend 在每线 × 每 2 采样网格求值 + Catmull-Rom 插值，
            与 tilt（对 y 线性）同为 C1+ —— 线段衔接处无折角突变
          · 高斯透镜排斥（仅鼠标/触控笔持续扰动）+ 点击扩散圆圈（轻点/点击
@@ -1581,51 +1580,44 @@
         }
         var noise = SN.createNoise3D(mulberry32(20261001));
 
-        /* 位移场：三层 simplex 噪声（振幅 48/18/3.5，波长各异）
-           三八度 x 频率 0.0120→0.0105、振幅 5→3.5：压低最坏 ∂/∂x0≈1.0 的
-           斜率尖峰，为 bend/tilt 与透镜/涟漪叠加留出不交叉预算
-           （7 个时间采样 × 6 场景实测零交叉） */
+        /* 位移场：三层 simplex 噪声（振幅 48/18/5，波长各异）
+           —— 全页连续"呼吸"的共享流场，负责疏密起伏（水波凹凸基底），
+           密度差映射亮度 → 波面自然明暗，无任何人工端部收拢 */
         function fieldOffset(x0, wy, t) {
           return 48 * noise(x0 * 0.0018, wy * 0.0011, t * 0.07)
-               + 18 * noise(x0 * 0.0058 + 41, wy * 0.0036, t * 0.14)
-               + 3.5 * noise(x0 * 0.0105 + 82, wy * 0.0080, t * 0.21);
+               + 18 * noise(x0 * 0.0042 + 41, wy * 0.0030, t * 0.14)
+               + 5 * noise(x0 * 0.0080 + 82, wy * 0.0065, t * 0.21);
         }
 
-        /* 波前关键可调参数（后续微调入口）：
-           BEND_GAIN —— 每线随机弯曲总增益（双八度基础 7px@ky0.0032 + 3px@ky0.005，
-                        x 尺度 0.012/0.028 让相邻线自然分化出各自曲率与局部角度）
-           TILT_AMP —— 每线静态随机倾角振幅（乘 (y-中线)），整体走向轻微差异
-           GROUP/S_END —— 端部收拢：每束线数与端距系数（见下）
-           实测定标：BEND_GAIN 0.45 + TILT_AMP 0.006 → minGap≈0.27px、零交叉 */
-        var BEND_GAIN = 0.45, TILT_AMP = 0.006;
-        function bendOffset(x0, wy, t) {
-          return 7 * BEND_GAIN * noise(x0 * 0.012 + 500, wy * 0.0032, t * 0.05)
-               + 3 * BEND_GAIN * noise(x0 * 0.028 + 700, wy * 0.005, t * 0.11);
-        }
+        /* 关键线人格混插（水波曲面错觉的骨架）：
+           KEYS 根"关键线"随机落在全页，每根有独立的倾角与弯曲曲线
+          （角度、曲率各不相同）；其余线条在相邻关键线之间用 smootherstep
+           混插人格 —— 线条间曲线平滑过渡，形成凹凸曲面的错觉，像水波。
 
-        /* 波前成组收拢（替代旧"重点线"）：每 GROUP 条线为一束，束心不动、
-           外侧线向束心靠拢 —— 束内间距只在每条线的两端（上下缘）收窄到
-           S_END×，中段保持等距；数根贴近的线在两端自然形成密集带 */
-        var GROUP = 8, S_END = 0.42;
-        function sEndAt(y) {
-          var u = Math.abs(y / cssH * 2 - 1);            /* 0=中段, 1=上下缘 */
-          if (u > 1) { u = 1; }
-          var s = u * u * u * (u * (6 * u - 15) + 10);   /* smootherstep：C2 连续 */
-          return 1 - (1 - S_END) * s;
-        }
-        function x0At(i, y) {
-          var gs = Math.floor(i / GROUP) * GROUP;
-          var ge = Math.min(gs + GROUP, LINES) - 1;
-          var cIdx = (gs + ge) / 2;
-          return (cIdx + (i - cIdx) * sEndAt(y)) * spacing;
+           波前关键可调参数（后续微调入口）：
+           KEYS        —— 关键线根数（越多人格变化越频密）
+           KEY_JITTER  —— 关键线位置随机幅度（槽宽比例；0=等距）
+           KEY_TILT    —— 关键线倾角振幅（×1.8 后实际约 ±0.04）
+           KEY_BEND1/2 —— 关键线弯曲两八度振幅（px）
+           KB_KY1/2    —— 弯曲纵向频率（0.0022/0.0042 → 特征高约 450/230px）
+           实测定标（_sweep_wave4/5 扫描）：KEYS=8 / JITTER .35 / TILT .022 /
+           BEND 10+4 → 7 时间采样 × 6 场景 574,560 对零交叉、minGap +1.81px、
+           中段疏密呼吸 3.4× */
+        var KEYS = 8, KEY_JITTER = 0.35, KEY_TILT = 0.022;
+        var KEY_BEND1 = 10, KEY_BEND2 = 4, KB_KY1 = 0.0022, KB_KY2 = 0.0042;
+        function keyBend(k, wy, t) {
+          return KEY_BEND1 * noise(k * 2.13 + 500, wy * KB_KY1, t * 0.035)
+               + KEY_BEND2 * noise(k * 4.7 + 700, wy * KB_KY2, t * 0.07);
         }
 
         var WAVE_PAD = 80;                /* 上下溢出余量，防拨动露边 */
         var LINES = 0, SAMPLES = 0, spacing = 0;
         var GW = 0, GH = 0;               /* 粗网格：每 3 线 × 每 2 采样 */
         var grid = null, fineX = null, yAt = null;
-        var bendGrid = null;              /* 每线 × 每 2 采样：随机弯曲场 */
-        var tiltArr = null;               /* 每线静态倾角（角度扰动） */
+        var keyBendGrid = null;           /* KEYS × GH：关键线弯曲锚 */
+        var bendGrid = null;              /* LINES × GH：混插后的每线弯曲 */
+        var blendK = null;                /* LINES × 2：[k0, smootherstep 权重] */
+        var tiltArr = null;               /* 每线静态倾角（关键线混插） */
 
         function resize() {
           /* 必须用 clientWidth/Height（不含滚动条）：innerWidth 含滚动条宽，
@@ -1652,11 +1644,43 @@
           yAt = new Float64Array(SAMPLES + 1);
           var ySpanR = cssH + WAVE_PAD * 2;
           for (var q = 0; q <= SAMPLES; q++) { yAt[q] = (q / SAMPLES) * ySpanR - WAVE_PAD; }
+          keyBendGrid = new Float64Array(KEYS * GH);
           bendGrid = new Float64Array(LINES * GH);
+          blendK = new Float64Array(LINES * 2);
           tiltArr = new Float64Array(LINES);
+
+          /* 关键线位置：等距 + 随机抖动（前后向钳制保次序，端点固定贴边） */
+          var keyIdx = new Float64Array(KEYS);
+          var slot = (LINES - 1) / (KEYS - 1);
+          keyIdx[0] = 0;
+          keyIdx[KEYS - 1] = LINES - 1;
+          for (var k = 1; k < KEYS - 1; k++) {
+            keyIdx[k] = k * slot + noise(k * 3.7 + 1234, 0.71, 0) * KEY_JITTER * slot;
+          }
+          var minSlot = 0.45 * slot;
+          for (var k2 = 1; k2 < KEYS; k2++) {
+            if (keyIdx[k2] < keyIdx[k2 - 1] + minSlot) { keyIdx[k2] = keyIdx[k2 - 1] + minSlot; }
+          }
+          for (var k3 = KEYS - 2; k3 >= 0; k3--) {
+            if (keyIdx[k3] > keyIdx[k3 + 1] - minSlot) { keyIdx[k3] = keyIdx[k3 + 1] - minSlot; }
+          }
+
+          /* 关键线静态倾角（±KEY_TILT×1.8，随机角度人格） */
+          var keyTilt = new Float64Array(KEYS);
+          for (var kt = 0; kt < KEYS; kt++) {
+            keyTilt[kt] = noise(kt * 1.7 + 900, 0.37, 0) * KEY_TILT * 1.8;
+          }
+
+          /* 每线人格 = 相邻关键线人格的 smootherstep 混插（C1，无棱角） */
           for (var m = 0; m < LINES; m++) {
-            /* 静态倾角 ±TILT_AMP（对 x0 平滑取样）—— 每线整体走向轻微差异 */
-            tiltArr[m] = noise(m * spacing * 0.005 + 900, 0.37, 0) * TILT_AMP;
+            var k0 = 0;
+            while (k0 < KEYS - 2 && m > keyIdx[k0 + 1]) { k0++; }
+            var f = (m - keyIdx[k0]) / (keyIdx[k0 + 1] - keyIdx[k0]);
+            if (f < 0) { f = 0; } else if (f > 1) { f = 1; }
+            var w = f * f * f * (f * (6 * f - 15) + 10);
+            blendK[m * 2] = k0;
+            blendK[m * 2 + 1] = w;
+            tiltArr[m] = keyTilt[k0] * (1 - w) + keyTilt[k0 + 1] * w;
           }
         }
 
@@ -1795,15 +1819,20 @@
           var ySpan = cssH + WAVE_PAD * 2;
 
           /* 1) 粗网格求位移场：每 3 条线 × 每 2 个采样求值一次
-             （x0 用成组收拢后的材料坐标 x0At）+ 每线弯曲场 */
+             + 关键线弯曲锚混插到每线（相邻关键线 smootherstep） */
           for (var gj = 0; gj < GH; gj++) {
             var yG = yAt[Math.min(gj * 2, SAMPLES)];
             var wy = yG + scrollDrift;
             for (var gi = 0; gi < GW; gi++) {
-              grid[gj * GW + gi] = fieldOffset(x0At(Math.min(gi * 3, LINES - 1), yG), wy, t);
+              grid[gj * GW + gi] = fieldOffset(Math.min(gi * 3, LINES - 1) * spacing, wy, t);
+            }
+            for (k = 0; k < KEYS; k++) {
+              keyBendGrid[k * GH + gj] = keyBend(k, wy, t);
             }
             for (var bi = 0; bi < LINES; bi++) {
-              bendGrid[bi * GH + gj] = bendOffset(x0At(bi, yG), wy, t);
+              var k0b = blendK[bi * 2], wb = blendK[bi * 2 + 1];
+              bendGrid[bi * GH + gj] = keyBendGrid[k0b * GH + gj] * (1 - wb)
+                                     + keyBendGrid[(k0b + 1) * GH + gj] * wb;
             }
           }
 
@@ -1815,8 +1844,7 @@
             var fx = i / 3;
             var gi0 = fx | 0;
             if (gi0 > GW - 2) { gi0 = GW - 2; }
-            var colL = Math.min(gi0 * 3, LINES - 1);
-            var colR = Math.min((gi0 + 1) * 3, LINES - 1);
+            var tx = fx - gi0;           /* 均匀列距：线号份额 = 材料坐标份额 */
             for (s = 0; s <= SAMPLES; s++) {
               var y = yAt[s];
               var fy = s / 2;
@@ -1825,11 +1853,7 @@
               var ty = fy - gj0;
               var jm = gj0 > 0 ? gj0 - 1 : 0;
               var jp = gj0 + 2 < GH ? gj0 + 2 : GH - 1;
-              /* x 向插值按真实材料坐标份额 —— 成组收拢后列距随高度变化，
-                 按线号份额插值会在组界产生误差阶跃（折角/假交叉根源） */
-              var x0 = x0At(i, y);
-              var xL = x0At(colL, y), xR = x0At(colR, y);
-              var tx = (x0 - xL) / (xR - xL);
+              var x0 = i * spacing;
               var a0 = grid[jm * GW + gi0] + (grid[jm * GW + gi0 + 1] - grid[jm * GW + gi0]) * tx;
               var a1 = grid[gj0 * GW + gi0] + (grid[gj0 * GW + gi0 + 1] - grid[gj0 * GW + gi0]) * tx;
               var a2 = grid[(gj0 + 1) * GW + gi0] + (grid[(gj0 + 1) * GW + gi0 + 1] - grid[(gj0 + 1) * GW + gi0]) * tx;
@@ -1837,8 +1861,8 @@
               var ty2 = ty * ty, ty3 = ty2 * ty;
               var off = 0.5 * (2 * a1 + (-a0 + a2) * ty +
                 (2 * a0 - 5 * a1 + 4 * a2 - a3) * ty2 + (-a0 + 3 * a1 - 3 * a2 + a3) * ty3);
-              /* 材料坐标随高度向束心收拢（两端收窄）+ 每线弯曲（同款
-                 Catmull-Rom y 插值，衔接处无折角）+ 静态倾角 */
+              /* 关键线混插弯曲（Catmull-Rom y 插值，衔接处无折角）
+                 + 静态倾角（关键线人格沿 x 平滑过渡） */
               var b0 = bendGrid[iGH + jm], b1 = bendGrid[iGH + gj0],
                   b2 = bendGrid[iGH + gj0 + 1], b3 = bendGrid[iGH + jp];
               var bend = 0.5 * (2 * b1 + (-b0 + b2) * ty +
@@ -1874,7 +1898,8 @@
           }
 
           /* 3) 逐线描边：局部疏密 → 亮度渐变，密度带即亮带；
-             两端束内收拢形成的密集带自然发亮（密度驱动），无单根重点线 */
+             关键线混插让疏密呼吸贯穿全页，亮带自然流动（密度驱动），
+             无单根重点线 */
           ctx.clearRect(0, 0, cssW, cssH);
           var baseAlpha = isDark ? 0.22 : 0.16;   /* 浅色再降一档，不干扰黑字可读性 */
           var STOPS = 8;
