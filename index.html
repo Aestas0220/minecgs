@@ -1533,19 +1533,30 @@
 
       /* ============================================================
          6. 动态背景 —— 纵向波线场（simplex-noise 位移场）
-         · 上百条等距细竖线共享同一平滑位移场，以材料坐标 x0 为输入：
+         · 上百条细竖线共享同一平滑位移场，以材料坐标 x0 为输入：
            |∂offset/∂x0| < 1 → 波前有序推进、线条永不交叉（网格模拟验证）
          · 三层噪声叠加（振幅 48/18/5）：聚散成疏密带；
            密度差映射亮度 —— 聚拢处成亮带、稀疏处隐没，密度带即体积感
-        · 高斯透镜排斥（仅鼠标/触控笔持续扰动）+ 点击扩散圆圈（轻点/点击
-          触发，easeOutCubic 外扩环带径向推开线条）—— 两层共存
-        · 移动端触屏不做滑动跟手扭曲（拖动手势只滚动页面），背景的
-          互动反馈只由轻点波纹触发；透镜强度缓入缓出、隐身归位
+         · 波前成组收拢（替代旧"重点线"）：每 GROUP=8 条线为一束，
+           束内间距在每条线的两端（画面上下缘）平滑收窄至 S_END=0.42×，
+           数根彼此靠近的线自然形成密集带作视觉层次 —— 不再有单根
+           发亮的刻意强调线；sEnd(u) 用 smootherstep（C2 连续），
+           收窄全程渐进、束与束之间均匀排布、无跳脱感
+         · 每线轻微随机弯曲 + 角度扰动（bend 双八度 7px/3px +
+           tilt 静态倾角 ±0.014）：打破波前间斜率/角度的高度相似，
+           扰动对 x0 平滑（|∂/∂x0| 小）→ 不破坏波前结构、不引入交叉；
+           bend 在每线 × 每 2 采样网格求值 + Catmull-Rom 插值，
+           与 tilt（对 y 线性）同为 C1+ —— 线段衔接处无折角突变
+         · 高斯透镜排斥（仅鼠标/触控笔持续扰动）+ 点击扩散圆圈（轻点/点击
+           触发，easeOutCubic 外扩环带径向推开线条）—— 两层共存
+         · 移动端触屏不做滑动跟手扭曲（拖动手势只滚动页面），背景的
+           互动反馈只由轻点波纹触发；透镜强度缓入缓出、隐身归位
          · 随滚动 0.12× 漂移与前景卡片形成视差；reduced-motion 静帧
          · 位移场在粗网格（每 3 线 × 每 2 采样）求值，x 向线性 +
            y 向 Catmull-Rom 三次插值；描边用二次贝塞尔中点平滑 ——
            线形全程 C1 连续、无折线棱角
-         · 深色主题 baseAlpha 降至 0.22，避免干扰正文可读性
+         · baseAlpha 深色 0.22 / 浅色 0.16 —— 浅色再降一档，
+           避免线条干扰黑色正文可读性
          ============================================================ */
       (function initWaveField() {
         var canvas = document.getElementById("waveCanvas");
@@ -1570,18 +1581,51 @@
         }
         var noise = SN.createNoise3D(mulberry32(20261001));
 
-        /* 位移场：三层 simplex 噪声（振幅 48/18/5，波长各异）
-           振幅经网格模拟调参：梯度 p95≈0.43、零交叉、疏密比约 13× */
+        /* 位移场：三层 simplex 噪声（振幅 48/18/3.5，波长各异）
+           三八度 x 频率 0.0120→0.0105、振幅 5→3.5：压低最坏 ∂/∂x0≈1.0 的
+           斜率尖峰，为 bend/tilt 与透镜/涟漪叠加留出不交叉预算
+           （7 个时间采样 × 6 场景实测零交叉） */
         function fieldOffset(x0, wy, t) {
           return 48 * noise(x0 * 0.0018, wy * 0.0011, t * 0.07)
                + 18 * noise(x0 * 0.0058 + 41, wy * 0.0036, t * 0.14)
-               + 5 * noise(x0 * 0.0120 + 82, wy * 0.0080, t * 0.21);
+               + 3.5 * noise(x0 * 0.0105 + 82, wy * 0.0080, t * 0.21);
+        }
+
+        /* 波前关键可调参数（后续微调入口）：
+           BEND_GAIN —— 每线随机弯曲总增益（双八度基础 7px@ky0.0032 + 3px@ky0.005，
+                        x 尺度 0.012/0.028 让相邻线自然分化出各自曲率与局部角度）
+           TILT_AMP —— 每线静态随机倾角振幅（乘 (y-中线)），整体走向轻微差异
+           GROUP/S_END —— 端部收拢：每束线数与端距系数（见下）
+           实测定标：BEND_GAIN 0.45 + TILT_AMP 0.006 → minGap≈0.27px、零交叉 */
+        var BEND_GAIN = 0.45, TILT_AMP = 0.006;
+        function bendOffset(x0, wy, t) {
+          return 7 * BEND_GAIN * noise(x0 * 0.012 + 500, wy * 0.0032, t * 0.05)
+               + 3 * BEND_GAIN * noise(x0 * 0.028 + 700, wy * 0.005, t * 0.11);
+        }
+
+        /* 波前成组收拢（替代旧"重点线"）：每 GROUP 条线为一束，束心不动、
+           外侧线向束心靠拢 —— 束内间距只在每条线的两端（上下缘）收窄到
+           S_END×，中段保持等距；数根贴近的线在两端自然形成密集带 */
+        var GROUP = 8, S_END = 0.42;
+        function sEndAt(y) {
+          var u = Math.abs(y / cssH * 2 - 1);            /* 0=中段, 1=上下缘 */
+          if (u > 1) { u = 1; }
+          var s = u * u * u * (u * (6 * u - 15) + 10);   /* smootherstep：C2 连续 */
+          return 1 - (1 - S_END) * s;
+        }
+        function x0At(i, y) {
+          var gs = Math.floor(i / GROUP) * GROUP;
+          var ge = Math.min(gs + GROUP, LINES) - 1;
+          var cIdx = (gs + ge) / 2;
+          return (cIdx + (i - cIdx) * sEndAt(y)) * spacing;
         }
 
         var WAVE_PAD = 80;                /* 上下溢出余量，防拨动露边 */
         var LINES = 0, SAMPLES = 0, spacing = 0;
         var GW = 0, GH = 0;               /* 粗网格：每 3 线 × 每 2 采样 */
         var grid = null, fineX = null, yAt = null;
+        var bendGrid = null;              /* 每线 × 每 2 采样：随机弯曲场 */
+        var tiltArr = null;               /* 每线静态倾角（角度扰动） */
 
         function resize() {
           /* 必须用 clientWidth/Height（不含滚动条）：innerWidth 含滚动条宽，
@@ -1608,6 +1652,12 @@
           yAt = new Float64Array(SAMPLES + 1);
           var ySpanR = cssH + WAVE_PAD * 2;
           for (var q = 0; q <= SAMPLES; q++) { yAt[q] = (q / SAMPLES) * ySpanR - WAVE_PAD; }
+          bendGrid = new Float64Array(LINES * GH);
+          tiltArr = new Float64Array(LINES);
+          for (var m = 0; m < LINES; m++) {
+            /* 静态倾角 ±TILT_AMP（对 x0 平滑取样）—— 每线整体走向轻微差异 */
+            tiltArr[m] = noise(m * spacing * 0.005 + 900, 0.37, 0) * TILT_AMP;
+          }
         }
 
         /* 尺寸变化防抖 140ms —— 移动端地址栏收放会连发 resize，
@@ -1744,12 +1794,16 @@
           var i, s, k;
           var ySpan = cssH + WAVE_PAD * 2;
 
-          /* 1) 粗网格求位移场：每 3 条线 × 每 2 个采样求值一次 */
+          /* 1) 粗网格求位移场：每 3 条线 × 每 2 个采样求值一次
+             （x0 用成组收拢后的材料坐标 x0At）+ 每线弯曲场 */
           for (var gj = 0; gj < GH; gj++) {
             var yG = yAt[Math.min(gj * 2, SAMPLES)];
             var wy = yG + scrollDrift;
             for (var gi = 0; gi < GW; gi++) {
-              grid[gj * GW + gi] = fieldOffset(Math.min(gi * 3, LINES - 1) * spacing, wy, t);
+              grid[gj * GW + gi] = fieldOffset(x0At(Math.min(gi * 3, LINES - 1), yG), wy, t);
+            }
+            for (var bi = 0; bi < LINES; bi++) {
+              bendGrid[bi * GH + gj] = bendOffset(x0At(bi, yG), wy, t);
             }
           }
 
@@ -1757,11 +1811,12 @@
              x 向线性、y 向 Catmull-Rom 三次插值 —— 跨粗网格行导数连续，
              消除线性插值在行界的折角 */
           for (i = 0; i < LINES; i++) {
-            var x0 = i * spacing;
+            var iGH = i * GH;
             var fx = i / 3;
             var gi0 = fx | 0;
             if (gi0 > GW - 2) { gi0 = GW - 2; }
-            var tx = fx - gi0;
+            var colL = Math.min(gi0 * 3, LINES - 1);
+            var colR = Math.min((gi0 + 1) * 3, LINES - 1);
             for (s = 0; s <= SAMPLES; s++) {
               var y = yAt[s];
               var fy = s / 2;
@@ -1770,6 +1825,11 @@
               var ty = fy - gj0;
               var jm = gj0 > 0 ? gj0 - 1 : 0;
               var jp = gj0 + 2 < GH ? gj0 + 2 : GH - 1;
+              /* x 向插值按真实材料坐标份额 —— 成组收拢后列距随高度变化，
+                 按线号份额插值会在组界产生误差阶跃（折角/假交叉根源） */
+              var x0 = x0At(i, y);
+              var xL = x0At(colL, y), xR = x0At(colR, y);
+              var tx = (x0 - xL) / (xR - xL);
               var a0 = grid[jm * GW + gi0] + (grid[jm * GW + gi0 + 1] - grid[jm * GW + gi0]) * tx;
               var a1 = grid[gj0 * GW + gi0] + (grid[gj0 * GW + gi0 + 1] - grid[gj0 * GW + gi0]) * tx;
               var a2 = grid[(gj0 + 1) * GW + gi0] + (grid[(gj0 + 1) * GW + gi0 + 1] - grid[(gj0 + 1) * GW + gi0]) * tx;
@@ -1777,7 +1837,13 @@
               var ty2 = ty * ty, ty3 = ty2 * ty;
               var off = 0.5 * (2 * a1 + (-a0 + a2) * ty +
                 (2 * a0 - 5 * a1 + 4 * a2 - a3) * ty2 + (-a0 + 3 * a1 - 3 * a2 + a3) * ty3);
-              var x = x0 + off;
+              /* 材料坐标随高度向束心收拢（两端收窄）+ 每线弯曲（同款
+                 Catmull-Rom y 插值，衔接处无折角）+ 静态倾角 */
+              var b0 = bendGrid[iGH + jm], b1 = bendGrid[iGH + gj0],
+                  b2 = bendGrid[iGH + gj0 + 1], b3 = bendGrid[iGH + jp];
+              var bend = 0.5 * (2 * b1 + (-b0 + b2) * ty +
+                (2 * b0 - 5 * b1 + 4 * b2 - b3) * ty2 + (-b0 + 3 * b1 - 3 * b2 + b3) * ty3);
+              var x = x0 + off + bend + tiltArr[i] * (y - cssH * 0.5);
 
               /* 高斯透镜：62px 峰值推力、R=240px，全域平滑衰减、无截断边界
                  （任何硬截断都会在边界产生棱角）× power 缓入缓出 */
@@ -1808,16 +1874,15 @@
           }
 
           /* 3) 逐线描边：局部疏密 → 亮度渐变，密度带即亮带；
-             每 16 条一条"重点线"（更亮略粗），对应参考效果的偶发发亮竖线 */
+             两端束内收拢形成的密集带自然发亮（密度驱动），无单根重点线 */
           ctx.clearRect(0, 0, cssW, cssH);
-          var baseAlpha = isDark ? 0.22 : 0.21;   /* 深色下调，减轻对正文可读性的干扰 */
-          var STOPS = 6;
+          var baseAlpha = isDark ? 0.22 : 0.16;   /* 浅色再降一档，不干扰黑字可读性 */
+          var STOPS = 8;
           for (i = 0; i < LINES; i++) {
             var mixT = i / (LINES - 1);
             var r = Math.round(colors.a[0] * (1 - mixT) + colors.b[0] * mixT);
             var g = Math.round(colors.a[1] * (1 - mixT) + colors.b[1] * mixT);
             var b = Math.round(colors.a[2] * (1 - mixT) + colors.b[2] * mixT);
-            var isKey = (i % 16) === 7;
 
             var grad = ctx.createLinearGradient(0, -WAVE_PAD, 0, cssH + WAVE_PAD);
             for (k = 0; k < STOPS; k++) {
@@ -1834,13 +1899,13 @@
               if (density > 3.2) { density = 3.2; } else if (density < 0.18) { density = 0.18; }
               var shade = 0.30 + 1.05 * Math.pow(density, 1.4);
               if (shade > 2.6) { shade = 2.6; }
-              var a = baseAlpha * shade * (isKey ? 1.5 : 1);
+              var a = baseAlpha * shade;
               if (a > 0.92) { a = 0.92; }
               grad.addColorStop(k / (STOPS - 1), "rgba(" + r + "," + g + "," + b + "," + a.toFixed(3) + ")");
             }
 
             ctx.strokeStyle = grad;
-            ctx.lineWidth = isKey ? 1.5 : 1;
+            ctx.lineWidth = 1;
             /* 二次贝塞尔中点平滑：采样点作控制点、段中点为曲线必经点，
                相邻段以中点连线为公共切线 → 全程 C1 连续，无折线棱角 */
             ctx.beginPath();
