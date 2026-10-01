@@ -1445,19 +1445,48 @@
       }
 
       var navLinks = document.querySelectorAll(".nav__link[data-section]");
-      if ("IntersectionObserver" in window && navLinks.length) {
-        var sectionIO = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (!entry.isIntersecting) return;
-            navLinks.forEach(function (link) {
-              link.classList.toggle("is-active", link.getAttribute("data-section") === entry.target.id);
-            });
-          });
-        }, { threshold: 0.35 });
-        ["hero", "intro", "progress", "join"].forEach(function (id) {
-          var el = document.getElementById(id);
-          if (el) sectionIO.observe(el);
+      /* 导航激活态：单一滚动位置驱动（第三十轮）。
+         旧版 IntersectionObserver(0.35) 与封面区 p<0.45 重置竞争是
+         "hero 下点简介/下滑不亮简介"的根源：intro 顶边 ≈ heroH，桌面端
+         其 35% 可见过线点恰落在 p<0.45 区间 —— IO 过线只回火一次，随即
+         被重置覆盖回"首屏"，而 hero 钉住、intro 过线状态不变，IO 永不
+         回火；简介/进度/加入互切在 p>0.45 无重置故正常（移动端 intro 更
+         高、过线点落在 p>0.45 外，故未现症）。现统一由滚动位置判定：
+         检测线（视口 50% 处）落在哪个区段，哪个区段即激活；区界 20px
+         迟滞防临界抖动；锚点跳转/深链同样收敛到正确区段 */
+      var navSections = ["hero", "intro", "progress", "join"].map(function (id) {
+        return { id: id, el: document.getElementById(id) };
+      }).filter(function (s) { return s.el; });
+      var navTops = [];
+      var navActiveIdx = 0;
+      function measureNav() {
+        var sy = window.scrollY || 0;
+        navTops = navSections.map(function (s) {
+          /* hero 钉住（sticky）rect 恒在视口顶，须特殊取 0；
+             其余区段正常流，rect.top + scrollY = 稳定文档坐标 */
+          return s.id === "hero" ? 0 : s.el.getBoundingClientRect().top + sy;
         });
+      }
+      function updateNav(y) {
+        if (navTops.length !== navSections.length) { measureNav(); }
+        var line = y + window.innerHeight * 0.5;
+        var rawIdx = 0;
+        for (var i = 0; i < navTops.length; i++) {
+          if (navTops[i] <= line) { rawIdx = i; } else { break; }
+        }
+        if (rawIdx === navActiveIdx) { return; }
+        var past = rawIdx > navActiveIdx ? line - navTops[rawIdx] : navTops[navActiveIdx] - line;
+        if (past <= 20) { return; }
+        navActiveIdx = rawIdx;
+        var activeId = navSections[navActiveIdx].id;
+        navLinks.forEach(function (link) {
+          link.classList.toggle("is-active", link.getAttribute("data-section") === activeId);
+        });
+      }
+      /* 布局漂移（字体交换/图片落位/主题切换尺寸变化）→ 重测区段坐标；
+         只读 rect 不写布局，无反馈回路 */
+      if ("ResizeObserver" in window && document.body) {
+        new ResizeObserver(function () { measureNav(); }).observe(document.body);
       }
 
       /* 钉住封面的 rect 永远停在视口顶，浏览器做锚点跳转时误判
@@ -1501,7 +1530,7 @@
       function updateParallax() {
         var y = window.scrollY || 0;
         if (heroSection) {
-          if (!heroH) { heroH = heroSection.offsetHeight || window.innerHeight; }
+          if (!heroH) { heroH = heroSection.offsetHeight || window.innerHeight; measureNav(); }
           var p = Math.min(Math.max(y / heroH, 0), 1);
 
           /* 波场裁切到内容面板滑界之下：面板顶边 = heroH - y（1:1 上移）。
@@ -1523,13 +1552,9 @@
             }
           }
 
-          /* 钉住的 hero 几何上永远"可见"，IntersectionObserver 不会再回火 ——
-             封面区（p<0.45）的导航态改由滚动进度直接判定 */
-          if (p < 0.45 && navLinks.length && !navLinks[0].classList.contains("is-active")) {
-            navLinks.forEach(function (link) {
-              link.classList.toggle("is-active", link.getAttribute("data-section") === "hero");
-            });
-          }
+          /* 导航激活态：统一滚动位置判定（见上方 updateNav）——
+             封面区与内容区不再两套机制竞争 */
+          updateNav(y);
 
           /* 品牌标签：hero 封面页隐去，第二页（内容面板滑过）起淡入；
              显/隐分设阈值 0.45 / 0.35 迟滞，防临界往复闪烁 */
@@ -1587,6 +1612,7 @@
       }
       window.addEventListener("scroll", requestParallax, { passive: true });
       window.addEventListener("resize", function () { heroH = 0; requestParallax(); }, { passive: true });
+      window.addEventListener("load", function () { heroH = 0; requestParallax(); });  /* 图片/字体落位后重测 */
       updateParallax();
 
       /* ============================================================
