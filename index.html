@@ -81,6 +81,8 @@
       --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
       /* Material 3 Expressive：spatial spring（带回弹的弹簧曲线） */
       --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      /* Material emphasized decelerate：快→慢非线性（激活指示器展开） */
+      --ease-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
       --dur-short: 200ms;
       --dur-medium: 300ms;
       --dur-long: 500ms;
@@ -315,6 +317,7 @@
       gap: 8px;
     }
     .nav {
+      position: relative;      /* 共享胶囊的定位锚（按钮 offsetLeft 的参照系） */
       display: flex;
       align-items: center;
       gap: 4px;
@@ -327,6 +330,11 @@
       border: 1px solid var(--glass-stroke);
       box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-tint);
       transition: background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard);
+      /* 滑动交互：横向拖动归手势（不选中文字），纵向仍交还页面滚动（pan-y） */
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: pan-y;
     }
     .nav__link {
       position: relative;
@@ -338,38 +346,53 @@
       padding: 0 18px;
       border-radius: var(--corner-full);
       color: var(--md-on-surface-variant);
+      cursor: grab;
       transition: color var(--dur-short) var(--ease-standard),
                   transform var(--dur-medium) var(--ease-spring);
       will-change: transform;
     }
     /* Expressive：按压微缩回弹 */
     .nav__link:active { transform: scale(0.94); }
-    /* Expressive 激活指示器（active indicator）：
-       官方规格 56×32dp 全圆角胶囊 / secondaryContainer 色 / 50% 圆角；
-       纯文字项胶囊取按钮自身几何（HUG 内容同义）。
-       胶囊形变动画：width 从中心向两边生长 —— 全程保持全圆角鹅卵石
-       轮廓（禁 scaleX 缩放：圆角被横向压扁，中段成竖缝/门板状，
-       观感是"翻页"而非"胶囊"）。运动按 MotionScheme：尺寸属 spatial，
-       展开 380ms 弹簧带过冲；收起 200ms 快速平滑（宽度负值非法，
-       反向不共用弹簧曲线） */
-    .nav__link { overflow: visible; }   /* 弹簧过冲时胶囊两端越出按钮呼吸，不裁切 */
-    .nav__pill {
+    .nav.is-dragging .nav__link { cursor: grabbing; }
+
+    /* Expressive 激活指示器（active indicator）· 共享胶囊版（第三十一轮重构）：
+       官方规格 56×32dp 全圆角胶囊 / secondaryContainer 色 / 50% 圆角。
+       结构：单一 .nav__pill（JS 驱动 left/width）+ .nav__pill-ghost（关闭残影）。
+       · 点击切换：旧胶囊以极短渐变（~90ms）消失（ghost 残影，无收起形变），
+         同时新胶囊在目标按钮中心从 width 0→满宽展开 —— 不经中间按钮过渡
+       · 展开曲线 = Material emphasized decelerate（--ease-decelerate，快→慢非线性）
+       · 拖动滑块：胶囊 1:1 跟手（.is-anim-off 零过渡），松手磁吸回按钮
+       · 禁 scaleX 缩放形变（圆角被压扁成竖缝/门板="翻页"感），
+         胶囊形体动画只能用 left/width 尺寸形变保轮廓 */
+    .nav__pill, .nav__pill-ghost {
       position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 50%;
+      top: 4px;
+      bottom: 4px;
+      left: 0;
       width: 0;
-      transform: translateX(-50%);
       border-radius: var(--corner-full);
       background: var(--md-secondary-container);
-      transition: width 200ms var(--ease-standard);
+      pointer-events: none;
     }
-    .nav__link.is-active .nav__pill {
-      width: 100%;
-      transition: width 380ms var(--ease-spring);
+    .nav__pill {
+      z-index: 0;
+      transition: left 300ms var(--ease-decelerate),
+                  width 300ms var(--ease-decelerate),
+                  opacity 120ms linear;
     }
+    .nav__pill-ghost {
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 90ms linear;
+    }
+    .nav__pill.is-anim-off, .nav__pill-ghost.is-anim-off { transition: none; }
+
+    .nav__link { overflow: visible; }
     .nav__label { position: relative; z-index: 1; }
     .nav__link.is-active { color: var(--md-on-secondary-container); }
+    /* 拖动态反馈：按钮微缩 + 状态层压深（MD3 pressed 观感） */
+    .nav.is-dragging .nav__link { transform: scale(0.95); }
+    .nav.is-dragging .nav__link::before { opacity: 0.10; }
 
     /* ============ 主题切换：独立圆形控件（48dp · 同半径） ============ */
     .theme-toggle {
@@ -949,7 +972,7 @@
       html { scroll-behavior: auto; }
       .hero__visual, .hero__stage, .reveal, .theme-toggle__icon,
       .scroll-hint__line, .ripple, .map-shell__badge::before,
-      .brand, .nav__pill {
+      .brand, .nav__pill, .nav__pill-ghost, .nav__link {
         animation: none !important;
         transition: none !important;
         will-change: auto;
@@ -969,11 +992,14 @@
     </a>
     <div class="nav-cluster">
       <nav class="nav" id="nav" aria-label="主导航">
-        <!-- 激活指示器：.nav__pill 胶囊（Expressive：点击后从中心向两边展开鹅卵石色块） -->
-        <a class="nav__link sl label-large is-active" href="#hero" data-section="hero"><span class="nav__pill" aria-hidden="true"></span><span class="nav__label">首屏</span></a>
-        <a class="nav__link sl label-large" href="#intro" data-section="intro"><span class="nav__pill" aria-hidden="true"></span><span class="nav__label">简介</span></a>
-        <a class="nav__link sl label-large" href="#progress" data-section="progress"><span class="nav__pill" aria-hidden="true"></span><span class="nav__label">进度</span></a>
-        <a class="nav__link sl label-large" href="#join" data-section="join"><span class="nav__pill" aria-hidden="true"></span><span class="nav__label">加入</span></a>
+        <!-- 激活指示器：单一共享鹅卵石胶囊（JS 驱动几何）+ 关闭残影。
+             展开=点击/滚动激活时从按钮中心生长；拖动时 1:1 跟手 -->
+        <span class="nav__pill" id="navPill" aria-hidden="true"></span>
+        <span class="nav__pill-ghost" id="navPillGhost" aria-hidden="true"></span>
+        <a class="nav__link sl label-large is-active" href="#hero" data-section="hero"><span class="nav__label">首屏</span></a>
+        <a class="nav__link sl label-large" href="#intro" data-section="intro"><span class="nav__label">简介</span></a>
+        <a class="nav__link sl label-large" href="#progress" data-section="progress"><span class="nav__label">进度</span></a>
+        <a class="nav__link sl label-large" href="#join" data-section="join"><span class="nav__label">加入</span></a>
       </nav>
 
       <!-- 主题切换：独立圆形控件，置于导航鹅卵石右侧 -->
@@ -1444,21 +1470,37 @@
         revealEls.forEach(function (el) { el.classList.add("is-visible"); });
       }
 
+      var navEl = document.getElementById("nav");
       var navLinks = document.querySelectorAll(".nav__link[data-section]");
-      /* 导航激活态：单一滚动位置驱动（第三十轮）。
-         旧版 IntersectionObserver(0.35) 与封面区 p<0.45 重置竞争是
-         "hero 下点简介/下滑不亮简介"的根源：intro 顶边 ≈ heroH，桌面端
-         其 35% 可见过线点恰落在 p<0.45 区间 —— IO 过线只回火一次，随即
-         被重置覆盖回"首屏"，而 hero 钉住、intro 过线状态不变，IO 永不
-         回火；简介/进度/加入互切在 p>0.45 无重置故正常（移动端 intro 更
-         高、过线点落在 p>0.45 外，故未现症）。现统一由滚动位置判定：
-         检测线（视口 50% 处）落在哪个区段，哪个区段即激活；区界 20px
-         迟滞防临界抖动；锚点跳转/深链同样收敛到正确区段 */
+      var pillEl = document.getElementById("navPill");
+      var ghostEl = document.getElementById("navPillGhost");
+      /* 导航激活态：单一滚动位置驱动（第三十轮）+ 共享胶囊交互（第三十一轮）。
+         第三十轮教训：同一 UI 状态两套机制（IO + 滚动重置）必竞争 ——
+         现所有状态变更都走唯一出口 setActive()，输入源分三路：
+         · 滚动：检测线（视口 50% 处）落在哪个区段哪个激活，区界 20px 迟滞；
+           hero 钉住 rect 恒在视口顶须特殊取 0，其余 rect.top+scrollY 稳定坐标
+         · 点击：旧胶囊 90ms 极短渐变消失（ghost 残影，无收起形变），
+           同时新胶囊在目标按钮中心 width 0→满宽展开（decelerate 快→慢）；
+           非相邻按钮切换绝不经过中间按钮（不做位移形变过渡）；
+           跳转走原生锚点（#hero 由 a[href=#hero] 处理器接管回顶）
+         · 拖动滑块：胶囊 1:1 跟手（中心=指针 x，宽度按相邻按钮插值）；
+           指针跨过按钮阈值（相邻中心的中点）即执行与点击等同的跳转
+           （非无极：整段拖动只在过阈值时换页，过一次跳一次）；
+           松手磁吸回激活按钮；拖动中按钮微缩+状态层压深（按压感）
+         程序化跳转（点击/拖动）期间抑制滚动判定（suppressNavScroll），
+         滚动停 280ms 后解除并重同步 —— 否则平滑滚动路过中间区段时
+         胶囊会逐个过渡（正是用户否决的观感） */
       var navSections = ["hero", "intro", "progress", "join"].map(function (id) {
         return { id: id, el: document.getElementById(id) };
       }).filter(function (s) { return s.el; });
       var navTops = [];
       var navActiveIdx = 0;
+      var navGeom = [];            /* 各按钮胶囊几何 {left,width}（相对 .nav，与 navSections 同序） */
+      var navSuppress = false;
+      var navSuppressTimer = 0;
+      var navClickSuppress = false; /* 拖动衍生的合成 click 抑制旗标 */
+      var navDrag = null;
+
       function measureNav() {
         var sy = window.scrollY || 0;
         navTops = navSections.map(function (s) {
@@ -1467,7 +1509,105 @@
           return s.id === "hero" ? 0 : s.el.getBoundingClientRect().top + sy;
         });
       }
+      function measurePill() {
+        navGeom = navSections.map(function (s) {
+          var link = null;
+          Array.prototype.forEach.call(navLinks, function (l) {
+            if (l.getAttribute("data-section") === s.id) { link = l; }
+          });
+          return link ? { left: link.offsetLeft, width: link.offsetWidth } : { left: 0, width: 0 };
+        });
+      }
+      function geomOfIdx(i) { return navGeom[i] || { left: 0, width: 0 }; }
+      /* 拖动跟手几何：中心=手指 x（钳到首尾按钮中心间防出界），
+         宽度在相邻按钮宽度间线性插值（段内 t 由 x 定义 → 中心恒等于 x） */
+      function geomAtX(x) {
+        var n = navGeom.length;
+        if (!n) { return { left: 0, width: 0 }; }
+        var c0 = navGeom[0].left + navGeom[0].width / 2;
+        var cN = navGeom[n - 1].left + navGeom[n - 1].width / 2;
+        if (x <= c0) { return { left: navGeom[0].left, width: navGeom[0].width }; }
+        if (x >= cN) { return { left: navGeom[n - 1].left, width: navGeom[n - 1].width }; }
+        for (var i = 0; i < n - 1; i++) {
+          var a = navGeom[i], b = navGeom[i + 1];
+          var ca = a.left + a.width / 2, cb = b.left + b.width / 2;
+          if (x <= cb) {
+            var t = (x - ca) / (cb - ca);
+            var w = a.width + (b.width - a.width) * t;
+            return { left: x - w / 2, width: w };
+          }
+        }
+        return { left: navGeom[n - 1].left, width: navGeom[n - 1].width };
+      }
+      /* 阈值位置：相邻按钮中心的中点为界，手指落在哪段归哪个按钮 */
+      function idxAtX(x) {
+        var best = 0, bestD = Infinity;
+        for (var i = 0; i < navGeom.length; i++) {
+          var d = Math.abs(x - (navGeom[i].left + navGeom[i].width / 2));
+          if (d < bestD) { bestD = d; best = i; }
+        }
+        return best;
+      }
+      function placePill(g) {
+        if (!pillEl) { return; }
+        pillEl.style.left = g.left + "px";
+        pillEl.style.width = g.width + "px";
+      }
+      function placePillNow(g) {
+        if (!pillEl) { return; }
+        pillEl.classList.add("is-anim-off");
+        placePill(g);
+        void pillEl.offsetWidth;
+        pillEl.classList.remove("is-anim-off");
+      }
+      /* 关闭：旧胶囊极短渐变（~90ms）消失 —— 无收起形变（要求 1） */
+      function ghostFade(g) {
+        if (!ghostEl || reduceMotion || !g.width) { return; }
+        ghostEl.classList.add("is-anim-off");
+        ghostEl.style.left = g.left + "px";
+        ghostEl.style.width = g.width + "px";
+        ghostEl.style.opacity = "1";
+        void ghostEl.offsetWidth;
+        ghostEl.classList.remove("is-anim-off");
+        ghostEl.style.opacity = "0";
+      }
+      /* 展开：目标按钮中心 width 0→满宽（decelerate 快→慢），
+         left/width 同曲线同周期 → 每帧皆全圆角鹅卵石 */
+      function pillExpandTo(g) {
+        if (!pillEl) { return; }
+        pillEl.classList.add("is-anim-off");
+        pillEl.style.left = (g.left + g.width / 2) + "px";
+        pillEl.style.width = "0px";
+        void pillEl.offsetWidth;                 /* 回流锁定：先复位后展开 */
+        pillEl.classList.remove("is-anim-off");
+        pillEl.style.left = g.left + "px";
+        pillEl.style.width = g.width + "px";
+      }
+      /* 唯一状态出口：mode "expand"=完整视觉（滚动/点击）；"none"=只切类（拖动跟手中） */
+      function setActive(idx, mode) {
+        if (idx === navActiveIdx || !navSections[idx]) { return; }
+        var oldGeom = geomOfIdx(navActiveIdx);
+        navActiveIdx = idx;
+        var activeId = navSections[navActiveIdx].id;
+        Array.prototype.forEach.call(navLinks, function (link) {
+          link.classList.toggle("is-active", link.getAttribute("data-section") === activeId);
+        });
+        if (mode === "expand") {
+          ghostFade(oldGeom);
+          pillExpandTo(geomOfIdx(navActiveIdx));
+        }
+      }
+      function suppressNavScroll() {
+        navSuppress = true;
+        if (navSuppressTimer) { clearTimeout(navSuppressTimer); }
+        navSuppressTimer = setTimeout(function () {
+          if (navDrag && navDrag.moved) { suppressNavScroll(); return; }  /* 拖动未结束不解除 */
+          navSuppress = false;
+          updateNav(window.scrollY || 0);   /* 解除即重同步 */
+        }, 280);
+      }
       function updateNav(y) {
+        if (navSuppress) { return; }
         if (navTops.length !== navSections.length) { measureNav(); }
         var line = y + window.innerHeight * 0.5;
         var rawIdx = 0;
@@ -1477,25 +1617,124 @@
         if (rawIdx === navActiveIdx) { return; }
         var past = rawIdx > navActiveIdx ? line - navTops[rawIdx] : navTops[navActiveIdx] - line;
         if (past <= 20) { return; }
-        navActiveIdx = rawIdx;
-        var activeId = navSections[navActiveIdx].id;
-        navLinks.forEach(function (link) {
-          link.classList.toggle("is-active", link.getAttribute("data-section") === activeId);
+        setActive(rawIdx, "expand");
+      }
+      /* 拖动阈值跳转：与点击等同（hero 回顶，其余 scrollIntoView 且尊重 scroll-margin） */
+      function jumpToSection(id) {
+        if (id === "hero") {
+          window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+          return;
+        }
+        var el = document.getElementById(id);
+        if (el && el.scrollIntoView) {
+          el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+        }
+      }
+
+      /* ---- 拖动滑块交互（pointer events；横向手势归我们，纵向 pan-y 交还滚动） ---- */
+      if (navEl) {
+        navEl.addEventListener("dragstart", function (e) { e.preventDefault(); });
+        navEl.addEventListener("pointerdown", function (e) {
+          if (!e.isPrimary || (typeof e.button === "number" && e.button > 0)) { return; }
+          navClickSuppress = false;              /* 新手势清旧旗标（拖动后未合成 click 的兜底） */
+          navDrag = {
+            id: e.pointerId,
+            x0: e.clientX,
+            y0: e.clientY,
+            moved: false,
+            rect: navEl.getBoundingClientRect()  /* top-bar 固定，拖动期间几何稳定 */
+          };
+        });
+        navEl.addEventListener("pointermove", function (e) {
+          if (!navDrag || e.pointerId !== navDrag.id) { return; }
+          var dx = e.clientX - navDrag.x0, dy = e.clientY - navDrag.y0;
+          if (!navDrag.moved) {
+            /* 进入拖动：横向位移过 8px 且横向主导（纵向意图交还 pan-y 页面滚动） */
+            if (Math.abs(dx) < 8 || Math.abs(dx) <= Math.abs(dy)) { return; }
+            navDrag.moved = true;
+            navClickSuppress = true;             /* 手势收尾的合成 click 不跳转 */
+            navEl.classList.add("is-dragging");  /* 按压态反馈：按钮微缩+微暗 */
+            if (pillEl) {
+              pillEl.classList.add("is-anim-off");
+              pillEl.style.opacity = "1";
+            }
+            suppressNavScroll();
+            if (navEl.setPointerCapture) {
+              try { navEl.setPointerCapture(e.pointerId); } catch (err) {}
+            }
+          }
+          var x = e.clientX - navDrag.rect.left;
+          placePill(geomAtX(x));                 /* 胶囊 1:1 实时跟手 */
+          var idx = idxAtX(x);
+          if (idx !== navActiveIdx) {
+            setActive(idx, "none");              /* 过阈值：切激活但胶囊仍跟手 */
+            jumpToSection(navSections[idx].id);  /* 等同点击的跳转（非无极） */
+            suppressNavScroll();
+          }
+        });
+        function navDragEnd(e) {
+          if (!navDrag || (e && e.pointerId !== navDrag.id)) { return; }
+          var wasDrag = navDrag.moved;
+          navDrag = null;
+          if (!wasDrag) { return; }
+          navEl.classList.remove("is-dragging");
+          if (pillEl) { pillEl.classList.remove("is-anim-off"); }
+          placePill(geomOfIdx(navActiveIdx));    /* 磁吸回激活按钮 */
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, "", "#" + navSections[navActiveIdx].id);
+          }
+          setTimeout(function () { navClickSuppress = false; }, 400);
+        }
+        navEl.addEventListener("pointerup", navDragEnd);
+        navEl.addEventListener("pointercancel", navDragEnd);
+        /* 点击：完整视觉（残影消失 + 中心展开）；跳转走原生锚点默认动作
+           （#hero 由下方 a[href=#hero] 处理器接管），此处不重复跳 */
+        navEl.addEventListener("click", function (e) {
+          var link = e.target && e.target.closest ? e.target.closest(".nav__link") : null;
+          if (!link) { return; }
+          if (navClickSuppress) {
+            e.preventDefault();
+            e.stopPropagation();
+            navClickSuppress = false;
+            return;
+          }
+          var id = link.getAttribute("data-section");
+          for (var i = 0; i < navSections.length; i++) {
+            if (navSections[i].id === id) { setActive(i, "expand"); break; }
+          }
+          suppressNavScroll();                   /* 跳转飞行期间不回灌滚动判定 */
         });
       }
+
       /* 布局漂移（字体交换/图片落位/主题切换尺寸变化）→ 重测区段坐标；
          只读 rect 不写布局，无反馈回路 */
       if ("ResizeObserver" in window && document.body) {
         new ResizeObserver(function () { measureNav(); }).observe(document.body);
       }
+      if ("ResizeObserver" in window && navEl) {
+        new ResizeObserver(function () {
+          measurePill();
+          if (navDrag && navDrag.moved) { return; }   /* 拖动中跟手优先 */
+          placePill(geomOfIdx(navActiveIdx));
+        }).observe(navEl);
+      }
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () {
+          measureNav(); measurePill(); placePillNow(geomOfIdx(navActiveIdx));
+        });
+      }
+      measurePill();
+      placePillNow(geomOfIdx(navActiveIdx));   /* 初始就位（零动画） */
 
       /* 钉住封面的 rect 永远停在视口顶，浏览器做锚点跳转时误判
          "已在视口内"而不滚动 —— #hero（品牌 LOGO / 首屏按钮）手动接管回顶 */
       Array.prototype.forEach.call(document.querySelectorAll('a[href="#hero"]'), function (link) {
         link.addEventListener("click", function (e) {
+          if (navClickSuppress) { return; }    /* 拖动衍生的合成 click 不跳转 */
           e.preventDefault();
           window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
           if (window.history && window.history.pushState) { window.history.pushState(null, "", "#hero"); }
+          suppressNavScroll();
         });
       });
 
@@ -1529,6 +1768,7 @@
 
       function updateParallax() {
         var y = window.scrollY || 0;
+        if (navSuppress) { suppressNavScroll(); }   /* 程序化飞行中滚动仍在发生 → 续期抑制 */
         if (heroSection) {
           if (!heroH) { heroH = heroSection.offsetHeight || window.innerHeight; measureNav(); }
           var p = Math.min(Math.max(y / heroH, 0), 1);
