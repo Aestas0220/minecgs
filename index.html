@@ -1038,7 +1038,7 @@
         </div>
 
         <div class="join__card reveal" data-delay="1">
-          <p class="join__requirement body-large">申请者需熟练使用<strong>创世神 (WorldEdit) / 公理 (Axiom)</strong> 等辅助模组，或具备极强的<strong>自学毅力</strong>与<strong>空间逻辑</strong>。</p>
+          <p class="join__requirement body-large">申请主要看<strong>建筑功底</strong>或<strong>相关经验</strong>，发几张自己的作品照片即可。</p>
           <p class="join__note body-medium">加入前我们会简单聊聊，双方都觉得合适再进服务器。</p>
 
           <div class="join__divider" aria-hidden="true"></div>
@@ -1581,8 +1581,11 @@
         var grid = null, fineX = null, yAt = null;
 
         function resize() {
-          cssW = window.innerWidth;
-          cssH = window.innerHeight;
+          /* 必须用 clientWidth/Height（不含滚动条）：innerWidth 含滚动条宽，
+             画布会比内容面板宽出一截，面板圆角裁切的右上角就错位到滚动条
+             底下（左角对齐、右角对不上的根源） */
+          cssW = document.documentElement.clientWidth || window.innerWidth;
+          cssH = document.documentElement.clientHeight || window.innerHeight;
           canvas.width = Math.round(cssW * dpr);
           canvas.height = Math.round(cssH * dpr);
           canvas.style.width = cssW + "px";
