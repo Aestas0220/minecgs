@@ -1611,6 +1611,11 @@
         }
 
         var WAVE_PAD = 80;                /* 上下溢出余量，防拨动露边 */
+        var X_PAD = 200;                  /* 水平过盈：材料域两侧各外扩 200px，
+                                             波场把线条扭离边缘时域外线条跟进
+                                             回填，页面左右缘不留空白。
+                                             预算=静态最坏 ~108px（场 71+弯曲 14+
+                                             倾角 23）+ 透镜 62 + 涟漪 26 ≈ 196 */
         var LINES = 0, SAMPLES = 0, spacing = 0;
         var GW = 0, GH = 0;               /* 粗网格：每 3 线 × 每 2 采样 */
         var grid = null, fineX = null, yAt = null;
@@ -1631,12 +1636,14 @@
           canvas.style.height = cssH + "px";
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-          /* 密度：约每 7.5px 一条细竖线（窄屏 10px，上限 241 条兼顾性能） */
+          /* 密度：约每 7.5px 一条细竖线（窄屏 10px，上限 320 条兼顾性能）
+             材料域 = 视口宽 + 两侧过盈 X_PAD*2，线条均匀铺满整个材料域 */
           var SPACING = cssW < 700 ? 10 : 7.5;
-          LINES = Math.max(48, Math.min(240, Math.round(cssW / SPACING)));
+          var spanW = cssW + X_PAD * 2;
+          LINES = Math.max(48, Math.min(320, Math.round(spanW / SPACING)));
           LINES = Math.round((LINES - 1) / 3) * 3 + 1;   /* 对齐粗网格 */
           SAMPLES = cssW < 700 ? 40 : 56;                /* 偶数 → 对齐粗网格；高采样保证线形连续 */
-          spacing = cssW / (LINES - 1);
+          spacing = spanW / (LINES - 1);
           GW = (LINES - 1) / 3 + 1;
           GH = SAMPLES / 2 + 1;
           grid = new Float64Array(GW * GH);
@@ -1824,7 +1831,7 @@
             var yG = yAt[Math.min(gj * 2, SAMPLES)];
             var wy = yG + scrollDrift;
             for (var gi = 0; gi < GW; gi++) {
-              grid[gj * GW + gi] = fieldOffset(Math.min(gi * 3, LINES - 1) * spacing, wy, t);
+              grid[gj * GW + gi] = fieldOffset(Math.min(gi * 3, LINES - 1) * spacing - X_PAD, wy, t);
             }
             for (k = 0; k < KEYS; k++) {
               keyBendGrid[k * GH + gj] = keyBend(k, wy, t);
@@ -1853,7 +1860,7 @@
               var ty = fy - gj0;
               var jm = gj0 > 0 ? gj0 - 1 : 0;
               var jp = gj0 + 2 < GH ? gj0 + 2 : GH - 1;
-              var x0 = i * spacing;
+              var x0 = i * spacing - X_PAD;   /* 材料域左缘在 -X_PAD（水平过盈） */
               var a0 = grid[jm * GW + gi0] + (grid[jm * GW + gi0 + 1] - grid[jm * GW + gi0]) * tx;
               var a1 = grid[gj0 * GW + gi0] + (grid[gj0 * GW + gi0 + 1] - grid[gj0 * GW + gi0]) * tx;
               var a2 = grid[(gj0 + 1) * GW + gi0] + (grid[(gj0 + 1) * GW + gi0 + 1] - grid[(gj0 + 1) * GW + gi0]) * tx;
