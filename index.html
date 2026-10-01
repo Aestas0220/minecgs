@@ -160,7 +160,10 @@
       line-height: 24px;
       letter-spacing: 0.5px;
       color: var(--md-on-surface);
-      background: var(--md-surface);
+      /* 页面底色用 MD3 surface-dim（浅色 T87，同 N 中性色板、色相不变）：
+         比 surface（T98）更柔和不刺眼；深色主题下 surface-dim 与 surface
+         同值（#16130b），故此改动只影响浅色模式。 */
+      background: var(--md-surface-dim);
       overflow-x: hidden;
       transition: var(--theme-shift);
     }
@@ -607,7 +610,7 @@
     .page-sheet {
       position: relative;
       z-index: 2;              /* 高于钉住的封面（z1），滑过时完整遮住它 */
-      background: var(--md-surface);
+      background: var(--md-surface-dim);  /* 与 body 同底色（浅色 T87） */
       border-radius: var(--corner-xl) var(--corner-xl) 0 0;
       box-shadow: 0 -20px 54px rgba(10, 7, 3, 0.38);
       transition: var(--theme-shift);
@@ -787,7 +790,7 @@
       z-index: 5;                      /* 与内容层同层，压住波浪画布 */
       padding: 28px clamp(20px, 5vw, 72px) 36px;
       border-top: 1px solid var(--md-outline-variant);
-      background: var(--md-surface);
+      background: var(--md-surface-dim);  /* 与页面底色一致，避免亮带 */
       color: var(--md-on-surface-variant);
       transition: var(--theme-shift);
     }
@@ -990,7 +993,7 @@
         </div>
 
         <div class="intro__layout reveal" data-delay="1">
-          <p class="intro__lead body-large">MineCGS 是一项校园建筑复刻工程：以 <span class="accent">1:2 比例</span>在 Minecraft 中严谨重建广东碧桂园学校，两格方块对应现实中的一米。项目由本校学生自主发起，2024 年动工，2026 学年重启后持续推进。</p>
+          <p class="intro__lead body-large">MineCGS 是一项始于 2024 年 9 月的校园建筑复刻工程：以 <span class="accent">1:2 比例</span>在 Minecraft 中严谨重建广东碧桂园学校，两格方块对应现实中的一米。项目起源于一次突发奇想，2026 学年重启后持续推进。</p>
           <p class="intro__body body-large">建模以 Google Earth 高清卫星图为底图，投射到超平坦地形上作为平面基准；其余数据来自现场测绘——拍照、量取尺寸，记录每栋建筑的轴线、层高与立面做法，再逐块在游戏中对齐。目前大门与行政楼外立面已经完成，小学部与初中部在建；山体、AP 楼、国际高中楼、少年宫、两个操场、剧院与宿舍列入待建名单，整体进度约 15–20%。</p>
           <p class="intro__body body-large">1:2 的尺度意味着持续的换算与取舍，也让许多平日被忽略的细节进入记录——不同年代翻新留下的墙面色差、连廊的宽度、台阶的高度。这座校园的形体与它的细节，都将在 Minecraft 中被一并留存。</p>
 
