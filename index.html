@@ -962,12 +962,13 @@
           <p class="hero__subtitle">广东碧桂园学校Minecraft复刻企划</p>
           <div class="hero__actions">
             <a class="btn btn--filled sl label-large" href="#intro">浏览档案</a>
-            <!-- 进服包（Modrinth 轻量格式 .zip，约 324KB）：内含全部 mod 的下载清单
+            <!-- 进服包（Modrinth 轻量格式 .mrpack，约 324KB）：内含全部 mod 的下载清单
                 （modrinth.index.json）、客户端配置与选项档（overrides/）、内置服务器
                  地址（servers.dat）与 PCL 安装档（Setup.ini）—— 拖入 PCL 等 Java 版启动器即自动
-                 下载 MC 26.2 + Fabric 0.19.5 与全部模组。随站直链托管，无第三方跳转；
-                 更新包时仅需替换同名 .zip（GitHub Pages 阶段同名直链不变） -->
-            <a class="btn btn--outlined sl label-large" id="downloadBtn" href="./minecgs-modpack.zip" download="MineCGS-进服包-MC26.2-Fabric0.19.5.zip" title="Modrinth 轻量包（约 324KB）：拖入 PCL 等 Java 版启动器，自动安装 MC 26.2 + Fabric 0.19.5 与全部模组、配置和服务器地址">下载进服包</a>
+                 下载 MC 26.2 + Fabric 0.19.5 与全部模组。用 Modrinth 官方扩展名 .mrpack
+                （启动器按扩展名识别包格式），且可避开托管 WAF 对 .zip 下载的误拦；
+                 随站直链托管，无第三方跳转；更新包时仅需替换同名文件 -->
+            <a class="btn btn--outlined sl label-large" id="downloadBtn" href="./minecgs-modpack.mrpack" download="MineCGS-进服包-MC26.2-Fabric0.19.5.mrpack" title="Modrinth 轻量包（约 324KB）：拖入 PCL 等 Java 版启动器，自动安装 MC 26.2 + Fabric 0.19.5 与全部模组、配置和服务器地址">下载进服包</a>
             <a class="btn btn--tonal sl label-large" href="#join">加入我们</a>
           </div>
         </article>
