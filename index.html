@@ -431,7 +431,7 @@
       position: absolute;
       inset: -14% 0 -14%;
       z-index: 0;
-      will-change: transform; /* 仅 transform —— 否则毛玻璃 backdrop-filter 失效 */
+      will-change: transform; /* hero 内无毛玻璃元素，JS 的 filter/opacity 退场动画安全 */
     }
     .hero__bg {
       width: 100%;
@@ -471,7 +471,7 @@
       align-items: flex-start;
       justify-content: center;
       padding: calc(var(--nav-h) + clamp(28px, 6vh, 60px)) 24px 0;
-      will-change: transform; /* 仅 transform */
+      will-change: transform; /* hero 内无毛玻璃元素，退场动画可安全加 filter/opacity */
     }
     .hero__cover {
       width: min(920px, 100%);
@@ -1365,28 +1365,57 @@
       }
 
       /* ============================================================
-         5. 视差滚动（仅 transform —— 保护毛玻璃 backdrop-filter）
-            背景波浪 0.12× · Hero 图 0.42× · 卡片 0.18× —— 三层不同速率
+         5. 滚动联动的 Hero 退场 + 视差
+            · 背景图 0.42× / 文字层 0.18× 三层不同速率视差
+            · 退场：随滚动进度递进高斯模糊 + 同步渐隐（smoothstep 缓动，
+              起止柔和无跳变）；scroll-hint 先行淡出
+            · 性能：rAF 节流 + 阈值守卫 + 模糊 0.5px 量化，稳定后零写入；
+              移动端模糊上限降档防掉帧；hero 内无毛玻璃元素，
+              filter/opacity 不破坏 backdrop-filter（第二轮教训不适用此处）
          ============================================================ */
       var heroParallax = document.getElementById("heroParallax");
       var heroStage = document.getElementById("heroStage");
       var heroPanel = document.getElementById("heroPanel");
       var heroSection = document.getElementById("hero");
+      var scrollHint = document.querySelector(".scroll-hint");
       var ticking = false;
       var heroH = 0;             /* 缓存 hero 高度 —— 滚动热路径禁读 offsetHeight（强制布局） */
-      var panelOpacity = -1;
+      var panelOpacity = -1, panelBlur = -1;
+      var bgOpacity = -1, bgBlur = -1;
+      var hintOpacity = -1;
 
       function updateParallax() {
         var y = window.scrollY || 0;
         if (!reduceMotion && heroSection) {
           if (!heroH) { heroH = heroSection.offsetHeight || window.innerHeight; }
-          var progress = Math.min(y / heroH, 1.2);
-          if (heroParallax) { heroParallax.style.transform = "translate3d(0," + (y * 0.42).toFixed(2) + "px,0)"; }
+          var p = Math.min(Math.max(y / heroH, 0), 1);
+          var e = p * p * (3 - 2 * p);              /* smoothstep：慢起慢收，过渡柔和 */
+          var maxBlur = window.innerWidth <= 840 ? 5 : 10;   /* 移动端降档 */
+          var q = function (v) { return Math.round(v * 2) / 2; };  /* 模糊 0.5px 量化 */
+
+          if (heroParallax) {
+            heroParallax.style.transform = "translate3d(0," + (y * 0.42).toFixed(2) + "px,0)";
+            var bo = Math.max(1 - e * 1.1, 0);
+            if (Math.abs(bo - bgOpacity) > 0.01) { heroParallax.style.opacity = bo.toFixed(3); bgOpacity = bo; }
+            var bb = q(e * maxBlur);
+            if (bb !== bgBlur) {
+              heroParallax.style.filter = bb > 0 ? "blur(" + bb.toFixed(1) + "px)" : "none";
+              bgBlur = bb;
+            }
+          }
           if (heroStage) { heroStage.style.transform = "translate3d(0," + (y * 0.18).toFixed(2) + "px,0)"; }
           if (heroPanel) {
-            var op = Math.max(1 - progress * 1.15, 0);
-            /* 变化超阈值才写 opacity —— 免每帧强制重绘 hero 面板 */
-            if (Math.abs(op - panelOpacity) > 0.004) { heroPanel.style.opacity = String(op); panelOpacity = op; }
+            var po = Math.max(1 - e * 1.25, 0);
+            if (Math.abs(po - panelOpacity) > 0.01) { heroPanel.style.opacity = po.toFixed(3); panelOpacity = po; }
+            var pb = q(e * maxBlur);
+            if (pb !== panelBlur) {
+              heroPanel.style.filter = pb > 0 ? "blur(" + pb.toFixed(1) + "px)" : "none";
+              panelBlur = pb;
+            }
+          }
+          if (scrollHint) {
+            var ho = Math.max(1 - p * 2.6, 0);      /* 提示先行淡出 */
+            if (Math.abs(ho - hintOpacity) > 0.01) { scrollHint.style.opacity = ho.toFixed(3); hintOpacity = ho; }
           }
         }
         ticking = false;
