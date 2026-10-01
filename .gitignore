@@ -1,0 +1,12 @@
+# WorkBuddy 工作区数据（记忆/会话），不进仓库
+.workbuddy/
+
+# 系统垃圾
+Thumbs.db
+.DS_Store
+
+# 原始 14.7MB PNG 不进仓库（仓库只带压缩后的 image.webp）
+image.png
+
+# WorkBuddy 应用发布标记（内部文件）
+.wbapp_*.genie
