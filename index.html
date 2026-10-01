@@ -1992,7 +1992,7 @@
       });
 
       /* 占位按钮通用拦截：aria-disabled 的链接在地址未定前阻止跳转
-         （下载按钮已接入实链 minecgs-modpack.zip，不再是占位） */
+         （下载按钮已接入实链 minecgs-modpack.mrpack，不再是占位） */
       document.querySelectorAll('a[aria-disabled="true"]').forEach(function (el) {
         el.addEventListener("click", function (e) { e.preventDefault(); });
       });
