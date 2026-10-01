@@ -1766,6 +1766,35 @@
       var brandChip = topBar ? topBar.querySelector(".brand") : null;
       var brandShown = false;
 
+      /* 波场裁切到内容面板滑界之下：面板顶边 = heroH - y（1:1 上移）。
+         面板还没到的地方，波场一条线也不许露出来；裁切轮廓带面板同款
+         圆角（--corner-xl 28px，两处必须一致），否则圆角弧外的三角区会
+         漏出线条（出框）；滑界扫过视口顶后 30px 内仍保持圆角裁切，
+         圆角完全离屏才解除。
+         同步写入、不等 rAF：滚动事件在渲染循环里先于 rAF 回调派发，
+         裁切与滚动输入同帧落位 —— 旧版裁切走 rAF 链，波场一帧的重绘
+         超时就会把裁切更新挤到下下帧，hero 切换时"波场层错位、迟滞于
+         底层"即源于此。本函数只读滚动量与缓存的 heroH，不触发布局 */
+      function updateClip() {
+        if (!waveCanvas) { return; }
+        if (!heroH) {
+          if (!heroSection) { return; }
+          heroH = heroSection.offsetHeight || window.innerHeight; measureNav();
+        }
+        var raw = heroH - (window.scrollY || 0);
+        if (Math.abs(raw - clipTop) > 0.5) {
+          if (raw > 0) {
+            waveCanvas.style.clipPath = "inset(" + raw.toFixed(1) + "px 0 0 0 round 28px 28px 0 0)";
+          } else if (raw > -30) {
+            waveCanvas.style.clipPath = "inset(0 0 0 0 round 28px 28px 0 0)";
+          } else {
+            waveCanvas.style.clipPath = "none";
+          }
+          clipTop = raw;
+          waveCanvas.__raw = raw;        /* 供波场 loop 判断是否被完全盖住 */
+        }
+      }
+
       function updateParallax() {
         var y = window.scrollY || 0;
         if (navSuppress) { suppressNavScroll(); }   /* 程序化飞行中滚动仍在发生 → 续期抑制 */
@@ -1773,24 +1802,7 @@
           if (!heroH) { heroH = heroSection.offsetHeight || window.innerHeight; measureNav(); }
           var p = Math.min(Math.max(y / heroH, 0), 1);
 
-          /* 波场裁切到内容面板滑界之下：面板顶边 = heroH - y（1:1 上移）。
-             面板还没到的地方，波场一条线也不许露出来；
-             裁切轮廓带面板同款圆角（--corner-xl 28px，两处必须一致），
-             否则圆角弧外的三角区会漏出线条（出框）；滑界扫过视口顶
-             后 30px 内仍保持圆角裁切，圆角完全离屏才解除 */
-          if (waveCanvas) {
-            var raw = heroH - y;
-            if (Math.abs(raw - clipTop) > 0.5) {
-              if (raw > 0) {
-                waveCanvas.style.clipPath = "inset(" + raw.toFixed(1) + "px 0 0 0 round 28px 28px 0 0)";
-              } else if (raw > -30) {
-                waveCanvas.style.clipPath = "inset(0 0 0 0 round 28px 28px 0 0)";
-              } else {
-                waveCanvas.style.clipPath = "none";
-              }
-              clipTop = raw;
-            }
-          }
+          updateClip();
 
           /* 导航激活态：统一滚动位置判定（见上方 updateNav）——
              封面区与内容区不再两套机制竞争 */
@@ -1848,6 +1860,7 @@
       }
 
       function requestParallax() {
+        updateClip();                    /* 裁切同步落位（见 updateClip 注释） */
         if (!ticking) { ticking = true; window.requestAnimationFrame(updateParallax); }
       }
       window.addEventListener("scroll", requestParallax, { passive: true });
@@ -1878,6 +1891,9 @@
          · 位移场在粗网格（每 3 线 × 每 2 采样）求值，x 向线性 +
            y 向 Catmull-Rom 三次插值；描边用二次贝塞尔中点平滑 ——
            线形全程 C1 连续、无折线棱角
+         · 自适应画质档位：帧预算监督（draw 耗时 + 帧间隔）超阈逐档
+           减负（线数 / 采样 / DPR / 渐变色标 / 抽帧），健康设备 0 档
+           = 全量；档位只动渲染密度，场形态参数不随档位变化
          · baseAlpha 深色 0.22 / 浅色 0.16 —— 浅色再降一档，
            避免线条干扰黑色正文可读性
          ============================================================ */
@@ -1886,7 +1902,7 @@
         if (!canvas || !canvas.getContext) return;
         if (typeof SN === "undefined" || !SN.createNoise3D) return;
         var ctx = canvas.getContext("2d");
-        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var dpr = 1;                     /* resize() 按面积预算 + 档位实算 */
         var cssW = 0, cssH = 0;
 
         var mouse = { x: -9999, y: -9999, tx: -9999, ty: -9999, inside: false, power: 0 };
@@ -1948,25 +1964,64 @@
         var blendK = null;                /* LINES × 2：[k0, smootherstep 权重] */
         var tiltArr = null;               /* 每线静态倾角（关键线混插） */
 
+        /* ---- 自适应画质档位（帧预算驱动，监督逻辑在 loop）----
+           开销随画布像素与线数在阈值后骤增（4K 全屏 / 大平板 /
+           保守 WebView 都撞在同一堵墙上）。实测 draw 耗时 + 帧间隔
+           双信号超阈就逐档减负：线距↑线数↓、纵向采样↓、DPR↓、
+           渐变色标↓、最深档 30fps 抽帧；有余量逐档回升。
+           健康设备永远停在 0 档 = 改前的全量画质。
+           档位只动"渲染密度"，不动场的形态参数（振幅 / 关键线 /
+           倾角 / 弯曲全不变）—— 线条人格与不交叉预算与档位无关 */
+        var tier = 0;
+        var TIER_SPACING = [1, 1, 1.4, 1.9];   /* 线距倍率（线数↓） */
+        var TIER_SAMP_D = [56, 48, 40, 32];    /* 纵向采样（桌面，偶数对齐粗网格） */
+        var TIER_SAMP_M = [40, 36, 30, 26];    /* 纵向采样（窄屏） */
+        var TIER_STOPS = [8, 8, 6, 4];         /* 渐变色标数 */
+        var TIER_DPR = [1, 1, 0.85, 0.7];      /* DPR 倍率（另有面积预算帽） */
+        var TIER_SKIP = [1, 1, 1, 2];          /* 抽帧：每 N 帧画 1 帧 */
+        var PIXEL_BUDGET = 6000000;            /* 后备缓冲像素预算 ≈ 6M */
+
+        /* 渐变缓存：色标（alpha 128 档量化）签名未变就复用整条渐变对象，
+           消掉每帧 320 次 createLinearGradient + 2560 次颜色串解析与 GC；
+           场演化慢（噪声 t 系数 ≤0.21），签名绝大多数帧不变 */
+        var gradCache = [];
+        var gradEpoch = 0;                     /* 尺寸/档位/主题变化 → 整体作废 */
+        var sigA = new Uint8Array(8);
+        var alphaStr = [];
+        for (var ai = 0; ai < 128; ai++) { alphaStr.push((ai / 127).toFixed(3)); }
+        function sigEq(a, b, n) {
+          for (var q = 0; q < n; q++) { if (a[q] !== b[q]) { return false; } }
+          return true;
+        }
+
         function resize() {
           /* 必须用 clientWidth/Height（不含滚动条）：innerWidth 含滚动条宽，
              画布会比内容面板宽出一截，面板圆角裁切的右上角就错位到滚动条
              底下（左角对齐、右角对不上的根源） */
           cssW = document.documentElement.clientWidth || window.innerWidth;
           cssH = document.documentElement.clientHeight || window.innerHeight;
+          /* 面积感知 DPR（每次重排重算：换屏 / 缩放都会变）：
+             后备像素 = W×H×dpr²，clear/合成/描边光栅全随像素数线性涨，
+             4K 全屏是填充率悬崖 —— 超预算压 DPR，下限 0.85（1.2× 放大
+             对发丝线的柔化肉眼难辨）；小屏 / 正常屏完全不受影响 */
+          var baseDpr = Math.min(window.devicePixelRatio || 1, 2);
+          var dprCap = Math.sqrt(PIXEL_BUDGET / Math.max(cssW * cssH, 1));
+          dpr = Math.max(0.85, Math.min(baseDpr, dprCap) * TIER_DPR[tier]);
+          dpr = Math.round(dpr * 100) / 100;
           canvas.width = Math.round(cssW * dpr);
           canvas.height = Math.round(cssH * dpr);
           canvas.style.width = cssW + "px";
           canvas.style.height = cssH + "px";
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-          /* 密度：约每 7.5px 一条细竖线（窄屏 10px，上限 320 条兼顾性能）
-             材料域 = 视口宽 + 两侧过盈 X_PAD*2，线条均匀铺满整个材料域 */
-          var SPACING = cssW < 700 ? 10 : 7.5;
+          /* 密度：约每 7.5px 一条细竖线（窄屏 10px，上限 320 条兼顾性能），
+             低画质档按线距倍率稀释线数。材料域 = 视口宽 + 两侧过盈 X_PAD*2，
+             线条均匀铺满整个材料域 */
+          var SPACING = (cssW < 700 ? 10 : 7.5) * TIER_SPACING[tier];
           var spanW = cssW + X_PAD * 2;
           LINES = Math.max(48, Math.min(320, Math.round(spanW / SPACING)));
           LINES = Math.round((LINES - 1) / 3) * 3 + 1;   /* 对齐粗网格 */
-          SAMPLES = cssW < 700 ? 40 : 56;                /* 偶数 → 对齐粗网格；高采样保证线形连续 */
+          SAMPLES = cssW < 700 ? TIER_SAMP_M[tier] : TIER_SAMP_D[tier];
           spacing = spanW / (LINES - 1);
           GW = (LINES - 1) / 3 + 1;
           GH = SAMPLES / 2 + 1;
@@ -2013,6 +2068,10 @@
             blendK[m * 2 + 1] = w;
             tiltArr[m] = keyTilt[k0] * (1 - w) + keyTilt[k0 + 1] * w;
           }
+
+          /* 尺寸/档位变化 → 渐变缓存整体作废（渐变几何依赖 cssH） */
+          gradEpoch++;
+          gradCache.length = 0;
         }
 
         /* 尺寸变化防抖 140ms —— 移动端地址栏收放会连发 resize，
@@ -2117,6 +2176,7 @@
           };
           colorCacheT = now;
           colorThemeKey = key;
+          gradEpoch++;                     /* 主题色变了：渐变缓存整体作废 */
           return colorCache;
         }
 
@@ -2169,7 +2229,11 @@
 
           /* 2) 插值到细网格 + 高斯透镜 + 扩散圆圈
              x 向线性、y 向 Catmull-Rom 三次插值 —— 跨粗网格行导数连续，
-             消除线性插值在行界的折角 */
+             消除线性插值在行界的折角。
+             快路径：透镜静默且无涟漪时整段特效跳过（每帧 1.8 万点
+             少两次平方和 + Math.sqrt/exp 与涟漪环遍历） */
+          var fxOn = mouse.power > 0.01;
+          var rpN = ripples.length;
           for (i = 0; i < LINES; i++) {
             var iGH = i * GH;
             var fx = i / 3;
@@ -2200,28 +2264,30 @@
                 (2 * b0 - 5 * b1 + 4 * b2 - b3) * ty2 + (-b0 + 3 * b1 - 3 * b2 + b3) * ty3);
               var x = x0 + off + bend + tiltArr[i] * (y - cssH * 0.5);
 
-              /* 高斯透镜：62px 峰值推力、R=240px，全域平滑衰减、无截断边界
-                 （任何硬截断都会在边界产生棱角）× power 缓入缓出 */
-              var dx = x - mouse.x, dy = y - mouse.y;
-              var d2 = dx * dx + dy * dy;
-              if (d2 < 265225 && mouse.power > 0.01) {
-                var dd = Math.sqrt(d2) || 1;
-                x += (dx / dd) * 62 * Math.exp(-d2 / 57600) * mouse.power;
-              }
+              if (fxOn || rpN) {
+                /* 高斯透镜：62px 峰值推力、R=240px，全域平滑衰减、无截断边界
+                   （任何硬截断都会在边界产生棱角）× power 缓入缓出 */
+                var dx = x - mouse.x, dy = y - mouse.y;
+                var d2 = dx * dx + dy * dy;
+                if (d2 < 265225 && fxOn) {
+                  var dd = Math.sqrt(d2) || 1;
+                  x += (dx / dd) * 62 * Math.exp(-d2 / 57600) * mouse.power;
+                }
 
-              /* 扩散圆圈：环带以曲线速率（easeOutCubic）外扩，
-                 经过处把线条径向推开 26px —— 与透镜扰动共存 */
-              for (var rp2 = 0; rp2 < ripples.length; rp2++) {
-                var R = ripples[rp2];
-                var age = (now - R.born) / 1400;
-                var rr = 340 * (1 - (1 - age) * (1 - age) * (1 - age));
-                var ex = x - R.x, ey = y - R.y;
-                var e2 = ex * ex + ey * ey;
-                var reach = rr + 100;
-                if (e2 > reach * reach || e2 < 0.01) { continue; }
-                var ed = Math.sqrt(e2);
-                var w2 = ed - rr;
-                x += (ex / ed) * 26 * Math.exp(-(w2 * w2) / 1800) * (1 - age);
+                /* 扩散圆圈：环带以曲线速率（easeOutCubic）外扩，
+                   经过处把线条径向推开 26px —— 与透镜扰动共存 */
+                for (var rp2 = 0; rp2 < rpN; rp2++) {
+                  var R = ripples[rp2];
+                  var age = (now - R.born) / 1400;
+                  var rr = 340 * (1 - (1 - age) * (1 - age) * (1 - age));
+                  var ex = x - R.x, ey = y - R.y;
+                  var e2 = ex * ex + ey * ey;
+                  var reach = rr + 100;
+                  if (e2 > reach * reach || e2 < 0.01) { continue; }
+                  var ed = Math.sqrt(e2);
+                  var w2 = ed - rr;
+                  x += (ex / ed) * 26 * Math.exp(-(w2 * w2) / 1800) * (1 - age);
+                }
               }
 
               fineX[i * (SAMPLES + 1) + s] = x;
@@ -2230,17 +2296,17 @@
 
           /* 3) 逐线描边：局部疏密 → 亮度渐变，密度带即亮带；
              关键线混插让疏密呼吸贯穿全页，亮带自然流动（密度驱动），
-             无单根重点线 */
+             无单根重点线。渐变对象按色标签名缓存复用（见 gradCache）：
+             签名（alpha 128 档量化）未变就不重建渐变 */
           ctx.clearRect(0, 0, cssW, cssH);
           var baseAlpha = isDark ? 0.22 : 0.16;   /* 浅色再降一档，不干扰黑字可读性 */
-          var STOPS = 8;
+          var STOPS = TIER_STOPS[tier];
           for (i = 0; i < LINES; i++) {
             var mixT = i / (LINES - 1);
             var r = Math.round(colors.a[0] * (1 - mixT) + colors.b[0] * mixT);
             var g = Math.round(colors.a[1] * (1 - mixT) + colors.b[1] * mixT);
             var b = Math.round(colors.a[2] * (1 - mixT) + colors.b[2] * mixT);
 
-            var grad = ctx.createLinearGradient(0, -WAVE_PAD, 0, cssH + WAVE_PAD);
             for (k = 0; k < STOPS; k++) {
               var sk = Math.round(k * SAMPLES / (STOPS - 1));
               var gap;
@@ -2257,10 +2323,21 @@
               if (shade > 2.6) { shade = 2.6; }
               var a = baseAlpha * shade;
               if (a > 0.92) { a = 0.92; }
-              grad.addColorStop(k / (STOPS - 1), "rgba(" + r + "," + g + "," + b + "," + a.toFixed(3) + ")");
+              var q = (a * 127 + 0.5) | 0;
+              sigA[k] = q > 127 ? 127 : (q < 0 ? 0 : q);
             }
 
-            ctx.strokeStyle = grad;
+            var ent = gradCache[i];
+            if (!ent || ent.epoch !== gradEpoch || ent.stops !== STOPS || !sigEq(ent.sig, sigA, STOPS)) {
+              var grad = ctx.createLinearGradient(0, -WAVE_PAD, 0, cssH + WAVE_PAD);
+              for (k = 0; k < STOPS; k++) {
+                grad.addColorStop(k / (STOPS - 1), "rgba(" + r + "," + g + "," + b + "," + alphaStr[sigA[k]] + ")");
+              }
+              ent = { g: grad, sig: sigA.slice(0, STOPS), epoch: gradEpoch, stops: STOPS };
+              gradCache[i] = ent;
+            }
+
+            ctx.strokeStyle = ent.g;
             ctx.lineWidth = 1;
             /* 二次贝塞尔中点平滑：采样点作控制点、段中点为曲线必经点，
                相邻段以中点连线为公共切线 → 全程 C1 连续，无折线棱角 */
@@ -2279,9 +2356,42 @@
         }
 
         /* 渲染循环：draw 只负责画一帧；loop 独占 rAF 链，避免叉链。
-           背景持续运动、与手势实时绑定 —— 滚动期间照常重绘（不冻结） */
+           背景持续运动、与手势实时绑定 —— 滚动期间照常重绘（不冻结）。
+           帧预算监督（自适应画质）：draw 耗时 + 帧间隔双信号，超阈逐档
+           减负、有余量逐档回升（1.5s 冷却防振荡；起跑 3s 内 350ms 快速
+           定档，保守 WebView 在首屏就能落到合适档位）。
+           画布被面板滑界完全盖住时按 3 帧 1 画保温（省 2/3 空转），
+           但不暂停测量 —— 定档在滚进内容区之前就完成 */
+        var drawEMA = 6, dtEMA = 16, lastT = 0, frameNo = 0, tierT = -1e9, bornT = 0;
+        function adaptTier(now) {
+          if (now - tierT <= (now - bornT < 3000 ? 350 : 1500)) { return false; }
+          var next = tier;
+          if (drawEMA > 8.5 || (dtEMA > 29 && drawEMA > 3)) {
+            next = Math.min(3, tier + 1);
+          } else if (tier > 0 && drawEMA < 4.5 && dtEMA < 22) {
+            next = tier - 1;
+          }
+          if (next === tier) { return false; }
+          tier = next;
+          tierT = now;
+          resize();                      /* 档位变 → 缓冲重建（清空） */
+          return true;
+        }
         function loop(now) {
-          draw(now);
+          if (lastT) {
+            var dt = now - lastT;
+            if (dt > 0 && dt < 400) { dtEMA += (dt - dtEMA) * 0.1; }  /* 剔除切后台大间隔 */
+          }
+          lastT = now;
+          frameNo++;
+          if (!bornT) { bornT = now; }
+          var rebuilt = adaptTier(now);
+          var cadence = canvas.__raw >= cssH ? 3 : TIER_SKIP[tier];
+          if (rebuilt || (frameNo % cadence) === 0) {
+            var t1 = performance.now();
+            draw(now);
+            drawEMA += (performance.now() - t1 - drawEMA) * 0.12;
+          }
           if (!reduceMotion && running) { window.requestAnimationFrame(loop); }
         }
 
