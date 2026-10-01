@@ -1382,10 +1382,12 @@
       if ("IntersectionObserver" in window && !reduceMotion) {
         var revealIO = new IntersectionObserver(function (entries) {
           entries.forEach(function (entry) {
-            /* 可重复触发：进入视区 → 上浮淡入；离开视区 → 收回消失。
-               每一次滑动到这个位置都重放动画，反向滑动相应消失 ——
-               不 unobserve，让进出两个方向都能反复触发 */
-            entry.target.classList.toggle("is-visible", entry.isIntersecting);
+            /* 方向敏感的可重复触发：
+               · 从下边缘进/出（下滑新内容上浮淡入；上滑返回时下浮收回原位）
+               · 上边缘进出（上方旧卡片）不动 —— 到达过的内容永不再播入场
+               判据：顶边在视口之上 = 旧卡片，保持可见 */
+            var seenFromTop = entry.boundingClientRect.top < 0;
+            entry.target.classList.toggle("is-visible", entry.isIntersecting || seenFromTop);
           });
         }, { threshold: 0.18, rootMargin: "0px 0px -8% 0px" });
         revealEls.forEach(function (el) { revealIO.observe(el); });
@@ -1408,6 +1410,16 @@
           if (el) sectionIO.observe(el);
         });
       }
+
+      /* 钉住封面的 rect 永远停在视口顶，浏览器做锚点跳转时误判
+         "已在视口内"而不滚动 —— #hero（品牌 LOGO / 首屏按钮）手动接管回顶 */
+      Array.prototype.forEach.call(document.querySelectorAll('a[href="#hero"]'), function (link) {
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+          if (window.history && window.history.pushState) { window.history.pushState(null, "", "#hero"); }
+        });
+      });
 
       /* ============================================================
          5. 封面退场（滚动联动）+ 波场滑界裁切
