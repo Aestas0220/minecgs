@@ -503,13 +503,14 @@
       isolation: isolate;
       background: #120e08;   /* 封面底色 = 遮罩同调暖黑：模糊渐隐收尾于自身暗调 */
     }
-    /* 图像 + 遮罩 + 颗粒 = 单一合成层，退场整体施加 filter/opacity ——
+    /* 图像 + 遮罩 + 颗粒 = 合成层，退场整体渐隐 + 缓推 scale；
+       "模糊消隐"由预模糊分层交叉淡化完成（见 hero__blur-stage）——
        遮罩与图像同生共死，从构造上杜绝"图片隐去、色带残留"的生硬边缘 */
     .hero__visual {
       position: absolute;
       inset: 0;
       z-index: 0;
-      will-change: filter, opacity, transform; /* hero 内无毛玻璃元素，filter/opacity 退场动画安全 */
+      will-change: opacity, transform; /* 退场只动 opacity/transform，合成器零重绘 */
     }
     .hero__bg {
       width: 100%;
@@ -518,6 +519,30 @@
       background-size: cover;
       background-position: center 45%;
       transform: scale(1.08);
+    }
+    /* 退场"模糊消隐"的预模糊分层（GoogleChromeLabs ui-element-samples
+       · animated-blur 技法，Apache-2.0，页脚开源致谢）：
+       · 模糊半径按档递增的静态模糊副本，退场时在清晰层上依次淡入，
+         视觉等效于模糊半径连续递增 —— 但逐帧只改 opacity
+       · 关键坑（Chrome 官方实测）：模糊副本自身绝不能升层 ——
+         升层后 GPU 会按帧对未模糊纹理重跑卷积，比逐帧动画 filter
+         还慢；正确做法是"升层父容器、模糊烘焙进父层纹理缓存一次"
+       · 副本 scale 1.13：把模糊边缘光晕（halo）推出视口，防止
+         过渡中段出现"中心糊、四周清晰"的边框感 */
+    .hero__blur-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      opacity: 0;
+      will-change: opacity;
+    }
+    .hero__bg--blur1 {
+      filter: blur(9px);
+      transform: scale(1.13);
+    }
+    .hero__bg--blur2 {
+      filter: blur(24px);
+      transform: scale(1.13);
     }
     /* 可读性遮罩（scrim）：全部 stop 同一暖黑、只变 alpha，向内全透明收尾 ——
        遮罩是"分离层"不是"遮蔽层"，绝不留色带与硬边；
@@ -556,7 +581,29 @@
       align-items: flex-start;
       justify-content: center;
       padding: calc(var(--nav-h) + clamp(28px, 6vh, 60px)) 24px 0;
-      will-change: filter, opacity, transform; /* hero 内无毛玻璃元素，退场动画可安全加 filter/opacity */
+      will-change: opacity, transform; /* 退场只动 opacity/transform（lift），合成器零重绘 */
+    }
+    /* 文字退场预模糊残影：静态模糊的封面克隆（JS 注入）浮在清晰版上，
+       退场时淡入 —— 视觉等效"文字渐进模糊"，但零逐帧滤镜开销。
+       模糊在内层 hero__stage-ghostblur 上（不升层，烘焙进升层父层），
+       外层只动 opacity */
+    .hero__stage-ghost {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: calc(var(--nav-h) + clamp(28px, 6vh, 60px)) 24px 0;
+      opacity: 0;
+      will-change: opacity;
+      pointer-events: none;
+    }
+    .hero__stage-ghostblur {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      filter: blur(13px);
     }
     .hero__cover {
       width: min(920px, 100%);
@@ -687,15 +734,27 @@
        · 相邻线相位连续，聚散成疏密带，密度差营造体积感
        · 鼠标靠近时竖线被"拨开"，产生水波荡漾般的排斥涟漪
        · 随滚动以 0.12 倍速漂移 —— 与前景卡片形成层级视差
-       · 画布固定全视口，但 JS 以 clip-path 把它钉在面板滑界之下
-         （面板顶边 = hero 高度 − 滚动量），波场只在内容区显形
+       · 波场画布活在 .wave-clip 里：clip-path 圆角矩形与面板同款
+         圆角、随面板一起滚动，画布 sticky 钉在视口顶被其裁切 ——
+         线条层与面板滑界在同一绘制流程里原子同步，任何渲染压力
+         下都不可能错位。旧版 fixed 画布 + JS clip-path 逐帧对齐
+         滑界的方案已废弃：裁切值一旦迟到一帧就露出色带空隙
        ============================================================ */
-    .wave-canvas {
-      position: fixed;
+    .wave-clip {
+      position: absolute;
       inset: 0;
       z-index: 0;
+      pointer-events: none;
+      -webkit-clip-path: inset(0 round var(--corner-xl) var(--corner-xl) 0 0);
+      clip-path: inset(0 round var(--corner-xl) var(--corner-xl) 0 0);
+    }
+    .wave-canvas {
+      position: sticky;
+      top: 0;
+      display: block;
       width: 100%;
-      height: 100%;
+      height: 100vh;          /* resize() 按精确像素覆写 + 负 margin 抵消占位 */
+      margin-bottom: -100vh;  /* 波场不参与文档流：面板内容排版不受影响 */
       pointer-events: none;
     }
 
@@ -958,10 +1017,13 @@
       .nav-cluster { margin-left: auto; }                /* 导航簇保持右对齐 */
       .nav__link { min-width: 52px; padding: 0 12px; }   /* 鹅卵石按钮收紧 */
       .section-kicker h2 { font-size: 28px; line-height: 36px; }            /* headline-medium */
+      .hero__bg--blur1 { filter: blur(6px); }            /* 移动端模糊档收窄（审美取值） */
+      .hero__bg--blur2 { filter: blur(16px); }
+      .hero__stage-ghostblur { filter: blur(9px); }
     }
     @media (max-width: 600px) {
       .hero { min-height: 560px; }
-      .hero__stage { padding-top: calc(var(--nav-h) + 22px); }
+      .hero__stage, .hero__stage-ghost { padding-top: calc(var(--nav-h) + 22px); }
       .section-kicker h2 { font-size: 24px; line-height: 32px; }            /* headline-small */
       .map-shell { width: 100%; height: 440px; }
       .hero__actions .btn { flex: 1 1 100%; }
@@ -1022,6 +1084,9 @@
            遮罩不单独残留 —— 旧版"图片隐去后色带悬空"的根源就在此 -->
       <div class="hero__visual" id="heroVisual" aria-hidden="true">
         <div class="hero__bg"></div>
+        <!-- 退场预模糊分层：静态模糊副本，JS 以 opacity 交叉淡化（零逐帧滤镜） -->
+        <div class="hero__blur-stage" id="heroBlur1"><div class="hero__bg hero__bg--blur1"></div></div>
+        <div class="hero__blur-stage" id="heroBlur2"><div class="hero__bg hero__bg--blur2"></div></div>
         <div class="hero__veil"></div>
         <div class="hero__grain"></div>
       </div>
@@ -1042,6 +1107,11 @@
             <a class="btn btn--tonal sl label-large" href="#join">加入我们</a>
           </div>
         </article>
+        <!-- 文字退场预模糊残影容器：JS 注入封面克隆（静态模糊），
+             退场时淡入形成"渐进模糊"观感 -->
+        <div class="hero__stage-ghost" id="heroGhost" aria-hidden="true">
+          <div class="hero__stage-ghostblur" id="heroGhostBlur"></div>
+        </div>
       </div>
 
       <div class="scroll-hint label-small" aria-hidden="true">
@@ -1053,8 +1123,11 @@
     <!-- 二~四、内容面板：从封面之上滑过的 sheet（圆角顶边 + 上投影）。
          波浪线场活在面板内部的独立层里，封面永远看不到它 -->
     <div class="page-sheet" id="pageSheet">
-      <!-- 动态背景：流动波浪线场（仅内容面板内显形；JS clip-path 钉在面板滑界之下） -->
-      <canvas class="wave-canvas" id="waveCanvas" aria-hidden="true"></canvas>
+      <!-- 动态背景：流动波浪线场。.wave-clip 的圆角裁切与面板同形同步滚动，
+           画布 sticky 钉在视口顶 —— 线条层与面板结构化绑定，不可能错位 -->
+      <div class="wave-clip" aria-hidden="true">
+        <canvas class="wave-canvas" id="waveCanvas"></canvas>
+      </div>
 
     <!-- 二、项目简介 Intro -->
     <section class="section section--center intro" id="intro">
@@ -1142,6 +1215,7 @@
             <ul class="oss__list body-small">
               <li><strong>Material Color Utilities</strong><span class="oss__by">Google</span><span class="oss__lic">Apache License 2.0</span></li>
               <li><strong>simplex-noise</strong><span class="oss__by">Jonas Wagner</span><span class="oss__lic">MIT License</span></li>
+              <li><strong>ui-element-samples · animated-blur</strong><span class="oss__by">GoogleChromeLabs · Surma &amp; Yi Gu</span><span class="oss__lic">Apache License 2.0</span></li>
               <li><strong>Source Serif 4 · Noto Serif SC</strong><span class="oss__by">Adobe · Google Fonts</span><span class="oss__lic">SIL Open Font License 1.1</span></li>
             </ul>
           </div>
@@ -1739,61 +1813,60 @@
       });
 
       /* ============================================================
-         5. 封面退场（滚动联动）+ 波场滑界裁切
+         5. 封面退场（滚动联动）
            · 封面钉住零平移 —— 不做任何随滚动的位移视差（旧版
              0.42×/0.18× 三层差速平移正是"下滑时背景滚动"的根源：
              半透明中段层间剪切全部暴露，触屏直推下尤其刺眼）
-           · 退场 = 合成层（图像+遮罩+颗粒）整体递进模糊 + 渐隐 + 缓推
-             scale，文字层 blur 减半 + 先行渐隐 + 上 lift；
-             smoothstep 缓动，起止柔和无跳变；scroll-hint 先行淡出
-           · 波场画布 clip-path 钉在内容面板滑界之下（面板顶边 =
-             heroH - scrollY，纯算术零布局读取），面板合拢与退场
-             完成严格同步 —— 封面任何透明度下都看不到波场
-           · 视觉优先：模糊不量化、上限放开（桌面 24 / 移动 16 为
-             审美取值）；仍保留 rAF 节流 + 阈值守卫（零画质代价）
+           · 退场"模糊消隐" = 预模糊分层交叉淡化（GoogleChromeLabs
+             ui-element-samples · animated-blur 技法，Apache-2.0，
+             页脚开源致谢）：清晰层上依次淡入两个静态模糊副本
+            （blur 9→24px，移动端 6→16px），视觉等效模糊半径连续
+             递增，但逐帧只改 opacity —— 合成器零重绘。
+             旧版逐帧 filter: blur() 是 GPU 卷积着色器每帧全量重跑，
+             正是 hero 切换卡顿与波场迟滞的元凶（Chrome 官方实测：
+             逐帧动画 blur 比任何替代方案慢一个量级）
+           · 文字层同理：静态模糊的封面克隆（残影）交叉淡入 + 上
+             lift + 渐隐 —— 三合一退场，观感与旧版一致
+           · 波场裁切已结构化（.wave-clip 与面板同圆角、随面板
+             同帧滚动），不再需要 JS 对齐滑界 —— 封面任何透明度
+             下都看不到波场，渲染压力再大也不可能错位
+           · smoothstep 缓动，起止柔和无跳变；scroll-hint 先行淡出
          ============================================================ */
       var heroVisual = document.getElementById("heroVisual");
       var heroStage = document.getElementById("heroStage");
       var heroSection = document.getElementById("hero");
-      var waveCanvas = document.getElementById("waveCanvas");
+      var heroBlur1 = document.getElementById("heroBlur1");
+      var heroBlur2 = document.getElementById("heroBlur2");
+      var heroGhost = document.getElementById("heroGhost");
       var scrollHint = document.querySelector(".scroll-hint");
       var ticking = false;
       var heroH = 0;             /* 缓存 hero 高度 —— 滚动热路径禁读 offsetHeight（强制布局） */
-      var visOpacity = -1, visBlur = -1, visScale = -1;
-      var stageOpacity = -1, stageBlur = -1, stageLift = -1;
+      var visOpacity = -1, visScale = -1;
+      var visB1 = -1, visB2 = -1;            /* 预模糊背景层交叉淡化 */
+      var stageOpacity = -1, stageLift = -1, stageGhost = -1;
       var hintOpacity = -1;
-      var clipTop = -1;
       var brandChip = topBar ? topBar.querySelector(".brand") : null;
       var brandShown = false;
 
-      /* 波场裁切到内容面板滑界之下：面板顶边 = heroH - y（1:1 上移）。
-         面板还没到的地方，波场一条线也不许露出来；裁切轮廓带面板同款
-         圆角（--corner-xl 28px，两处必须一致），否则圆角弧外的三角区会
-         漏出线条（出框）；滑界扫过视口顶后 30px 内仍保持圆角裁切，
-         圆角完全离屏才解除。
-         同步写入、不等 rAF：滚动事件在渲染循环里先于 rAF 回调派发，
-         裁切与滚动输入同帧落位 —— 旧版裁切走 rAF 链，波场一帧的重绘
-         超时就会把裁切更新挤到下下帧，hero 切换时"波场层错位、迟滞于
-         底层"即源于此。本函数只读滚动量与缓存的 heroH，不触发布局 */
-      function updateClip() {
-        if (!waveCanvas) { return; }
-        if (!heroH) {
-          if (!heroSection) { return; }
-          heroH = heroSection.offsetHeight || window.innerHeight; measureNav();
+      /* 文字退场预模糊残影：克隆封面为静态模糊副本（模糊值恒定 →
+         只烘焙一次），退场时与清晰版交叉淡化。克隆去 id / 去焦点 /
+         aria-hidden —— 纯视觉副本，不进无障碍树、不抢交互 */
+      (function buildHeroGhost() {
+        var host = document.getElementById("heroGhostBlur");
+        var src = document.getElementById("heroPanel");
+        if (!host || !src) { return; }
+        var ghost = src.cloneNode(true);
+        ghost.removeAttribute("id");
+        ghost.setAttribute("aria-hidden", "true");
+        var ided = ghost.querySelectorAll("[id]");
+        for (var gi = 0; gi < ided.length; gi++) { ided[gi].removeAttribute("id"); }
+        var focusables = ghost.querySelectorAll("a, button, input, [tabindex]");
+        for (var fi = 0; fi < focusables.length; fi++) {
+          focusables[fi].setAttribute("tabindex", "-1");
+          focusables[fi].setAttribute("aria-hidden", "true");
         }
-        var raw = heroH - (window.scrollY || 0);
-        if (Math.abs(raw - clipTop) > 0.5) {
-          if (raw > 0) {
-            waveCanvas.style.clipPath = "inset(" + raw.toFixed(1) + "px 0 0 0 round 28px 28px 0 0)";
-          } else if (raw > -30) {
-            waveCanvas.style.clipPath = "inset(0 0 0 0 round 28px 28px 0 0)";
-          } else {
-            waveCanvas.style.clipPath = "none";
-          }
-          clipTop = raw;
-          waveCanvas.__raw = raw;        /* 供波场 loop 判断是否被完全盖住 */
-        }
-      }
+        host.appendChild(ghost);
+      })();
 
       function updateParallax() {
         var y = window.scrollY || 0;
@@ -1801,8 +1874,6 @@
         if (heroSection) {
           if (!heroH) { heroH = heroSection.offsetHeight || window.innerHeight; measureNav(); }
           var p = Math.min(Math.max(y / heroH, 0), 1);
-
-          updateClip();
 
           /* 导航激活态：统一滚动位置判定（见上方 updateNav）——
              封面区与内容区不再两套机制竞争 */
@@ -1820,34 +1891,44 @@
 
           if (!reduceMotion) {
             var e = p * p * (3 - 2 * p);            /* smoothstep：慢起慢收，过渡柔和 */
-            var maxBlur = window.innerWidth <= 840 ? 16 : 24;   /* 审美取值：移动端稍收，保可读 */
 
             if (heroVisual) {
               var vo = Math.max(1 - e * 1.1, 0);
               if (Math.abs(vo - visOpacity) > 0.01) { heroVisual.style.opacity = vo.toFixed(3); visOpacity = vo; }
-              var vb = e * maxBlur;
-              if (Math.abs(vb - visBlur) > 0.25) {
-                heroVisual.style.filter = vb > 0.25 ? "blur(" + vb.toFixed(1) + "px)" : "none";
-                visBlur = vb;
-              }
               var vs = 1 + e * 0.05;               /* 缓推：径向运动，不产生平移剪切 */
               if (Math.abs(vs - visScale) > 0.001) {
                 heroVisual.style.transform = vs > 1.001 ? "scale(" + vs.toFixed(3) + ")" : "none";
                 visScale = vs;
               }
+              /* 预模糊层交叉淡化（动画只碰 opacity）：
+                 blur1 在 e 0.05→0.60 淡入，blur2 在 0.45→1.00 淡入，
+                 叠在清晰层上 = 模糊半径连续递增的观感 */
+              var b1 = (e - 0.05) / 0.55;
+              b1 = b1 < 0 ? 0 : (b1 > 1 ? 1 : b1);
+              if (Math.abs(b1 - visB1) > 0.01) {
+                if (heroBlur1) { heroBlur1.style.opacity = b1.toFixed(3); }
+                visB1 = b1;
+              }
+              var b2 = (e - 0.45) / 0.55;
+              b2 = b2 < 0 ? 0 : (b2 > 1 ? 1 : b2);
+              if (Math.abs(b2 - visB2) > 0.01) {
+                if (heroBlur2) { heroBlur2.style.opacity = b2.toFixed(3); }
+                visB2 = b2;
+              }
             }
             if (heroStage) {
               var so = Math.max(1 - e * 1.25, 0);
               if (Math.abs(so - stageOpacity) > 0.01) { heroStage.style.opacity = so.toFixed(3); stageOpacity = so; }
-              var sb = e * maxBlur * 0.55;         /* 文字层模糊减半：信息层退场更体面 */
-              if (Math.abs(sb - stageBlur) > 0.25) {
-                heroStage.style.filter = sb > 0.25 ? "blur(" + sb.toFixed(1) + "px)" : "none";
-                stageBlur = sb;
-              }
-              var sl = -e * 44;                    /* 上 lift：blur + lift + fade 三合一退场 */
+              var sl = -e * 44;                    /* 上 lift：模糊残影 + lift + fade 三合一退场 */
               if (Math.abs(sl - stageLift) > 0.25) {
                 heroStage.style.transform = "translate3d(0," + sl.toFixed(1) + "px,0)";
                 stageLift = sl;
+              }
+              var go = e / 0.75;                   /* 残影淡入 = 文字渐进模糊 */
+              go = go < 0 ? 0 : (go > 1 ? 1 : go);
+              if (Math.abs(go - stageGhost) > 0.01) {
+                if (heroGhost) { heroGhost.style.opacity = go.toFixed(3); }
+                stageGhost = go;
               }
             }
             if (scrollHint) {
@@ -1860,7 +1941,6 @@
       }
 
       function requestParallax() {
-        updateClip();                    /* 裁切同步落位（见 updateClip 注释） */
         if (!ticking) { ticking = true; window.requestAnimationFrame(updateParallax); }
       }
       window.addEventListener("scroll", requestParallax, { passive: true });
@@ -1904,6 +1984,8 @@
         var ctx = canvas.getContext("2d");
         var dpr = 1;                     /* resize() 按面积预算 + 档位实算 */
         var cssW = 0, cssH = 0;
+        var clipEl = canvas.parentNode;  /* .wave-clip：sticky 画布的定位参照（= 面板盒子） */
+        var sheetH = 0;                  /* 面板高：换算画布 sticky 实际顶边用 */
 
         var mouse = { x: -9999, y: -9999, tx: -9999, ty: -9999, inside: false, power: 0 };
         var scrollDrift = 0;
@@ -2012,6 +2094,8 @@
           canvas.height = Math.round(cssH * dpr);
           canvas.style.width = cssW + "px";
           canvas.style.height = cssH + "px";
+          canvas.style.marginBottom = -cssH + "px";  /* sticky 画布不占文档流（与 CSS 负 margin 一致） */
+          sheetH = clipEl ? (clipEl.offsetHeight || 0) : 0;
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
           /* 密度：约每 7.5px 一条细竖线（窄屏 10px，上限 320 条兼顾性能），
@@ -2086,6 +2170,14 @@
             draw(performance.now());
           }, 140);
         }, { passive: true });
+
+        /* 面板高度漂移（图片/字体/iframe 落位）→ 只更新 sheetH 缓存，
+           不重建画布（重建即清空）；画布 sticky 顶边换算依赖它 */
+        if (window.ResizeObserver && clipEl) {
+          new window.ResizeObserver(function () {
+            sheetH = clipEl.offsetHeight || 0;
+          }).observe(clipEl);
+        }
         window.addEventListener("scroll", function () {
           /* 波线背景以 0.12 倍速漂移 —— 与前景卡片形成层级视差。
              背景运动与滚动/触点持续绑定（同一手势同时驱动页面滑动与
@@ -2209,6 +2301,17 @@
           var i, s, k;
           var ySpan = cssH + WAVE_PAD * 2;
 
+          /* 画布 sticky 顶边的视口坐标 cTop：正常钉在视口顶（0）；
+             面板顶边还在视口内时随面板（heroH - scrollY）；页面尽头
+             sticky 被面板下缘回推时取下界。鼠标/涟漪是视口坐标，
+             换算到画布本地 y 才能与线条对准 */
+          var sheetTopVp = heroH - (window.scrollY || 0);
+          var cTop = sheetTopVp > 0 ? sheetTopVp : 0;
+          if (sheetH) {
+            var cTopMax = sheetTopVp + sheetH - cssH;
+            if (cTopMax < cTop) { cTop = cTopMax; }
+          }
+
           /* 1) 粗网格求位移场：每 3 条线 × 每 2 个采样求值一次
              + 关键线弯曲锚混插到每线（相邻关键线 smootherstep） */
           for (var gj = 0; gj < GH; gj++) {
@@ -2267,7 +2370,7 @@
               if (fxOn || rpN) {
                 /* 高斯透镜：62px 峰值推力、R=240px，全域平滑衰减、无截断边界
                    （任何硬截断都会在边界产生棱角）× power 缓入缓出 */
-                var dx = x - mouse.x, dy = y - mouse.y;
+                var dx = x - mouse.x, dy = y - (mouse.y - cTop);
                 var d2 = dx * dx + dy * dy;
                 if (d2 < 265225 && fxOn) {
                   var dd = Math.sqrt(d2) || 1;
@@ -2280,7 +2383,7 @@
                   var R = ripples[rp2];
                   var age = (now - R.born) / 1400;
                   var rr = 340 * (1 - (1 - age) * (1 - age) * (1 - age));
-                  var ex = x - R.x, ey = y - R.y;
+                  var ex = x - R.x, ey = y - (R.y - cTop);
                   var e2 = ex * ex + ey * ey;
                   var reach = rr + 100;
                   if (e2 > reach * reach || e2 < 0.01) { continue; }
@@ -2360,8 +2463,9 @@
            帧预算监督（自适应画质）：draw 耗时 + 帧间隔双信号，超阈逐档
            减负、有余量逐档回升（1.5s 冷却防振荡；起跑 3s 内 350ms 快速
            定档，保守 WebView 在首屏就能落到合适档位）。
-           画布被面板滑界完全盖住时按 3 帧 1 画保温（省 2/3 空转），
-           但不暂停测量 —— 定档在滚进内容区之前就完成 */
+           画布被封面完全盖住（面板整块在视口下方）时按 3 帧 1 画
+           保温（省 2/3 空转），但不暂停测量 —— 定档在滚进内容区之前
+           就完成 */
         var drawEMA = 6, dtEMA = 16, lastT = 0, frameNo = 0, tierT = -1e9, bornT = 0;
         function adaptTier(now) {
           if (now - tierT <= (now - bornT < 3000 ? 350 : 1500)) { return false; }
@@ -2386,7 +2490,10 @@
           frameNo++;
           if (!bornT) { bornT = now; }
           var rebuilt = adaptTier(now);
-          var cadence = canvas.__raw >= cssH ? 3 : TIER_SKIP[tier];
+          /* 面板还整块在视口下方（封面全遮、画布不可见）→ 3 帧 1 画
+             保温；否则按档位抽帧 */
+          var covered = (heroH - (window.scrollY || 0)) >= cssH;
+          var cadence = covered ? 3 : TIER_SKIP[tier];
           if (rebuilt || (frameNo % cadence) === 0) {
             var t1 = performance.now();
             draw(now);
