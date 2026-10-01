@@ -170,6 +170,9 @@
 
     img { max-width: 100%; display: block; }
     a { color: inherit; text-decoration: none; }
+    /* 安卓 WebView 系统点按高亮（蓝灰块）非 Material 规范 —— 禁用，
+       按压反馈由 MD3 状态层 + 微缩回弹承担 */
+    a, button { -webkit-tap-highlight-color: transparent; }
     button { font-family: inherit; }
 
     ::selection { background: color-mix(in srgb, var(--md-primary) 30%, transparent); }
@@ -344,21 +347,26 @@
     /* Expressive 激活指示器（active indicator）：
        官方规格 56×32dp 全圆角胶囊 / secondaryContainer 色 / 50% 圆角；
        纯文字项胶囊取按钮自身几何（HUG 内容同义）。
-       运动按 MotionScheme 分类：尺寸/形状属 spatial —— 展开=弹簧带过冲、
-       从中心向两边撑开鹅卵石色块；收起=快速平滑不回弹
-      （反向共用弹簧曲线会在 scaleX<0 翻转镜像，故分开） */
+       胶囊形变动画：width 从中心向两边生长 —— 全程保持全圆角鹅卵石
+       轮廓（禁 scaleX 缩放：圆角被横向压扁，中段成竖缝/门板状，
+       观感是"翻页"而非"胶囊"）。运动按 MotionScheme：尺寸属 spatial，
+       展开 380ms 弹簧带过冲；收起 200ms 快速平滑（宽度负值非法，
+       反向不共用弹簧曲线） */
+    .nav__link { overflow: visible; }   /* 弹簧过冲时胶囊两端越出按钮呼吸，不裁切 */
     .nav__pill {
       position: absolute;
-      inset: 0;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      transform: translateX(-50%);
       border-radius: var(--corner-full);
       background: var(--md-secondary-container);
-      transform: scaleX(0);
-      transform-origin: 50% 50%;
-      transition: transform 220ms var(--ease-standard);
+      transition: width 200ms var(--ease-standard);
     }
     .nav__link.is-active .nav__pill {
-      transform: scaleX(1);
-      transition: transform 380ms var(--ease-spring);
+      width: 100%;
+      transition: width 380ms var(--ease-spring);
     }
     .nav__label { position: relative; z-index: 1; }
     .nav__link.is-active { color: var(--md-on-secondary-container); }
