@@ -1,0 +1,1032 @@
+    /* ============================================================
+       Material Design 3 —— 严格遵循官方规范
+       · 色彩：Material Color Utilities（HCT / Tonal Palette / SchemeTonalSpot）
+         静态兜底 = 谷歌官方算法对 ./image.webp 的输出；运行时由官方库重新取色
+       · 字阶：衬线体（Source Serif 4 + Noto Serif SC），display 57/45/36
+              headline 32/28/24 · title 22/16/14 · body 16/14/12 · label 14/12/11
+       · 形状：corner 4 / 8 / 12 / 16 / 28 / full
+       · 阴影：elevation 0-5 官方阴影值 + 浅色模式 surface tint
+       · 状态层：hover 8% · focus 10% · pressed 10%
+       ============================================================ */
+
+    /* —— Light scheme（Material Color Utilities · SchemeTonalSpot）—— */
+    :root {
+      color-scheme: light;
+      --md-primary: #735c0c;
+      --md-on-primary: #ffffff;
+      --md-primary-container: #ffe08a;
+      --md-on-primary-container: #574400;
+      --md-secondary: #695d3f;
+      --md-on-secondary: #ffffff;
+      --md-secondary-container: #f2e1bb;
+      --md-on-secondary-container: #50462a;
+      --md-tertiary: #47664a;
+      --md-on-tertiary: #ffffff;
+      --md-tertiary-container: #c8ecc9;
+      --md-on-tertiary-container: #2f4d34;
+      --md-error: #ba1a1a;
+      --md-on-error: #ffffff;
+      --md-error-container: #ffdad6;
+      --md-on-error-container: #93000a;
+      --md-background: #fff8f0;
+      --md-on-background: #1f1b13;
+      --md-surface: #fff8f0;
+      --md-on-surface: #1f1b13;
+      --md-surface-variant: #ebe1cf;
+      --md-on-surface-variant: #4c4639;
+      --md-surface-dim: #e1d9cc;
+      --md-surface-bright: #fff8f0;
+      --md-surface-container-lowest: #ffffff;
+      --md-surface-container-low: #fbf3e5;
+      --md-surface-container: #f5eddf;
+      --md-surface-container-high: #f0e7d9;
+      --md-surface-container-highest: #eae1d4;
+      --md-outline: #7d7667;
+      --md-outline-variant: #cfc6b4;
+      --md-shadow: #000000;
+      --md-scrim: #000000;
+      --md-inverse-surface: #343027;
+      --md-inverse-on-surface: #f8f0e2;
+      --md-inverse-primary: #e2c46d;
+
+      /* —— MD3 Elevation（官方阴影 token）—— */
+      --elev-0: none;
+      --elev-1: 0 1px 2px 0 rgba(0,0,0,.30), 0 1px 3px 1px rgba(0,0,0,.15);
+      --elev-2: 0 1px 2px 0 rgba(0,0,0,.30), 0 2px 6px 2px rgba(0,0,0,.15);
+      --elev-3: 0 4px 8px 3px rgba(0,0,0,.15), 0 1px 3px 0 rgba(0,0,0,.30);
+      --elev-4: 0 6px 10px 4px rgba(0,0,0,.15), 0 2px 3px 0 rgba(0,0,0,.30);
+      --elev-5: 0 8px 12px 6px rgba(0,0,0,.15), 0 4px 4px 0 rgba(0,0,0,.30);
+
+      /* —— MD3 Shape —— */
+      --corner-xs: 4px;
+      --corner-sm: 8px;
+      --corner-md: 12px;
+      --corner-lg: 16px;
+      --corner-xl: 28px;
+      --corner-full: 999px;
+
+      /* —— MD3 Motion —— */
+      --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+      --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+      /* Material 3 Expressive：spatial spring（带回弹的弹簧曲线） */
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      /* Material emphasized decelerate：快→慢非线性（激活指示器展开） */
+      --ease-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+      --dur-short: 200ms;
+      --dur-medium: 300ms;
+      --dur-long: 500ms;
+
+      /* —— 毛玻璃（Android 17 glass × MD3 surface）—— */
+      --glass-fill: rgba(255, 248, 240, 0.42);
+      --glass-fill-strong: rgba(255, 248, 240, 0.68);
+      --glass-stroke: rgba(255, 255, 255, 0.55);
+      --glass-tint: rgba(255, 255, 255, 0.25);
+      --glass-blur: 26px;
+      --glass-saturate: 155%;
+
+      --font-ui: "Source Serif 4", "Noto Serif SC", Georgia, "Times New Roman", serif;
+      --nav-h: 4rem;
+      --hero-image: url("./image.webp");
+
+      --theme-shift: background-color 420ms var(--ease-standard),
+                     color 420ms var(--ease-standard),
+                     border-color 420ms var(--ease-standard),
+                     box-shadow 420ms var(--ease-standard);
+    }
+
+    /* —— Dark scheme（Material Color Utilities · SchemeTonalSpot）—— */
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --md-primary: #e2c46d;
+      --md-on-primary: #3d2f00;
+      --md-primary-container: #574400;
+      --md-on-primary-container: #ffe08a;
+      --md-secondary: #d5c5a1;
+      --md-on-secondary: #393015;
+      --md-secondary-container: #50462a;
+      --md-on-secondary-container: #f2e1bb;
+      --md-tertiary: #adcfae;
+      --md-on-tertiary: #19371f;
+      --md-tertiary-container: #2f4d34;
+      --md-on-tertiary-container: #c8ecc9;
+      --md-error: #ffb4ab;
+      --md-on-error: #690005;
+      --md-error-container: #93000a;
+      --md-on-error-container: #ffdad6;
+      --md-background: #16130b;
+      --md-on-background: #eae1d4;
+      --md-surface: #16130b;
+      --md-on-surface: #eae1d4;
+      --md-surface-variant: #4c4639;
+      --md-on-surface-variant: #cfc6b4;
+      --md-surface-dim: #16130b;
+      --md-surface-bright: #3d392f;
+      --md-surface-container-lowest: #110e07;
+      --md-surface-container-low: #1f1b13;
+      --md-surface-container: #231f17;
+      --md-surface-container-high: #2d2a21;
+      --md-surface-container-highest: #38342b;
+      --md-outline: #989080;
+      --md-outline-variant: #4c4639;
+      --md-shadow: #000000;
+      --md-scrim: #000000;
+      --md-inverse-surface: #eae1d4;
+      --md-inverse-on-surface: #343027;
+      --md-inverse-primary: #735c0c;
+
+      --glass-fill: rgba(22, 19, 11, 0.48);
+      --glass-fill-strong: rgba(22, 19, 11, 0.70);
+      --glass-stroke: rgba(255, 255, 255, 0.14);
+      --glass-tint: rgba(255, 255, 255, 0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-ui);
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: 0.5px;
+      color: var(--md-on-surface);
+      /* 页面底色用 MD3 surface-dim（浅色 T87，同 N 中性色板、色相不变）：
+         比 surface（T98）更柔和不刺眼；深色主题下 surface-dim 与 surface
+         同值（#16130b），故此改动只影响浅色模式。 */
+      background: var(--md-surface-dim);
+      overflow-x: hidden;
+      transition: var(--theme-shift);
+    }
+
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+    /* 安卓 WebView 系统点按高亮（蓝灰块）非 Material 规范 —— 禁用，
+       按压反馈由 MD3 状态层 + 微缩回弹承担 */
+    a, button { -webkit-tap-highlight-color: transparent; }
+    button { font-family: inherit; }
+
+    ::selection { background: color-mix(in srgb, var(--md-primary) 30%, transparent); }
+
+    /* MD3 焦点指示器：3dp 实线 primary，2dp 偏移 */
+    :focus-visible {
+      outline: 3px solid var(--md-primary);
+      outline-offset: 2px;
+      border-radius: var(--corner-xs);
+    }
+
+    /* ============ MD3 Type Scale（官方 token） ============ */
+    .display-large   { font-size: 57px; line-height: 64px; letter-spacing: -0.25px; font-weight: 400; }
+    .display-medium  { font-size: 45px; line-height: 52px; letter-spacing: 0; font-weight: 400; }
+    .display-small   { font-size: 36px; line-height: 44px; letter-spacing: 0; font-weight: 400; }
+    .headline-large  { font-size: 32px; line-height: 40px; letter-spacing: 0; font-weight: 400; }
+    .headline-medium { font-size: 28px; line-height: 36px; letter-spacing: 0; font-weight: 400; }
+    .headline-small  { font-size: 24px; line-height: 32px; letter-spacing: 0; font-weight: 400; }
+    .title-large     { font-size: 22px; line-height: 28px; letter-spacing: 0; font-weight: 400; }
+    .title-medium    { font-size: 16px; line-height: 24px; letter-spacing: 0.15px; font-weight: 500; }
+    .title-small     { font-size: 14px; line-height: 20px; letter-spacing: 0.1px; font-weight: 500; }
+    .body-large      { font-size: 16px; line-height: 24px; letter-spacing: 0.5px; font-weight: 400; }
+    .body-medium     { font-size: 14px; line-height: 20px; letter-spacing: 0.25px; font-weight: 400; }
+    .body-small      { font-size: 12px; line-height: 16px; letter-spacing: 0.4px; font-weight: 400; }
+    .label-large     { font-size: 14px; line-height: 20px; letter-spacing: 0.1px; font-weight: 500; }
+    .label-medium    { font-size: 12px; line-height: 16px; letter-spacing: 0.5px; font-weight: 500; }
+    .label-small     { font-size: 11px; line-height: 16px; letter-spacing: 0.5px; font-weight: 500; }
+
+    /* ============ MD3 状态层：8% / 10% / 10% ============ */
+    .sl { position: relative; overflow: hidden; }
+    .sl::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: currentColor;
+      opacity: 0;
+      transition: opacity 120ms linear;
+      pointer-events: none;
+    }
+    .sl:hover::before { opacity: 0.08; }
+    .sl:focus-visible::before { opacity: 0.10; }
+    .sl:active::before { opacity: 0.10; }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: md-ripple 600ms var(--ease-standard);
+      background: currentColor;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+    @keyframes md-ripple { to { transform: scale(4); opacity: 0; } }
+
+    /* ============ Material Expressive · 悬浮控件簇 ============
+       · 不做整条 tab 栏：右侧悬浮「鹅卵石」导航（connected button group）
+         + 独立圆形日夜切换（同半径），整体为一个悬浮控件簇
+       · 高度 48dp，圆角 full（两边半圆的胶囊），间距 8dp */
+    .top-bar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 40;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 clamp(16px, 4vw, 40px);
+      background: transparent;
+      border-bottom: 0;
+      pointer-events: none;              /* 仅控件簇接收指针事件 */
+      transition: background-color 420ms var(--ease-standard), box-shadow 420ms var(--ease-standard),
+                  border-color 420ms var(--ease-standard), color 420ms var(--ease-standard);
+    }
+    .top-bar > * { pointer-events: auto; }
+    /* 滚动后品牌一侧抬出玻璃底（surface container + elevation 2） */
+    .top-bar.is-scrolled .brand {
+      background: color-mix(in srgb, var(--md-surface-container) 82%, transparent);
+      border-color: var(--md-outline-variant);
+      box-shadow: var(--elev-2);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      height: 48px;
+      padding: 0 20px 0 14px;
+      border-radius: var(--corner-full);
+      border: 1px solid transparent;
+      background: color-mix(in srgb, var(--md-surface) 38%, transparent);
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      /* 品牌标签只在第二页起展示：hero 封面页隐去，内容面板滑过时淡入。
+         显隐走 effect 类动画（透明度+微位移，平滑无弹） */
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-14px);
+      pointer-events: none;
+      transition: opacity 280ms var(--ease-standard), transform 320ms var(--ease-standard),
+                  visibility 0s linear 320ms,
+                  background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
+                  box-shadow 420ms var(--ease-standard);
+    }
+    .top-bar .brand.is-shown {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      pointer-events: auto;
+      transition: opacity 280ms var(--ease-standard), transform 320ms var(--ease-standard),
+                  visibility 0s,
+                  background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
+                  box-shadow 420ms var(--ease-standard);
+    }
+    .brand__mark {
+      flex: none;
+      width: 10px;
+      height: 10px;
+      border-radius: var(--corner-full);
+      background: var(--md-primary);
+      transition: var(--theme-shift);
+    }
+    .brand__name {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-family: var(--font-ui);       /* 衬线体 */
+    }
+    /* 宽度不足以同时容纳品牌 + 导航簇时，品牌整体隐去（JS 测量后加此类） */
+    .brand.is-hidden { display: none; }
+
+    /* ============ Material Expressive · 鹅卵石导航簇 ============
+       connected button group：全圆角胶囊，48dp 高；激活项抬为 secondary-container
+       主题切换为独立圆形控件（同半径），置于导航组右侧 */
+    .nav-cluster {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav {
+      position: relative;      /* 共享胶囊的定位锚（按钮 offsetLeft 的参照系） */
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 48px;
+      padding: 4px;
+      border-radius: var(--corner-full);
+      background: color-mix(in srgb, var(--md-surface-container-high) 72%, transparent);
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      border: 1px solid var(--glass-stroke);
+      box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-tint);
+      transition: background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard);
+      /* 滑动交互：横向拖动归手势（不选中文字），纵向仍交还页面滚动（pan-y） */
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: pan-y;
+    }
+    .nav__link {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      min-width: 64px;
+      padding: 0 18px;
+      border-radius: var(--corner-full);
+      color: var(--md-on-surface-variant);
+      cursor: grab;
+      transition: color var(--dur-short) var(--ease-standard),
+                  transform var(--dur-medium) var(--ease-spring);
+      will-change: transform;
+    }
+    /* Expressive：按压微缩回弹 */
+    .nav__link:active { transform: scale(0.94); }
+    .nav.is-dragging .nav__link { cursor: grabbing; }
+
+    /* Expressive 激活指示器（active indicator）· 共享胶囊版（第三十一轮重构）：
+       官方规格 56×32dp 全圆角胶囊 / secondaryContainer 色 / 50% 圆角。
+       结构：单一 .nav__pill（JS 驱动 left/width）+ .nav__pill-ghost（关闭残影）。
+       · 点击切换：旧胶囊以极短渐变（~90ms）消失（ghost 残影，无收起形变），
+         同时新胶囊在目标按钮中心从 width 0→满宽展开 —— 不经中间按钮过渡
+       · 展开曲线 = Material emphasized decelerate（--ease-decelerate，快→慢非线性）
+       · 拖动滑块：胶囊 1:1 跟手（.is-anim-off 零过渡），松手磁吸回按钮
+       · 禁 scaleX 缩放形变（圆角被压扁成竖缝/门板="翻页"感），
+         胶囊形体动画只能用 left/width 尺寸形变保轮廓 */
+    .nav__pill, .nav__pill-ghost {
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 0;
+      width: 0;
+      border-radius: var(--corner-full);
+      background: var(--md-secondary-container);
+      pointer-events: none;
+    }
+    .nav__pill {
+      z-index: 0;
+      transition: left 300ms var(--ease-decelerate),
+                  width 300ms var(--ease-decelerate),
+                  opacity 120ms linear;
+    }
+    .nav__pill-ghost {
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 90ms linear;
+    }
+    .nav__pill.is-anim-off, .nav__pill-ghost.is-anim-off { transition: none; }
+
+    .nav__link { overflow: visible; }
+    .nav__label { position: relative; z-index: 1; }
+    .nav__link.is-active { color: var(--md-on-secondary-container); }
+    /* 拖动态反馈：按钮微缩 + 状态层压深（MD3 pressed 观感） */
+    .nav.is-dragging .nav__link { transform: scale(0.95); }
+    .nav.is-dragging .nav__link::before { opacity: 0.10; }
+
+    /* ============ 主题切换：独立圆形控件（48dp · 同半径） ============ */
+    .theme-toggle {
+      position: relative;
+      flex: none;
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid var(--glass-stroke);
+      border-radius: var(--corner-full);
+      background: color-mix(in srgb, var(--md-surface-container-high) 72%, transparent);
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-tint);
+      color: var(--md-on-surface);
+      cursor: pointer;
+      transition: background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
+                  box-shadow 420ms var(--ease-standard), transform var(--dur-medium) var(--ease-spring);
+    }
+    .theme-toggle:hover { box-shadow: var(--elev-3), inset 0 1px 0 var(--glass-tint); }
+    .theme-toggle:active { transform: scale(0.92); }
+    .theme-toggle__icon {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      transition: opacity var(--dur-medium) var(--ease-standard), transform var(--dur-long) var(--ease-spring);
+    }
+    .theme-toggle__icon--sun { opacity: 1; transform: rotate(0deg) scale(1); }
+    .theme-toggle__icon--moon { opacity: 0; transform: rotate(-70deg) scale(0.5); }
+    [data-theme="dark"] .theme-toggle__icon--sun { opacity: 0; transform: rotate(90deg) scale(0.5); }
+    [data-theme="dark"] .theme-toggle__icon--moon { opacity: 1; transform: rotate(0deg) scale(1); }
+
+    /* ============ MD3 Buttons（Filled / Filled tonal · 40dp · full corner） ============ */
+    .btn {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 40px;
+      min-width: 64px;
+      padding: 0 24px;
+      border: 0;
+      border-radius: var(--corner-full);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: box-shadow var(--dur-short) var(--ease-standard),
+                  background-color 420ms var(--ease-standard), color 420ms var(--ease-standard);
+    }
+    .btn--filled {
+      background: var(--md-primary);
+      color: var(--md-on-primary);
+      box-shadow: var(--elev-0);
+    }
+    .btn--filled:hover { box-shadow: var(--elev-1); }
+    .btn--tonal {
+      background: var(--md-secondary-container);
+      color: var(--md-on-secondary-container);
+      box-shadow: var(--elev-0);
+    }
+    .btn--tonal:hover { box-shadow: var(--elev-1); }
+    /* 压图描边按钮（Hero 封面语境）：固定暖白描边/文字，与封面标题同调 */
+    .btn--outlined {
+      background: rgba(18, 14, 8, 0.28);
+      border: 1px solid rgba(246, 240, 228, 0.55);
+      color: #f6f0e4;
+    }
+    .btn--outlined:hover {
+      background: rgba(18, 14, 8, 0.42);
+      border-color: rgba(246, 240, 228, 0.8);
+      box-shadow: var(--elev-1);
+    }
+
+    /* ============ MD3 Assist Chip（32dp · corner 8 · outline 1dp） ============ */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 32px;
+      padding: 0 16px;
+      border: 1px solid var(--md-outline);
+      border-radius: var(--corner-sm);
+      background: transparent;
+      color: var(--md-on-surface-variant);
+      cursor: default;
+      transition: var(--theme-shift), box-shadow var(--dur-short) var(--ease-standard);
+    }
+    .chip:hover { box-shadow: var(--elev-1); }
+    .chip__val { color: var(--md-on-surface); }
+    .chip__val--pending { color: var(--md-outline); font-style: italic; }
+
+    /* ============ Hero · 独立封面页 ============
+       一页式封面（pinned cover）：position: sticky 钉住，滚动期间
+       封面本体零平移 —— 没有随滚动的位移，就没有层间剪切；
+       由下方 .page-sheet 内容面板从其上滑过完成交接。
+       封面完全独立于波浪背景与后续内容：底色为不透明暖黑
+       （与照片暗部同调），任何透明度下都看不到封面背后的世界 */
+    .hero {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      height: 100svh;
+      min-height: 640px;
+      overflow: hidden;
+      isolation: isolate;
+      background: #120e08;   /* 封面底色 = 遮罩同调暖黑：模糊渐隐收尾于自身暗调 */
+    }
+    /* 图像 + 遮罩 + 颗粒 = 合成层，退场整体渐隐 + 缓推 scale；
+       "模糊消隐"由预模糊分层交叉淡化完成（见 hero__blur-stage）——
+       遮罩与图像同生共死，从构造上杜绝"图片隐去、色带残留"的生硬边缘 */
+    .hero__visual {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      will-change: opacity, transform; /* 退场只动 opacity/transform，合成器零重绘 */
+    }
+    .hero__bg {
+      width: 100%;
+      height: 100%;
+      background-image: var(--hero-image);
+      background-size: cover;
+      background-position: center 45%;
+      transform: scale(1.08);
+    }
+    /* 退场"模糊消隐"的预模糊分层（GoogleChromeLabs ui-element-samples
+       · animated-blur 技法，Apache-2.0，页脚开源致谢）：
+       · 模糊半径按档递增的静态模糊副本，退场时在清晰层上依次淡入，
+         视觉等效于模糊半径连续递增 —— 但逐帧只改 opacity
+       · 关键坑（Chrome 官方实测）：模糊副本自身绝不能升层 ——
+         升层后 GPU 会按帧对未模糊纹理重跑卷积，比逐帧动画 filter
+         还慢；正确做法是"升层父容器、模糊烘焙进父层纹理缓存一次"
+       · 副本 scale 1.13：把模糊边缘光晕（halo）推出视口，防止
+         过渡中段出现"中心糊、四周清晰"的边框感 */
+    .hero__blur-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      opacity: 0;
+      will-change: opacity;
+    }
+    .hero__bg--blur1 {
+      filter: blur(9px);
+      transform: scale(1.13);
+    }
+    .hero__bg--blur2 {
+      filter: blur(24px);
+      transform: scale(1.13);
+    }
+    /* 可读性遮罩（scrim）：全部 stop 同一暖黑、只变 alpha，向内全透明收尾 ——
+       遮罩是"分离层"不是"遮蔽层"，绝不留色带与硬边；
+       不再向 --md-surface 过渡（那条表面色带就是旧版生硬边缘的来源） */
+    .hero__veil {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg,
+          rgba(18, 14, 8, 0.60) 0%,
+          rgba(18, 14, 8, 0.30) 28%,
+          rgba(18, 14, 8, 0.12) 52%,
+          rgba(18, 14, 8, 0.22) 76%,
+          rgba(18, 14, 8, 0.48) 100%),
+        radial-gradient(88% 58% at 50% 30%, transparent 46%, rgba(14, 10, 5, 0.34) 100%);
+    }
+    .hero__grain {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0.06;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    /* 杂志封面式排版：文字直接压在游戏截图的拱门阴影区（无卡片底）
+       文字色固定暖白、不随主题切换 —— 图像不变，封面字永远压在照片上；
+       配合顶部加深的 scrim 与文字投影，深浅两种主题下对比度均达标 */
+    .hero__stage {
+      position: relative;
+      z-index: 3;
+      height: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: calc(var(--nav-h) + clamp(28px, 6vh, 60px)) 24px 0;
+      will-change: opacity, transform; /* 退场只动 opacity/transform（lift），合成器零重绘 */
+    }
+    /* 文字退场预模糊残影：静态模糊的封面克隆（JS 注入）浮在清晰版上，
+       退场时淡入 —— 视觉等效"文字渐进模糊"，但零逐帧滤镜开销。
+       模糊在内层 hero__stage-ghostblur 上（不升层，烘焙进升层父层），
+       外层只动 opacity */
+    .hero__stage-ghost {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: calc(var(--nav-h) + clamp(28px, 6vh, 60px)) 24px 0;
+      opacity: 0;
+      will-change: opacity;
+      pointer-events: none;
+    }
+    .hero__stage-ghostblur {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      filter: blur(13px);
+    }
+    .hero__cover {
+      width: min(920px, 100%);
+      text-align: center;
+    }
+    .hero h1 {
+      margin: 0;
+      color: #f6f0e4;
+      font-family: var(--font-ui);
+      font-size: clamp(36px, 5.6vw, 68px);   /* 封面大字：自上而下第一视觉 */
+      line-height: 1.12;
+      letter-spacing: 0.01em;
+      text-shadow: 0 2px 26px rgba(12, 9, 4, 0.55), 0 1px 4px rgba(12, 9, 4, 0.42);
+    }
+    .hero__subtitle {
+      margin: 14px 0 0;
+      color: rgba(246, 240, 228, 0.88);
+      font-family: var(--font-ui);
+      font-size: clamp(15px, 1.8vw, 21px);
+      text-shadow: 0 1px 18px rgba(12, 9, 4, 0.5), 0 1px 3px rgba(12, 9, 4, 0.4);
+    }
+    .hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: clamp(22px, 3.4vh, 34px);
+    }
+
+    .scroll-hint {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      z-index: 4;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      /* 封面字固定暖白、不随主题（同 h1 教义）：永远压在照片上 */
+      color: rgba(246, 240, 228, 0.78);
+      text-shadow: 0 1px 12px rgba(12, 9, 4, 0.5);
+    }
+    .scroll-hint__line {
+      width: 1px;
+      height: 34px;
+      background: linear-gradient(180deg, rgba(246, 240, 228, 0.85), transparent);
+      animation: drip 1.9s var(--ease-standard) infinite;
+    }
+    @keyframes drip {
+      0% { transform: scaleY(0.4); opacity: 0; transform-origin: top; }
+      40% { opacity: 1; }
+      100% { transform: scaleY(1); opacity: 0; transform-origin: top; }
+    }
+
+    /* ============ Sections ============
+       背景透明 —— 露出波浪线场；内容置于玻璃卡片，形成前后层级 */
+    .section {
+      position: relative;
+      z-index: 5;
+      padding: clamp(88px, 13vh, 144px) clamp(20px, 5vw, 72px);
+      background: transparent;
+      scroll-margin-top: calc(var(--nav-h) + 12px);
+      overflow: clip;
+    }
+    .section__inner { max-width: 1120px; margin: 0 auto; }
+    .section--center .section__inner { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .section-kicker { max-width: 720px; }
+    .section--center .section-kicker { margin-inline: auto; }
+    .section-kicker h2 { margin: 0; color: var(--md-on-surface); }
+    .section-kicker p { margin: 16px 0 0; color: var(--md-on-surface-variant); }
+
+    .kicker-tag {
+      display: inline-flex;
+      align-items: center;
+      height: 32px;
+      margin-bottom: 18px;
+      padding: 0 16px;
+      border: 1px solid var(--md-outline-variant);
+      border-radius: var(--corner-sm);
+      color: var(--md-primary);
+      transition: var(--theme-shift);
+    }
+
+    /* 滚动监听：上浮淡入 / 离开收回（可重复触发，两个方向都带动画；
+       绝不对玻璃元素祖先使用 opacity/will-change:opacity） */
+    .reveal {
+      opacity: 0;
+      transform: translate3d(0, 42px, 0);
+      transition: opacity 720ms var(--ease-emphasized), transform 720ms var(--ease-emphasized),
+                  background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
+                  box-shadow 420ms var(--ease-standard), color 420ms var(--ease-standard);
+    }
+    .reveal.is-visible { opacity: 1; transform: translate3d(0, 0, 0); }
+    .reveal[data-delay="1"] { transition-delay: 110ms; }
+    .reveal[data-delay="2"] { transition-delay: 220ms; }
+    .reveal[data-delay="3"] { transition-delay: 330ms; }
+    /* 玻璃卡片自身的上浮淡入：只做 transform、禁 opacity 过渡 ——
+       opacity 动画的元素带 backdrop-filter 时，毛玻璃逐帧重算+重取样，
+       竖向滚屏每帧全量重合成（第十三轮卡顿根源之一） */
+    .intro__layout.reveal, .join__card.reveal {
+      opacity: 1;
+      transition: transform 720ms var(--ease-emphasized),
+                  background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
+                  box-shadow 420ms var(--ease-standard);
+    }
+    /* 退场不带入场的 stagger 延迟 —— 收回要比出场干脆（放最后覆盖 data-delay） */
+    .reveal:not(.is-visible) { transition-delay: 0ms; }
+
+    /* ============================================================
+       内容面板（Sheet）：圆角顶边 + 上投影的不透明面板，滚动时
+       从钉住的封面之上滑过完成交接（MD3 sheet 形制）。
+       波浪线场活在面板内部 —— 封面与波场互不相见，
+       封面任何透明度下都看不到"背后滚动的背景"
+       ============================================================ */
+    .page-sheet {
+      position: relative;
+      z-index: 2;              /* 高于钉住的封面（z1），滑过时完整遮住它 */
+      background: var(--md-surface-dim);  /* 与 body 同底色（浅色 T87） */
+      border-radius: var(--corner-xl) var(--corner-xl) 0 0;
+      box-shadow: 0 -20px 54px rgba(10, 7, 3, 0.38);
+      transition: var(--theme-shift);
+    }
+
+    /* ============================================================
+       动态背景：纵向波线场（canvas · longitudinal wave）
+       · 上百条等距细竖线共享同一平滑位移场，随高度左右偏移
+       · 相邻线相位连续，聚散成疏密带，密度差营造体积感
+       · 鼠标靠近时竖线被"拨开"，产生水波荡漾般的排斥涟漪
+       · 随滚动以 0.12 倍速漂移 —— 与前景卡片形成层级视差
+       · 波场画布活在 .wave-clip 里：clip-path 圆角矩形与面板同款
+         圆角、随面板一起滚动，画布 sticky 钉在视口顶被其裁切 ——
+         线条层与面板滑界在同一绘制流程里原子同步，任何渲染压力
+         下都不可能错位。旧版 fixed 画布 + JS clip-path 逐帧对齐
+         滑界的方案已废弃：裁切值一旦迟到一帧就露出色带空隙
+       ============================================================ */
+    .wave-clip {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      -webkit-clip-path: inset(0 round var(--corner-xl) var(--corner-xl) 0 0);
+      clip-path: inset(0 round var(--corner-xl) var(--corner-xl) 0 0);
+    }
+    .wave-canvas {
+      position: sticky;
+      top: 0;
+      display: block;
+      width: 100%;
+      height: 100vh;          /* resize() 按精确像素覆写 + 负 margin 抵消占位 */
+      margin-bottom: -100vh;  /* 波场不参与文档流：面板内容排版不受影响 */
+      pointer-events: none;
+    }
+
+    /* ============ Intro ============ */
+    /* 玻璃卡片：内容层悬浮于波浪背景之上（层级感） */
+    .intro__layout {
+      margin-top: 44px;
+      max-width: 760px;
+      padding: clamp(28px, 4vw, 44px) clamp(24px, 4vw, 44px);
+      border-radius: var(--corner-xl);
+      background: var(--glass-fill);
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      border: 1px solid var(--glass-stroke);
+      box-shadow: var(--elev-3), inset 0 1px 0 var(--glass-tint);
+      transition: background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
+                  box-shadow 420ms var(--ease-standard);
+    }
+    .intro__layout p { margin: 0 0 20px; }
+    .intro__layout p:last-child { margin-bottom: 0; }
+    .intro__lead { color: var(--md-on-surface); }
+    .intro__body { color: var(--md-on-surface-variant); }
+    .accent { color: var(--md-primary); transition: color 420ms var(--ease-standard); }
+
+    /* 免责声明：简介的收尾段落，非独立卡片 */
+    .disclaimer {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--md-outline-variant);
+      color: var(--md-on-surface);
+      text-align: left;
+    }
+    .disclaimer__icon {
+      flex: none;
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      color: var(--md-primary);
+      transition: color 420ms var(--ease-standard);
+    }
+    .disclaimer__text { margin: 0; font-weight: 500; }
+
+    /* ============ Progress ============ */
+    .progress__frame-wrap { display: flex; justify-content: center; margin-top: 48px; }
+    .map-shell {
+      position: relative;
+      /* 顶出 section__inner 的 1120px 内容容器 —— BlueMap 窗口尽量放大 */
+      width: min(92vw, 1320px);
+      max-width: none;
+      height: 720px;
+      border-radius: var(--corner-xl);
+      overflow: hidden;
+      /* MD3 surface tint：elevation 3 → 浅色模式 9% primary */
+      background: color-mix(in srgb, var(--md-primary) 9%, var(--md-surface-container));
+      border: 1px solid var(--md-outline-variant);
+      box-shadow: var(--elev-3);
+      transition: var(--theme-shift);
+    }
+    [data-theme="dark"] .map-shell {
+      background: var(--md-surface-container-high); /* 深色模式抬升用更高 surface 层级 */
+    }
+    .map-shell iframe { display: block; border: 0; background: transparent; }
+    .map-shell__badge {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 32px;
+      padding: 0 16px;
+      border-radius: var(--corner-sm);
+      background: var(--md-secondary-container);
+      color: var(--md-on-secondary-container);
+      box-shadow: var(--elev-1);
+      pointer-events: none;
+      transition: var(--theme-shift);
+    }
+    .map-shell__badge::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: var(--corner-full);
+      background: var(--md-primary);
+      animation: pulse 2.2s var(--ease-standard) infinite;
+      transition: background-color 420ms var(--ease-standard);
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--md-primary) 45%, transparent); }
+      55% { box-shadow: 0 0 0 8px transparent; }
+    }
+    .progress__note {
+      margin: 20px auto 0;
+      max-width: 680px;
+      color: var(--md-on-surface-variant);
+      text-align: center;
+      transition: color 420ms var(--ease-standard);
+    }
+
+    /* ============ Join Us ============ */
+    .join__card {
+      width: min(680px, 100%);
+      margin-top: 44px;
+      padding: clamp(32px, 4.5vw, 52px) clamp(24px, 4vw, 48px);
+      border-radius: var(--corner-xl);
+      background: var(--glass-fill);
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      border: 1px solid var(--glass-stroke);
+      box-shadow: var(--elev-3), inset 0 1px 0 var(--glass-tint);
+      transition: background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
+                  box-shadow 420ms var(--ease-standard);
+    }
+    .join__requirement { margin: 0 auto; max-width: 520px; }
+    .join__requirement strong {
+      color: var(--md-primary);
+      font-weight: 500;
+      transition: color 420ms var(--ease-standard);
+    }
+    .join__note {
+      margin: 16px auto 0;
+      max-width: 520px;
+      color: var(--md-on-surface-variant);
+      transition: color 420ms var(--ease-standard);
+    }
+    .join__divider {
+      width: 56px;
+      height: 2px;
+      margin: 32px auto;
+      border-radius: var(--corner-full);
+      background: var(--md-primary);
+      opacity: 0.55;
+      transition: background-color 420ms var(--ease-standard);
+    }
+    .join__contact-title {
+      margin: 0 0 16px;
+      color: var(--md-on-surface-variant);
+      transition: color 420ms var(--ease-standard);
+    }
+    .contact-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    /* ============ Footer ============ */
+    .site-footer {
+      position: relative;
+      z-index: 5;                      /* 与内容层同层，压住波浪画布 */
+      padding: 28px clamp(20px, 5vw, 72px) 36px;
+      border-top: 1px solid var(--md-outline-variant);
+      background: var(--md-surface-dim);  /* 与页面底色一致，避免亮带 */
+      color: var(--md-on-surface-variant);
+      transition: var(--theme-shift);
+    }
+    .site-footer__inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .site-footer__end {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* ============ 开源致谢下拉（MD3 details menu） ============ */
+    .oss { position: relative; }
+    .oss__summary {
+      cursor: pointer;
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: var(--corner-full);
+      border: 1px solid var(--md-outline-variant);
+      color: var(--md-on-surface-variant);
+      transition: background-color var(--dur-short) var(--ease-standard),
+                  color var(--dur-short) var(--ease-standard);
+    }
+    .oss__summary::-webkit-details-marker { display: none; }
+    .oss__summary::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      transform: rotate(45deg) translateY(-2px);
+      transition: transform var(--dur-short) var(--ease-standard);
+    }
+    .oss__summary:hover { background: color-mix(in srgb, var(--md-on-surface-variant) 10%, transparent); }
+    .oss[open] .oss__summary {
+      background: var(--md-secondary-container);
+      color: var(--md-on-secondary-container);
+    }
+    .oss[open] .oss__summary::after { transform: rotate(225deg) translateY(-1px); }
+    .oss__menu {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 10px);
+      width: min(320px, 74vw);
+      padding: 16px 18px;
+      border-radius: var(--corner-lg);
+      background: var(--md-surface-container-high);
+      border: 1px solid var(--md-outline-variant);
+      box-shadow: var(--elev-3);
+      text-align: left;
+      transition: var(--theme-shift);
+    }
+    .oss__title { margin: 0 0 12px; color: var(--md-on-surface); }
+    .oss__list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+    .oss__list li {
+      display: grid;
+      gap: 1px;
+      color: var(--md-on-surface-variant);
+    }
+    .oss__list strong { color: var(--md-on-surface); font-weight: 600; }
+    .oss__by { color: var(--md-on-surface-variant); }
+    .oss__lic { color: var(--md-outline); }
+
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: -72px;
+      z-index: 100;
+      padding: 10px 18px;
+      border-radius: var(--corner-sm);
+      background: var(--md-inverse-surface);
+      color: var(--md-inverse-on-surface);
+      transition: top var(--dur-short) var(--ease-standard), background-color 420ms var(--ease-standard), color 420ms var(--ease-standard);
+    }
+    .skip-link:focus { top: 16px; }
+
+    /* ============ 响应式（桌面 / 平板 / 手机） ============ */
+    @media (max-width: 960px) {
+      .map-shell { height: 580px; }
+    }
+    @media (max-width: 840px) {
+      .brand { display: none; }                          /* 顶栏放不下品牌+导航簇 → 品牌整体隐去（含圆点） */
+      .nav-cluster { margin-left: auto; }                /* 导航簇保持右对齐 */
+      .nav__link { min-width: 52px; padding: 0 12px; }   /* 鹅卵石按钮收紧 */
+      .section-kicker h2 { font-size: 28px; line-height: 36px; }            /* headline-medium */
+      .hero__bg--blur1 { filter: blur(6px); }            /* 移动端模糊档收窄（审美取值） */
+      .hero__bg--blur2 { filter: blur(16px); }
+      .hero__stage-ghostblur { filter: blur(9px); }
+    }
+    @media (max-width: 600px) {
+      .hero { min-height: 560px; }
+      .hero__stage, .hero__stage-ghost { padding-top: calc(var(--nav-h) + 22px); }
+      .section-kicker h2 { font-size: 24px; line-height: 32px; }            /* headline-small */
+      .map-shell { width: 100%; height: 440px; }
+      .hero__actions .btn { flex: 1 1 100%; }
+      .nav__link { min-width: 44px; padding: 0 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .hero__visual, .hero__stage, .reveal, .theme-toggle__icon,
+      .scroll-hint__line, .ripple, .map-shell__badge::before,
+      .brand, .nav__pill, .nav__pill-ghost, .nav__link {
+        animation: none !important;
+        transition: none !important;
+        will-change: auto;
+      }
+      .reveal { opacity: 1; transform: none; }
+    }
