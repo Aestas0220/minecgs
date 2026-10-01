@@ -419,19 +419,29 @@
     .chip__val { color: var(--md-on-surface); }
     .chip__val--pending { color: var(--md-outline); font-style: italic; }
 
-    /* ============ Hero ============ */
+    /* ============ Hero · 独立封面页 ============
+       一页式封面（pinned cover）：position: sticky 钉住，滚动期间
+       封面本体零平移 —— 没有随滚动的位移，就没有层间剪切；
+       由下方 .page-sheet 内容面板从其上滑过完成交接。
+       封面完全独立于波浪背景与后续内容：底色为不透明暖黑
+       （与照片暗部同调），任何透明度下都看不到封面背后的世界 */
     .hero {
-      position: relative;
+      position: sticky;
+      top: 0;
+      z-index: 1;
       height: 100svh;
       min-height: 640px;
       overflow: hidden;
       isolation: isolate;
+      background: #120e08;   /* 封面底色 = 遮罩同调暖黑：模糊渐隐收尾于自身暗调 */
     }
-    .hero__parallax {
+    /* 图像 + 遮罩 + 颗粒 = 单一合成层，退场整体施加 filter/opacity ——
+       遮罩与图像同生共死，从构造上杜绝"图片隐去、色带残留"的生硬边缘 */
+    .hero__visual {
       position: absolute;
-      inset: -14% 0 -14%;
+      inset: 0;
       z-index: 0;
-      will-change: transform; /* hero 内无毛玻璃元素，JS 的 filter/opacity 退场动画安全 */
+      will-change: filter, opacity, transform; /* hero 内无毛玻璃元素，filter/opacity 退场动画安全 */
     }
     .hero__bg {
       width: 100%;
@@ -441,15 +451,22 @@
       background-position: center 45%;
       transform: scale(1.08);
     }
+    /* 可读性遮罩（scrim）：全部 stop 同一暖黑、只变 alpha，向内全透明收尾 ——
+       遮罩是"分离层"不是"遮蔽层"，绝不留色带与硬边；
+       不再向 --md-surface 过渡（那条表面色带就是旧版生硬边缘的来源） */
     .hero__veil {
       position: absolute;
       inset: 0;
       z-index: 1;
       pointer-events: none;
       background:
-        linear-gradient(180deg, rgba(18, 14, 8, 0.52) 0%, rgba(18, 14, 8, 0.40) 24%, rgba(18, 14, 8, 0.13) 46%, rgba(20, 16, 8, 0.10) 62%, color-mix(in srgb, var(--md-surface) 55%, transparent) 92%, var(--md-surface) 100%),
-        radial-gradient(90% 60% at 50% 28%, transparent 42%, rgba(16, 12, 6, 0.30) 100%);
-      transition: background 420ms var(--ease-standard);
+        linear-gradient(180deg,
+          rgba(18, 14, 8, 0.60) 0%,
+          rgba(18, 14, 8, 0.30) 28%,
+          rgba(18, 14, 8, 0.12) 52%,
+          rgba(18, 14, 8, 0.22) 76%,
+          rgba(18, 14, 8, 0.48) 100%),
+        radial-gradient(88% 58% at 50% 30%, transparent 46%, rgba(14, 10, 5, 0.34) 100%);
     }
     .hero__grain {
       position: absolute;
@@ -471,7 +488,7 @@
       align-items: flex-start;
       justify-content: center;
       padding: calc(var(--nav-h) + clamp(28px, 6vh, 60px)) 24px 0;
-      will-change: transform; /* hero 内无毛玻璃元素，退场动画可安全加 filter/opacity */
+      will-change: filter, opacity, transform; /* hero 内无毛玻璃元素，退场动画可安全加 filter/opacity */
     }
     .hero__cover {
       width: min(920px, 100%);
@@ -511,12 +528,14 @@
       flex-direction: column;
       align-items: center;
       gap: 6px;
-      color: var(--md-on-surface-variant);
+      /* 封面字固定暖白、不随主题（同 h1 教义）：永远压在照片上 */
+      color: rgba(246, 240, 228, 0.78);
+      text-shadow: 0 1px 12px rgba(12, 9, 4, 0.5);
     }
     .scroll-hint__line {
       width: 1px;
       height: 34px;
-      background: linear-gradient(180deg, var(--md-primary), transparent);
+      background: linear-gradient(180deg, rgba(246, 240, 228, 0.85), transparent);
       animation: drip 1.9s var(--ease-standard) infinite;
     }
     @keyframes drip {
@@ -577,11 +596,28 @@
     }
 
     /* ============================================================
+       内容面板（Sheet）：圆角顶边 + 上投影的不透明面板，滚动时
+       从钉住的封面之上滑过完成交接（MD3 sheet 形制）。
+       波浪线场活在面板内部 —— 封面与波场互不相见，
+       封面任何透明度下都看不到"背后滚动的背景"
+       ============================================================ */
+    .page-sheet {
+      position: relative;
+      z-index: 2;              /* 高于钉住的封面（z1），滑过时完整遮住它 */
+      background: var(--md-surface);
+      border-radius: var(--corner-xl) var(--corner-xl) 0 0;
+      box-shadow: 0 -20px 54px rgba(10, 7, 3, 0.38);
+      transition: var(--theme-shift);
+    }
+
+    /* ============================================================
        动态背景：纵向波线场（canvas · longitudinal wave）
        · 上百条等距细竖线共享同一平滑位移场，随高度左右偏移
        · 相邻线相位连续，聚散成疏密带，密度差营造体积感
        · 鼠标靠近时竖线被"拨开"，产生水波荡漾般的排斥涟漪
        · 随滚动以 0.12 倍速漂移 —— 与前景卡片形成层级视差
+       · 画布固定全视口，但 JS 以 clip-path 把它钉在面板滑界之下
+         （面板顶边 = hero 高度 − 滚动量），波场只在内容区显形
        ============================================================ */
     .wave-canvas {
       position: fixed;
@@ -863,7 +899,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
-      .hero__parallax, .hero__stage, .reveal, .theme-toggle__icon,
+      .hero__visual, .hero__stage, .reveal, .theme-toggle__icon,
       .scroll-hint__line, .ripple, .map-shell__badge::before {
         animation: none !important;
         transition: none !important;
@@ -875,9 +911,6 @@
 </head>
 <body>
   <a class="skip-link body-medium" href="#intro">跳至项目简介</a>
-
-  <!-- 动态背景：流动波浪线场（hero 以外区域） -->
-  <canvas class="wave-canvas" id="waveCanvas" aria-hidden="true"></canvas>
 
   <!-- MD3 Top App Bar（small） -->
   <header class="top-bar" id="topBar">
@@ -907,13 +940,15 @@
   </header>
 
   <main>
-    <!-- 一、首屏 Hero -->
+    <!-- 一、首屏 Hero · 独立封面页（sticky 钉住，内容面板滑过交接） -->
     <section class="hero" id="hero">
-      <div class="hero__parallax" id="heroParallax" aria-hidden="true">
+      <!-- 合成层：图像 + 遮罩 + 颗粒整体退场（模糊/渐隐/缓推），
+           遮罩不单独残留 —— 旧版"图片隐去后色带悬空"的根源就在此 -->
+      <div class="hero__visual" id="heroVisual" aria-hidden="true">
         <div class="hero__bg"></div>
+        <div class="hero__veil"></div>
+        <div class="hero__grain"></div>
       </div>
-      <div class="hero__veil" aria-hidden="true"></div>
-      <div class="hero__grain" aria-hidden="true"></div>
 
       <div class="hero__stage" id="heroStage">
         <article class="hero__cover" id="heroPanel">
@@ -936,6 +971,12 @@
         <span class="scroll-hint__line"></span>
       </div>
     </section>
+
+    <!-- 二~四、内容面板：从封面之上滑过的 sheet（圆角顶边 + 上投影）。
+         波浪线场活在面板内部的独立层里，封面永远看不到它 -->
+    <div class="page-sheet" id="pageSheet">
+      <!-- 动态背景：流动波浪线场（仅内容面板内显形；JS clip-path 钉在面板滑界之下） -->
+      <canvas class="wave-canvas" id="waveCanvas" aria-hidden="true"></canvas>
 
     <!-- 二、项目简介 Intro -->
     <section class="section section--center intro" id="intro">
@@ -1008,6 +1049,7 @@
         </div>
       </div>
     </section>
+    </div><!-- /.page-sheet -->
   </main>
 
   <footer class="site-footer">
@@ -1365,57 +1407,91 @@
       }
 
       /* ============================================================
-         5. 滚动联动的 Hero 退场 + 视差
-            · 背景图 0.42× / 文字层 0.18× 三层不同速率视差
-            · 退场：随滚动进度递进高斯模糊 + 同步渐隐（smoothstep 缓动，
-              起止柔和无跳变）；scroll-hint 先行淡出
-            · 性能：rAF 节流 + 阈值守卫 + 模糊 0.5px 量化，稳定后零写入；
-              移动端模糊上限降档防掉帧；hero 内无毛玻璃元素，
-              filter/opacity 不破坏 backdrop-filter（第二轮教训不适用此处）
+         5. 封面退场（滚动联动）+ 波场滑界裁切
+           · 封面钉住零平移 —— 不做任何随滚动的位移视差（旧版
+             0.42×/0.18× 三层差速平移正是"下滑时背景滚动"的根源：
+             半透明中段层间剪切全部暴露，触屏直推下尤其刺眼）
+           · 退场 = 合成层（图像+遮罩+颗粒）整体递进模糊 + 渐隐 + 缓推
+             scale，文字层 blur 减半 + 先行渐隐 + 上 lift；
+             smoothstep 缓动，起止柔和无跳变；scroll-hint 先行淡出
+           · 波场画布 clip-path 钉在内容面板滑界之下（面板顶边 =
+             heroH - scrollY，纯算术零布局读取），面板合拢与退场
+             完成严格同步 —— 封面任何透明度下都看不到波场
+           · 视觉优先：模糊不量化、上限放开（桌面 24 / 移动 16 为
+             审美取值）；仍保留 rAF 节流 + 阈值守卫（零画质代价）
          ============================================================ */
-      var heroParallax = document.getElementById("heroParallax");
+      var heroVisual = document.getElementById("heroVisual");
       var heroStage = document.getElementById("heroStage");
-      var heroPanel = document.getElementById("heroPanel");
       var heroSection = document.getElementById("hero");
+      var waveCanvas = document.getElementById("waveCanvas");
       var scrollHint = document.querySelector(".scroll-hint");
       var ticking = false;
       var heroH = 0;             /* 缓存 hero 高度 —— 滚动热路径禁读 offsetHeight（强制布局） */
-      var panelOpacity = -1, panelBlur = -1;
-      var bgOpacity = -1, bgBlur = -1;
+      var visOpacity = -1, visBlur = -1, visScale = -1;
+      var stageOpacity = -1, stageBlur = -1, stageLift = -1;
       var hintOpacity = -1;
+      var clipTop = -1;
 
       function updateParallax() {
         var y = window.scrollY || 0;
-        if (!reduceMotion && heroSection) {
+        if (heroSection) {
           if (!heroH) { heroH = heroSection.offsetHeight || window.innerHeight; }
           var p = Math.min(Math.max(y / heroH, 0), 1);
-          var e = p * p * (3 - 2 * p);              /* smoothstep：慢起慢收，过渡柔和 */
-          var maxBlur = window.innerWidth <= 840 ? 5 : 10;   /* 移动端降档 */
-          var q = function (v) { return Math.round(v * 2) / 2; };  /* 模糊 0.5px 量化 */
 
-          if (heroParallax) {
-            heroParallax.style.transform = "translate3d(0," + (y * 0.42).toFixed(2) + "px,0)";
-            var bo = Math.max(1 - e * 1.1, 0);
-            if (Math.abs(bo - bgOpacity) > 0.01) { heroParallax.style.opacity = bo.toFixed(3); bgOpacity = bo; }
-            var bb = q(e * maxBlur);
-            if (bb !== bgBlur) {
-              heroParallax.style.filter = bb > 0 ? "blur(" + bb.toFixed(1) + "px)" : "none";
-              bgBlur = bb;
+          /* 波场裁切到内容面板滑界之下：面板顶边 = heroH - y（1:1 上移）。
+             面板还没到的地方，波场一条线也不许露出来 */
+          if (waveCanvas) {
+            var ct = Math.max(heroH - y, 0);
+            if (Math.abs(ct - clipTop) > 0.5) {
+              waveCanvas.style.clipPath = ct > 0 ? "inset(" + ct.toFixed(1) + "px 0 0 0)" : "none";
+              clipTop = ct;
             }
           }
-          if (heroStage) { heroStage.style.transform = "translate3d(0," + (y * 0.18).toFixed(2) + "px,0)"; }
-          if (heroPanel) {
-            var po = Math.max(1 - e * 1.25, 0);
-            if (Math.abs(po - panelOpacity) > 0.01) { heroPanel.style.opacity = po.toFixed(3); panelOpacity = po; }
-            var pb = q(e * maxBlur);
-            if (pb !== panelBlur) {
-              heroPanel.style.filter = pb > 0 ? "blur(" + pb.toFixed(1) + "px)" : "none";
-              panelBlur = pb;
-            }
+
+          /* 钉住的 hero 几何上永远"可见"，IntersectionObserver 不会再回火 ——
+             封面区（p<0.45）的导航态改由滚动进度直接判定 */
+          if (p < 0.45 && navLinks.length && !navLinks[0].classList.contains("is-active")) {
+            navLinks.forEach(function (link) {
+              link.classList.toggle("is-active", link.getAttribute("data-section") === "hero");
+            });
           }
-          if (scrollHint) {
-            var ho = Math.max(1 - p * 2.6, 0);      /* 提示先行淡出 */
-            if (Math.abs(ho - hintOpacity) > 0.01) { scrollHint.style.opacity = ho.toFixed(3); hintOpacity = ho; }
+
+          if (!reduceMotion) {
+            var e = p * p * (3 - 2 * p);            /* smoothstep：慢起慢收，过渡柔和 */
+            var maxBlur = window.innerWidth <= 840 ? 16 : 24;   /* 审美取值：移动端稍收，保可读 */
+
+            if (heroVisual) {
+              var vo = Math.max(1 - e * 1.1, 0);
+              if (Math.abs(vo - visOpacity) > 0.01) { heroVisual.style.opacity = vo.toFixed(3); visOpacity = vo; }
+              var vb = e * maxBlur;
+              if (Math.abs(vb - visBlur) > 0.25) {
+                heroVisual.style.filter = vb > 0.25 ? "blur(" + vb.toFixed(1) + "px)" : "none";
+                visBlur = vb;
+              }
+              var vs = 1 + e * 0.05;               /* 缓推：径向运动，不产生平移剪切 */
+              if (Math.abs(vs - visScale) > 0.001) {
+                heroVisual.style.transform = vs > 1.001 ? "scale(" + vs.toFixed(3) + ")" : "none";
+                visScale = vs;
+              }
+            }
+            if (heroStage) {
+              var so = Math.max(1 - e * 1.25, 0);
+              if (Math.abs(so - stageOpacity) > 0.01) { heroStage.style.opacity = so.toFixed(3); stageOpacity = so; }
+              var sb = e * maxBlur * 0.55;         /* 文字层模糊减半：信息层退场更体面 */
+              if (Math.abs(sb - stageBlur) > 0.25) {
+                heroStage.style.filter = sb > 0.25 ? "blur(" + sb.toFixed(1) + "px)" : "none";
+                stageBlur = sb;
+              }
+              var sl = -e * 44;                    /* 上 lift：blur + lift + fade 三合一退场 */
+              if (Math.abs(sl - stageLift) > 0.25) {
+                heroStage.style.transform = "translate3d(0," + sl.toFixed(1) + "px,0)";
+                stageLift = sl;
+              }
+            }
+            if (scrollHint) {
+              var ho = Math.max(1 - p * 2.6, 0);      /* 提示先行淡出 */
+              if (Math.abs(ho - hintOpacity) > 0.01) { scrollHint.style.opacity = ho.toFixed(3); hintOpacity = ho; }
+            }
           }
         }
         ticking = false;
@@ -1546,23 +1622,39 @@
           addRipple(e.clientX, e.clientY);
         }, { passive: true });
 
-        /* ---- 触屏：仅轻点扩散圆圈 ----
-           移动端不做滑动跟手背景扭曲 —— 拖动手势只滚动页面，
-           背景的互动反馈只由轻点波纹触发；被动监听，不影响滚动。
-           轻点判定只在 touchend 放行（touchcancel 多为滚动手势接管，
-           不能触发波纹，否则开始滚动瞬间会误炸圆圈） */
+        /* ---- 触屏：仅轻点扩散圆圈（滚动手势判定重写）----
+           轻点三重判据，权威判据是"页面是否真的滚动了"：
+           ① touchstart 记录 scrollY，touchend 时 scrollY 变化 > 2px
+              即滚动手势，绝不触发波纹 —— 旧版只比起终点位移，绕回式
+              拖动（拉下又拉回）会在滚动途中误炸圆圈；
+           ② 累积位移（touchmove 全程测量）< 14px，不再用起终点直线
+              距离（起点→绕回→起点的净位移是 0，会漏判）；
+           ③ 320ms 内、全程单指（多指/捏合一律放弃判定）。
+           触摸事件流只做测量、全部 passive，不干预滚动；
+           touchcancel（系统接管手势）只清状态、不触发 */
         var tapInfo = null;
         window.addEventListener("touchstart", function (e) {
-          if (e.touches.length) {
-            tapInfo = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: performance.now() };
-          }
+          if (e.touches.length === 1) {
+            tapInfo = {
+              x: e.touches[0].clientX, y: e.touches[0].clientY,
+              t: performance.now(),
+              y0: window.scrollY || 0,
+              maxMove: 0
+            };
+          } else { tapInfo = null; }
+        }, { passive: true });
+        window.addEventListener("touchmove", function (e) {
+          if (!tapInfo) return;
+          if (e.touches.length !== 1) { tapInfo = null; return; }
+          var m = Math.abs(e.touches[0].clientX - tapInfo.x) + Math.abs(e.touches[0].clientY - tapInfo.y);
+          if (m > tapInfo.maxMove) { tapInfo.maxMove = m; }
         }, { passive: true });
         function onTouchEnd(e) {
           if (!e.touches.length && tapInfo) {
-            /* 轻点（短按且位移小）→ 从触点扩散圆圈；拖动/滚动划过不触发 */
-            var ct = e.changedTouches && e.changedTouches[0];
-            var moved = ct ? Math.abs(ct.clientX - tapInfo.x) + Math.abs(ct.clientY - tapInfo.y) : 0;
-            if (performance.now() - tapInfo.t < 320 && moved < 14) { addRipple(tapInfo.x, tapInfo.y); }
+            var scrolled = Math.abs((window.scrollY || 0) - tapInfo.y0) > 2;
+            if (!scrolled && tapInfo.maxMove < 14 && performance.now() - tapInfo.t < 320) {
+              addRipple(tapInfo.x, tapInfo.y);
+            }
             tapInfo = null;
           }
         }
