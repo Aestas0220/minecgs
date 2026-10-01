@@ -265,7 +265,25 @@
       background: color-mix(in srgb, var(--md-surface) 38%, transparent);
       backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
       -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-      transition: background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
+      /* 品牌标签只在第二页起展示：hero 封面页隐去，内容面板滑过时淡入。
+         显隐走 effect 类动画（透明度+微位移，平滑无弹） */
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-14px);
+      pointer-events: none;
+      transition: opacity 280ms var(--ease-standard), transform 320ms var(--ease-standard),
+                  visibility 0s linear 320ms,
+                  background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
+                  box-shadow 420ms var(--ease-standard);
+    }
+    .top-bar .brand.is-shown {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      pointer-events: auto;
+      transition: opacity 280ms var(--ease-standard), transform 320ms var(--ease-standard),
+                  visibility 0s,
+                  background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
                   box-shadow 420ms var(--ease-standard);
     }
     .brand__mark {
@@ -318,16 +336,32 @@
       border-radius: var(--corner-full);
       color: var(--md-on-surface-variant);
       transition: color var(--dur-short) var(--ease-standard),
-                  background-color var(--dur-medium) var(--ease-standard),
                   transform var(--dur-medium) var(--ease-spring);
       will-change: transform;
     }
     /* Expressive：按压微缩回弹 */
     .nav__link:active { transform: scale(0.94); }
-    .nav__link.is-active {
+    /* Expressive 激活指示器（active indicator）：
+       官方规格 56×32dp 全圆角胶囊 / secondaryContainer 色 / 50% 圆角；
+       纯文字项胶囊取按钮自身几何（HUG 内容同义）。
+       运动按 MotionScheme 分类：尺寸/形状属 spatial —— 展开=弹簧带过冲、
+       从中心向两边撑开鹅卵石色块；收起=快速平滑不回弹
+      （反向共用弹簧曲线会在 scaleX<0 翻转镜像，故分开） */
+    .nav__pill {
+      position: absolute;
+      inset: 0;
+      border-radius: var(--corner-full);
       background: var(--md-secondary-container);
-      color: var(--md-on-secondary-container);
+      transform: scaleX(0);
+      transform-origin: 50% 50%;
+      transition: transform 220ms var(--ease-standard);
     }
+    .nav__link.is-active .nav__pill {
+      transform: scaleX(1);
+      transition: transform 380ms var(--ease-spring);
+    }
+    .nav__label { position: relative; z-index: 1; }
+    .nav__link.is-active { color: var(--md-on-secondary-container); }
 
     /* ============ 主题切换：独立圆形控件（48dp · 同半径） ============ */
     .theme-toggle {
@@ -906,7 +940,8 @@
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       .hero__visual, .hero__stage, .reveal, .theme-toggle__icon,
-      .scroll-hint__line, .ripple, .map-shell__badge::before {
+      .scroll-hint__line, .ripple, .map-shell__badge::before,
+      .brand, .nav__pill {
         animation: none !important;
         transition: none !important;
         will-change: auto;
@@ -926,10 +961,11 @@
     </a>
     <div class="nav-cluster">
       <nav class="nav" id="nav" aria-label="主导航">
-        <a class="nav__link sl label-large is-active" href="#hero" data-section="hero">首屏</a>
-        <a class="nav__link sl label-large" href="#intro" data-section="intro">简介</a>
-        <a class="nav__link sl label-large" href="#progress" data-section="progress">进度</a>
-        <a class="nav__link sl label-large" href="#join" data-section="join">加入</a>
+        <!-- 激活指示器：.nav__pill 胶囊（Expressive：点击后从中心向两边展开鹅卵石色块） -->
+        <a class="nav__link sl label-large is-active" href="#hero" data-section="hero"><span class="nav__pill" aria-hidden="true"></span><span class="nav__label">首屏</span></a>
+        <a class="nav__link sl label-large" href="#intro" data-section="intro"><span class="nav__pill" aria-hidden="true"></span><span class="nav__label">简介</span></a>
+        <a class="nav__link sl label-large" href="#progress" data-section="progress"><span class="nav__pill" aria-hidden="true"></span><span class="nav__label">进度</span></a>
+        <a class="nav__link sl label-large" href="#join" data-section="join"><span class="nav__pill" aria-hidden="true"></span><span class="nav__label">加入</span></a>
       </nav>
 
       <!-- 主题切换：独立圆形控件，置于导航鹅卵石右侧 -->
@@ -1451,6 +1487,8 @@
       var stageOpacity = -1, stageBlur = -1, stageLift = -1;
       var hintOpacity = -1;
       var clipTop = -1;
+      var brandChip = topBar ? topBar.querySelector(".brand") : null;
+      var brandShown = false;
 
       function updateParallax() {
         var y = window.scrollY || 0;
@@ -1483,6 +1521,16 @@
             navLinks.forEach(function (link) {
               link.classList.toggle("is-active", link.getAttribute("data-section") === "hero");
             });
+          }
+
+          /* 品牌标签：hero 封面页隐去，第二页（内容面板滑过）起淡入；
+             显/隐分设阈值 0.45 / 0.35 迟滞，防临界往复闪烁 */
+          if (brandChip) {
+            var wantBrand = brandShown ? p > 0.35 : p > 0.45;
+            if (wantBrand !== brandShown) {
+              brandShown = wantBrand;
+              brandChip.classList.toggle("is-shown", brandShown);
+            }
           }
 
           if (!reduceMotion) {
