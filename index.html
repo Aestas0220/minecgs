@@ -962,11 +962,12 @@
           <p class="hero__subtitle">广东碧桂园学校Minecraft复刻企划</p>
           <div class="hero__actions">
             <a class="btn btn--filled sl label-large" href="#intro">浏览档案</a>
-            <!-- 下载整合包（占位）：拿到下载地址后把 href 换成直链、删掉 aria-disabled 即可。
-                 · GitHub Pages：整合包 .zip 放进仓库 → href="./minecgs-modpack.zip"（加 download 属性）
-                 · 蓝奏云/网盘：填分享直链 → href="https://…"
-                 · 仓库单文件 100MB 限制；包太大就走网盘，按钮只是换一个 href -->
-            <a class="btn btn--outlined sl label-large" id="downloadBtn" href="#" aria-disabled="true">下载整合包</a>
+            <!-- 进服包（Modrinth 轻量格式 .zip，约 324KB）：内含全部 mod 的下载清单
+                （modrinth.index.json）、客户端配置与选项档（overrides/）、内置服务器
+                 地址（servers.dat）与 PCL 安装档（Setup.ini）—— 拖入 PCL 等 Java 版启动器即自动
+                 下载 MC 26.2 + Fabric 0.19.5 与全部模组。随站直链托管，无第三方跳转；
+                 更新包时仅需替换同名 .zip（GitHub Pages 阶段同名直链不变） -->
+            <a class="btn btn--outlined sl label-large" id="downloadBtn" href="./minecgs-modpack.zip" download="MineCGS-进服包-MC26.2-Fabric0.19.5.zip" title="Modrinth 轻量包（约 324KB）：拖入 PCL 等 Java 版启动器，自动安装 MC 26.2 + Fabric 0.19.5 与全部模组、配置和服务器地址">下载进服包</a>
             <a class="btn btn--tonal sl label-large" href="#join">加入我们</a>
           </div>
         </article>
@@ -1989,7 +1990,8 @@
         });
       });
 
-      /* 占位按钮（如下载整合包）：地址未定前阻止跳转 */
+      /* 占位按钮通用拦截：aria-disabled 的链接在地址未定前阻止跳转
+         （下载按钮已接入实链 minecgs-modpack.zip，不再是占位） */
       document.querySelectorAll('a[aria-disabled="true"]').forEach(function (el) {
         el.addEventListener("click", function (e) { e.preventDefault(); });
       });
