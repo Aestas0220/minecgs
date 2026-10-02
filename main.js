@@ -6,10 +6,12 @@
 
       /* ============================================================
          1. Dynamic Color —— 谷歌 Material Color Utilities 官方流水线
-         流程：./image.webp -> canvas RGBA -> sourceColorFromImageBytes
-              （Celebi 量化 -> Score 评分）-> SchemeTonalSpot -> 36 个 MD3 角色
-         换掉 image.webp 后刷新页面即自动重新取色（带缓存穿透）。
+         种子 = 砖红/陶土 #B4552F（第四十轮用户定稿，策展值）。
+         取色验证：image.webp 全局 Celebi+Score 输出金卡其（HCT hue≈90，
+         低饱和砖红相位所致），与观感不符；改用图中砖红域策展种子，
+         生成仍走官方 SchemeTonalSpot -> 36 个 MD3 角色（与 CSS 静态兜底同源）。
          ============================================================ */
+      var SEED = 0xffb4552f;
       var ROLES = [
         "primary", "onPrimary", "primaryContainer", "onPrimaryContainer",
         "secondary", "onSecondary", "secondaryContainer", "onSecondaryContainer",
@@ -68,41 +70,12 @@
         try { localStorage.setItem("gcgs-mc-seed", String(seedArgb)); } catch (e) {}
       }
 
-      function imageToSeed(img) {
-        var size = 160;
-        var canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = Math.max(1, Math.round(size * img.height / img.width));
-        var ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        /* file:// 下 getImageData 受限会抛异常 —— 由调用方回退 */
-        return MCU.sourceColorFromImageBytes(data);
-      }
-
       function runDynamicColor() {
-        var img = new Image();
-        img.onload = function () {
-          try {
-            applyDynamicColor(imageToSeed(img));
-          } catch (e) {
-            restoreSavedSeed();
-          }
-        };
-        img.onerror = restoreSavedSeed;
-        /* 缓存穿透：替换 image.webp 后总是取到新图 */
-        img.src = "./image.webp?r=" + Date.now();
+        /* 策展种子直出；applyDynamicColor 会覆写 localStorage 旧种子缓存 */
+        applyDynamicColor(SEED);
       }
 
-      function restoreSavedSeed() {
-        try {
-          var saved = localStorage.getItem("gcgs-mc-seed");
-          if (saved) { applyDynamicColor(parseInt(saved, 10)); }
-          /* 否则保留 CSS 中的静态兜底色板（同为官方算法输出） */
-        } catch (e) {}
-      }
-
-      if (window.MCU && MCU.sourceColorFromImageBytes) {
+      if (window.MCU && MCU.MaterialDynamicColors) {
         runDynamicColor();
       }
 
