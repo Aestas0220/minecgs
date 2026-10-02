@@ -26,7 +26,7 @@
       ];
 
       function roleToVar(name) {
-        return "--md-" + name.replace(/[A-Z]/g, function (m) { return "-" + m.toLowerCase(); });
+        return "--md-sys-color-" + name.replace(/[A-Z]/g, function (m) { return "-" + m.toLowerCase(); });
       }
 
       function argbToHex(argb) {
@@ -479,6 +479,9 @@
       var hintOpacity = -1;
       var brandChip = topBar ? topBar.querySelector(".brand") : null;
       var brandShown = false;
+      /* Extended FAB：滚过 hero 封面后自右下浮现（阈值迟滞防临界闪烁） */
+      var fabEl = document.getElementById("fabDownload");
+      var fabShown = false;
 
       /* 文字退场预模糊残影（双级 g1/g2）：克隆封面为静态模糊副本
         （模糊值恒定 → 只烘焙一次），退场时与清晰版交叉淡化。
@@ -523,6 +526,15 @@
             if (wantBrand !== brandShown) {
               brandShown = wantBrand;
               brandChip.classList.toggle("is-shown", brandShown);
+            }
+          }
+
+          /* Extended FAB「下载进服包」：封面滑过后浮现（0.85 / 0.75 迟滞） */
+          if (fabEl) {
+            var wantFab = fabShown ? p > 0.75 : p > 0.85;
+            if (wantFab !== fabShown) {
+              fabShown = wantFab;
+              fabEl.classList.toggle("is-shown", fabShown);
             }
           }
 
@@ -907,12 +919,12 @@
         var colorCache = null, colorCacheT = -1e9, colorThemeKey = "";
         function readThemeColors(now) {
           var key = (document.documentElement.getAttribute("data-theme") || "") + "|" +
-                    document.documentElement.style.getPropertyValue("--md-primary");
+                    document.documentElement.style.getPropertyValue("--md-sys-color-primary");
           if (colorCache && key === colorThemeKey && now - colorCacheT < 500) return colorCache;
           var cs = window.getComputedStyle(document.documentElement);
           colorCache = {
-            a: hexToRgb(cs.getPropertyValue("--md-primary")),
-            b: hexToRgb(cs.getPropertyValue("--md-tertiary"))
+            a: hexToRgb(cs.getPropertyValue("--md-sys-color-primary")),
+            b: hexToRgb(cs.getPropertyValue("--md-sys-color-tertiary"))
           };
           colorCacheT = now;
           colorThemeKey = key;
@@ -1162,7 +1174,7 @@
       /* ============================================================
          7. MD3 Ripple（状态层水波纹）
          ============================================================ */
-      document.querySelectorAll(".btn.sl, .theme-toggle.sl").forEach(function (el) {
+      document.querySelectorAll(".btn.sl, .theme-toggle.sl, .fab.sl").forEach(function (el) {
         el.addEventListener("click", function (event) {
           if (reduceMotion) return;
           var rect = el.getBoundingClientRect();
@@ -1225,7 +1237,7 @@
         window.setTimeout(function () {
           dlDlg.classList.remove("is-closing");
           dlDlg.close();
-        }, 200); /* 退场 = --dur-short（emphasized accelerate） */
+        }, 200); /* 退场 = --md-sys-motion-expressive-effects-default（200ms） */
       }
 
       if (dlBtn && dlDlg && dlConfirm && dlCancel && dlCountdown) {
@@ -1255,5 +1267,13 @@
           a.click();
           a.remove();
         });
+
+        /* Extended FAB「下载进服包」：与 hero 下载按钮同一免责弹窗流程 */
+        if (fabEl) {
+          fabEl.addEventListener("click", function () {
+            dlDlg.showModal();
+            dlStartCountdown();
+          });
+        }
       }
     })();
