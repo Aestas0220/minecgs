@@ -785,8 +785,9 @@
     .section-kicker h2 { margin: 0; color: var(--md-on-surface); }
     .section-kicker p { margin: 16px 0 0; color: var(--md-on-surface-variant); }
 
-    /* kicker 标签 = 填充胶囊（corner-full · primaryContainer 色对）——
-       2026-10-02 用户定稿：空心描边框改填充式 */
+    /* kicker 标签 = 填充胶囊（corner-full）——2026-10-02 用户定稿：空心描边框改填充式；
+       同日二次调：纯 primaryContainer 金在浅色下饱和度偏高显跳脱，向
+       surfaceContainerHigh tonal 拉淡 45% 保金色调性、压饱和度（深色随之微柔） */
     .kicker-tag {
       display: inline-flex;
       align-items: center;
@@ -795,7 +796,7 @@
       padding: 0 16px;
       border: 0;
       border-radius: var(--corner-full);
-      background: var(--md-primary-container);
+      background: color-mix(in srgb, var(--md-primary-container) 55%, var(--md-surface-container-high));
       color: var(--md-on-primary-container);
       transition: var(--theme-shift);
     }
