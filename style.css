@@ -562,7 +562,9 @@
       .dlg.is-closing .dlg__container, .dlg.is-closing::backdrop { animation: none; }
     }
 
-    /* ============ MD3 Assist Chip（32dp · corner 8 · outline 1dp） ============ */
+    /* ============ MD3 Assist Chip（32dp · corner 8 · outline 1dp） ============
+       静态信息展示（联系方式占位）：MD3 状态层/悬停反馈只用于可交互控件 ——
+       移除旧版"hover 只加阴影"的非标准反馈；后续挂链时补站内 .sl 状态层即可 */
     .chip {
       display: inline-flex;
       align-items: center;
@@ -574,11 +576,14 @@
       background: transparent;
       color: var(--md-on-surface-variant);
       cursor: default;
-      transition: var(--theme-shift), box-shadow var(--dur-short) var(--ease-standard);
+      transition: var(--theme-shift);
     }
-    .chip:hover { box-shadow: var(--elev-1); }
     .chip__val { color: var(--md-on-surface); }
-    .chip__val--pending { color: var(--md-outline); font-style: italic; }
+    /* 待公布 = MD3 禁用文本规格（onSurface 38%），斜体作占位语义强调 */
+    .chip__val--pending {
+      color: color-mix(in srgb, var(--md-on-surface) 38%, transparent);
+      font-style: italic;
+    }
 
     /* ============ Hero · 独立封面页 ============
        一页式封面（pinned cover）：position: sticky 钉住，滚动期间
@@ -784,7 +789,7 @@
       display: inline-flex;
       align-items: center;
       height: 32px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       padding: 0 16px;
       border: 1px solid var(--md-outline-variant);
       border-radius: var(--corner-sm);
@@ -862,22 +867,33 @@
       pointer-events: none;
     }
 
-    /* ============ Intro ============ */
-    /* 玻璃卡片：内容层悬浮于波浪背景之上（层级感） */
-    .intro__layout {
-      margin-top: 44px;
-      max-width: 760px;
-      padding: clamp(28px, 4vw, 44px) clamp(24px, 4vw, 44px);
-      border-radius: var(--corner-xl);
+    /* ============ MD3 Elevated Card · 内容卡片基座（Intro / Join 共用） ============
+       规格对位（m3.material.io/components/cards · Elevated Card）：
+       · 形状：Shape Medium = 12dp（--corner-md）——卡片圆角的 MD3 标准档
+         （旧版 28px extra-large 为 Dialog/Sheet 档位，卡片用它属圆角错档）
+       · 阴影：Elevation level 1（--elev-1）——Elevated Card 标准档（旧 elev-3 超标）
+       · 容器：毛玻璃语言（Android 17 glass × MD3 surface）——glass-fill + blur；
+         1dp glass-stroke 是玻璃高光边，非 MD3 outline 角色（Elevated Card 本身无描边）
+       · 间距：8dp 网格——卡片外距 48dp、内边距 24–40dp、段落间距 24dp */
+    .intro__layout,
+    .join__card {
+      border-radius: var(--corner-md);
       background: var(--glass-fill);
       backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
       -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
       border: 1px solid var(--glass-stroke);
-      box-shadow: var(--elev-3), inset 0 1px 0 var(--glass-tint);
+      box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-tint);
       transition: background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
                   box-shadow 420ms var(--ease-standard);
     }
-    .intro__layout p { margin: 0 0 20px; }
+
+    /* ============ Intro ============ */
+    .intro__layout {
+      margin-top: 48px;
+      max-width: 760px;
+      padding: clamp(24px, 4vw, 40px);
+    }
+    .intro__layout p { margin: 0 0 24px; }
     .intro__layout p:last-child { margin-bottom: 0; }
     .intro__lead { color: var(--md-on-surface); }
     .intro__body { color: var(--md-on-surface-variant); }
@@ -887,18 +903,17 @@
     .disclaimer {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
+      gap: 12px;
       margin-top: 32px;
-      padding-top: 20px;
+      padding-top: 24px;
       border-top: 1px solid var(--md-outline-variant);
       color: var(--md-on-surface);
       text-align: left;
     }
     .disclaimer__icon {
       flex: none;
-      width: 20px;
-      height: 20px;
-      margin-top: 2px;
+      width: 24px;
+      height: 24px;
       color: var(--md-primary);
       transition: color 420ms var(--ease-standard);
     }
@@ -906,24 +921,26 @@
 
     /* ============ Progress ============ */
     .progress__frame-wrap { display: flex; justify-content: center; margin-top: 48px; }
+    /* MD3 Elevated Card（媒体容器档）：形状 medium 12dp ·
+       容器 surfaceContainerLow + tonal elevation 1（5% primary 叠色，M3 浅色
+       elevation-1 表面色调官方值）· 阴影 elevation 1 · 无描边 ——
+       旧版 28px 圆角 + elev-3 + 1dp 描边三者混用，均非 Card 标准档；
+       深浅主题同配方（深色抬升同样由 tonal elevation 叠色承担） */
     .map-shell {
       position: relative;
       /* 顶出 section__inner 的 1120px 内容容器 —— BlueMap 窗口尽量放大 */
       width: min(92vw, 1320px);
       max-width: none;
       height: 720px;
-      border-radius: var(--corner-xl);
+      border-radius: var(--corner-md);
       overflow: hidden;
-      /* MD3 surface tint：elevation 3 → 浅色模式 9% primary */
-      background: color-mix(in srgb, var(--md-primary) 9%, var(--md-surface-container));
-      border: 1px solid var(--md-outline-variant);
-      box-shadow: var(--elev-3);
+      background: color-mix(in srgb, var(--md-primary) 5%, var(--md-surface-container-low));
+      box-shadow: var(--elev-1);
       transition: var(--theme-shift);
     }
-    [data-theme="dark"] .map-shell {
-      background: var(--md-surface-container-high); /* 深色模式抬升用更高 surface 层级 */
-    }
     .map-shell iframe { display: block; border: 0; background: transparent; }
+    /* 角标 = MD3 Assist Chip 形态（32dp · corner 8 · secondaryContainer 色对），
+       静态展示 elevation 0（chip 标准档，旧 elev-1 非 chip 档位） */
     .map-shell__badge {
       position: absolute;
       top: 16px;
@@ -937,7 +954,6 @@
       border-radius: var(--corner-sm);
       background: var(--md-secondary-container);
       color: var(--md-on-secondary-container);
-      box-shadow: var(--elev-1);
       pointer-events: none;
       transition: var(--theme-shift);
     }
@@ -955,7 +971,7 @@
       55% { box-shadow: 0 0 0 8px transparent; }
     }
     .progress__note {
-      margin: 20px auto 0;
+      margin: 24px auto 0;
       max-width: 680px;
       color: var(--md-on-surface-variant);
       text-align: center;
@@ -963,18 +979,11 @@
     }
 
     /* ============ Join Us ============ */
+    /* 卡片表面/圆角/阴影走共用 Elevated Card 基座（见 Intro 区） */
     .join__card {
       width: min(680px, 100%);
-      margin-top: 44px;
-      padding: clamp(32px, 4.5vw, 52px) clamp(24px, 4vw, 48px);
-      border-radius: var(--corner-xl);
-      background: var(--glass-fill);
-      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-      border: 1px solid var(--glass-stroke);
-      box-shadow: var(--elev-3), inset 0 1px 0 var(--glass-tint);
-      transition: background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
-                  box-shadow 420ms var(--ease-standard);
+      margin-top: 48px;
+      padding: clamp(24px, 4vw, 40px);
     }
     .join__requirement { margin: 0 auto; max-width: 520px; }
     .join__requirement strong {
@@ -1006,7 +1015,7 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 12px;
+      gap: 8px;
       margin: 0;
       padding: 0;
       list-style: none;
