@@ -562,18 +562,18 @@
       .dlg.is-closing .dlg__container, .dlg.is-closing::backdrop { animation: none; }
     }
 
-    /* ============ MD3 Assist Chip（32dp · corner 8 · outline 1dp） ============
-       静态信息展示（联系方式占位）：MD3 状态层/悬停反馈只用于可交互控件 ——
-       移除旧版"hover 只加阴影"的非标准反馈；后续挂链时补站内 .sl 状态层即可 */
+    /* ============ 信息胶囊（32dp · corner-full 填充式） ============
+       2026-10-02 用户定稿：空心描边框（outline chip）显丑，改填充胶囊 ——
+       surfaceContainerHigh 色对；静态信息展示无悬停反馈（状态层只用于可交互控件） */
     .chip {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       height: 32px;
       padding: 0 16px;
-      border: 1px solid var(--md-outline);
-      border-radius: var(--corner-sm);
-      background: transparent;
+      border: 0;
+      border-radius: var(--corner-full);
+      background: var(--md-surface-container-high);
       color: var(--md-on-surface-variant);
       cursor: default;
       transition: var(--theme-shift);
@@ -785,15 +785,18 @@
     .section-kicker h2 { margin: 0; color: var(--md-on-surface); }
     .section-kicker p { margin: 16px 0 0; color: var(--md-on-surface-variant); }
 
+    /* kicker 标签 = 填充胶囊（corner-full · primaryContainer 色对）——
+       2026-10-02 用户定稿：空心描边框改填充式 */
     .kicker-tag {
       display: inline-flex;
       align-items: center;
       height: 32px;
       margin-bottom: 16px;
       padding: 0 16px;
-      border: 1px solid var(--md-outline-variant);
-      border-radius: var(--corner-sm);
-      color: var(--md-primary);
+      border: 0;
+      border-radius: var(--corner-full);
+      background: var(--md-primary-container);
+      color: var(--md-on-primary-container);
       transition: var(--theme-shift);
     }
 
@@ -867,22 +870,20 @@
       pointer-events: none;
     }
 
-    /* ============ MD3 Elevated Card · 内容卡片基座（Intro / Join 共用） ============
-       规格对位（m3.material.io/components/cards · Elevated Card）：
-       · 形状：Shape Medium = 12dp（--corner-md）——卡片圆角的 MD3 标准档
-         （旧版 28px extra-large 为 Dialog/Sheet 档位，卡片用它属圆角错档）
-       · 阴影：Elevation level 1（--elev-1）——Elevated Card 标准档（旧 elev-3 超标）
-       · 容器：毛玻璃语言（Android 17 glass × MD3 surface）——glass-fill + blur；
-         1dp glass-stroke 是玻璃高光边，非 MD3 outline 角色（Elevated Card 本身无描边）
-       · 间距：8dp 网格——卡片外距 48dp、内边距 24–40dp、段落间距 24dp */
+    /* ============ 内容卡片基座（Intro / Join 共用） ============
+       形制（2026-10-02 用户定稿）：大 R 角 extra-large 28px + elevation 3 ——
+       12px/elev-1 的 MD3 Card 标准档曾于第三十七轮试用，用户嫌方正显丑回滚；
+       容器毛玻璃语言（Android 17 glass × MD3 surface）不变：glass-fill + blur，
+       1dp glass-stroke 为玻璃高光边（非 MD3 outline 角色）
+       间距走 8dp 网格——卡片外距 48dp、内边距 24–40dp、段落间距 24dp */
     .intro__layout,
     .join__card {
-      border-radius: var(--corner-md);
+      border-radius: var(--corner-xl);
       background: var(--glass-fill);
       backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
       -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
       border: 1px solid var(--glass-stroke);
-      box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-tint);
+      box-shadow: var(--elev-3), inset 0 1px 0 var(--glass-tint);
       transition: background-color 420ms var(--ease-standard), border-color 420ms var(--ease-standard),
                   box-shadow 420ms var(--ease-standard);
     }
@@ -892,6 +893,7 @@
       margin-top: 48px;
       max-width: 760px;
       padding: clamp(24px, 4vw, 40px);
+      text-align: left;   /* 卡片居中、文字靠左（2026-10-02 用户定稿） */
     }
     .intro__layout p { margin: 0 0 24px; }
     .intro__layout p:last-child { margin-bottom: 0; }
@@ -899,14 +901,17 @@
     .intro__body { color: var(--md-on-surface-variant); }
     .accent { color: var(--md-primary); transition: color 420ms var(--ease-standard); }
 
-    /* 免责声明：简介的收尾段落，非独立卡片 */
+    /* 免责声明：简介的收尾段落，非独立卡片 ——
+       2026-10-02 定稿：分隔线+图标的横条呈现有"页脚感"显怪，改软性 tonal
+       提示块（primary 6% 叠色 + corner-lg 圆角容器），与正文同左对齐基线 */
     .disclaimer {
       display: flex;
       align-items: flex-start;
       gap: 12px;
       margin-top: 32px;
-      padding-top: 24px;
-      border-top: 1px solid var(--md-outline-variant);
+      padding: 16px 20px;
+      border-radius: var(--corner-lg);
+      background: color-mix(in srgb, var(--md-primary) 6%, transparent);
       color: var(--md-on-surface);
       text-align: left;
     }
@@ -921,26 +926,27 @@
 
     /* ============ Progress ============ */
     .progress__frame-wrap { display: flex; justify-content: center; margin-top: 48px; }
-    /* MD3 Elevated Card（媒体容器档）：形状 medium 12dp ·
-       容器 surfaceContainerLow + tonal elevation 1（5% primary 叠色，M3 浅色
-       elevation-1 表面色调官方值）· 阴影 elevation 1 · 无描边 ——
-       旧版 28px 圆角 + elev-3 + 1dp 描边三者混用，均非 Card 标准档；
-       深浅主题同配方（深色抬升同样由 tonal elevation 叠色承担） */
+    /* 媒体容器形制（2026-10-02 用户定稿）：大 R 角 extra-large 28px +
+       1dp outline-variant 描边 + elevation 3 + 9% primary 叠色 ——
+       12px/elev-1 的 MD3 Card 标准档曾于第三十七轮试用，用户嫌方正显丑回滚；
+       深色下叠色改 surfaceContainerHigh 直给（深色叠色发浑） */
     .map-shell {
       position: relative;
       /* 顶出 section__inner 的 1120px 内容容器 —— BlueMap 窗口尽量放大 */
       width: min(92vw, 1320px);
       max-width: none;
       height: 720px;
-      border-radius: var(--corner-md);
+      border-radius: var(--corner-xl);
       overflow: hidden;
-      background: color-mix(in srgb, var(--md-primary) 5%, var(--md-surface-container-low));
-      box-shadow: var(--elev-1);
+      border: 1px solid var(--md-outline-variant);
+      background: color-mix(in srgb, var(--md-primary) 9%, var(--md-surface-container));
+      box-shadow: var(--elev-3);
       transition: var(--theme-shift);
     }
+    [data-theme="dark"] .map-shell { background: var(--md-surface-container-high); }
     .map-shell iframe { display: block; border: 0; background: transparent; }
-    /* 角标 = MD3 Assist Chip 形态（32dp · corner 8 · secondaryContainer 色对），
-       静态展示 elevation 0（chip 标准档，旧 elev-1 非 chip 档位） */
+    /* 角标 = 填充胶囊（corner-full · secondaryContainer 色对，静态展示 elevation 0）——
+       2026-10-02 用户定稿：空心描边框一律改填充式，实线空心框非目标形态 */
     .map-shell__badge {
       position: absolute;
       top: 16px;
@@ -951,7 +957,7 @@
       gap: 8px;
       height: 32px;
       padding: 0 16px;
-      border-radius: var(--corner-sm);
+      border-radius: var(--corner-full);
       background: var(--md-secondary-container);
       color: var(--md-on-secondary-container);
       pointer-events: none;
@@ -1049,6 +1055,7 @@
 
     /* ============ 开源致谢下拉（MD3 details menu） ============ */
     .oss { position: relative; }
+    /* 开源致谢下拉触发器 = 填充胶囊（2026-10-02 定稿：空心描边框改填充式） */
     .oss__summary {
       cursor: pointer;
       list-style: none;
@@ -1057,7 +1064,8 @@
       gap: 6px;
       padding: 6px 14px;
       border-radius: var(--corner-full);
-      border: 1px solid var(--md-outline-variant);
+      border: 0;
+      background: var(--md-surface-container-high);
       color: var(--md-on-surface-variant);
       transition: background-color var(--dur-short) var(--ease-standard),
                   color var(--dur-short) var(--ease-standard);
@@ -1072,7 +1080,7 @@
       transform: rotate(45deg) translateY(-2px);
       transition: transform var(--dur-short) var(--ease-standard);
     }
-    .oss__summary:hover { background: color-mix(in srgb, var(--md-on-surface-variant) 10%, transparent); }
+    .oss__summary:hover { background: color-mix(in srgb, var(--md-on-surface-variant) 10%, var(--md-surface-container-high)); }
     .oss[open] .oss__summary {
       background: var(--md-secondary-container);
       color: var(--md-on-secondary-container);
