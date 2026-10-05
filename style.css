@@ -1,21 +1,31 @@
     /* ============================================================
        Material Design 3 —— 设计令牌（三层链 · 官方命名体系）
        Layer 0 · Reference  --md-ref-palette-*        （主题无关的色板 tone）
-       Layer 1 · System     --md-sys-color-* / --md-sys-typescale-* /
-                            --md-sys-shape-corner-* / --md-sys-motion-*
+       Layer 1 · System     --md-sys-color-* / --md-typescale-* /
+                            --md-sys-shape-* / --md-sys-elevation-* /
+                            --md-sys-motion-* / --md-sys-state-*
        Layer 2 · Component  --md-<组件>-<属性>          （引用系统层）
-       · 色彩：Material Color Utilities · SchemeTonalSpot（Google 官方库）
-         种子 = 砖红/陶土 #B4552F（第四十轮用户定稿）；Layer 0/1 的静态值即
-         官方算法输出（生成器逐值断言通过），main.js 运行时同源覆写角色 hex
-       · 对比度：全部 on-*/容器配对由 HCT tone 映射保障（ΔT ≥ 30 关口）
-       · 字阶：--md-sys-typescale-*，字体红线全站衬线（Source Serif 4 +
-         Noto Serif SC）；字号 rem 自适应页面缩放，断点只改 token
+       · 色彩：Material Color Utilities（Google 官方库）——主题源色
+         固定 = 品牌砖红（THEME_SOURCE 0xffB4552F，2026-10-05 用户
+         定案，不随主图漂移）；SchemeTonalSpot 标准 tone 真值表
+         （contrastLevel 0，逐值经 libs.js 实测断言，零手写偏移）；
+         Layer 0/1 静态值 = 官方算法输出（r70_reseed.js 逐值断言
+         回写），main.js 运行时同源覆写角色 hex
+       · 对比度：全部 on-* 容器配对由 HCT tone 映射保障（ΔT ≥ 30 关口）
+       · 字阶：--md-typescale-*，Source Serif 4 + Noto Serif SC 全站衬线；
+         字号/行高/字距/字重全按 md3_spec 字阶表
        · 形状：--md-sys-shape-corner-*（none/extra-small/small/medium/
          large/extra-large/full = 0/4/8/12/16/28/full）
-       · 阴影：--md-sys-elevation-0..5，色（tonal 表面）优先于影
-       · 状态层：hover 8% · focus 10% · pressed 10%
-       · 动效：--md-sys-motion-* = M3 Expressive 弹簧体系的官方 Web 转换表
-         （expressive/standard × spatial/effects × fast/default/slow）
+       · 阴影：--md-sys-elevation-0..5（官方双层阴影），色（tonal 表面）
+         优先于影
+       · 状态层：hover 8% / focus 12% / pressed 12% / dragged 16%
+       · 动效：--md-sys-motion-* = 官方 emphasized/standard 曲线与
+         short4/medium1-4/long1-2 时长，禁弹簧自定值
+       · 渲染红线（全文件严格遵守，注释内亦不得违反）：
+         禁 backdrop-filter；禁 mix-blend-mode；禁实时 CSS filter blur；
+         禁 will-change 常驻；禁运行时逐帧 canvas 模糊烘焙。
+         动画只允许 opacity 与 transform（及 left/width 指示器位移），
+         帧率稳定优先。
        ============================================================ */
 
     /* —— Layer 0 · Reference palettes（主题无关 · 随种子整体重算）—— */
@@ -45,27 +55,27 @@
       --md-ref-palette-error90: #ffdad6;
       --md-ref-palette-error100: #ffffff;
       --md-ref-palette-neutral0: #000000;
-      --md-ref-palette-neutral4: #140c09;
-      --md-ref-palette-neutral6: #1a110e;
-      --md-ref-palette-neutral10: #231a16;
-      --md-ref-palette-neutral12: #271e1a;
-      --md-ref-palette-neutral17: #322824;
-      --md-ref-palette-neutral20: #392e2b;
-      --md-ref-palette-neutral22: #3d322f;
-      --md-ref-palette-neutral24: #423733;
-      --md-ref-palette-neutral87: #e8d6d1;
-      --md-ref-palette-neutral90: #f1dfd9;
-      --md-ref-palette-neutral92: #f7e4df;
-      --md-ref-palette-neutral94: #fceae4;
+      --md-ref-palette-neutral4: #180b07;
+      --md-ref-palette-neutral6: #1e100b;
+      --md-ref-palette-neutral10: #271813;
+      --md-ref-palette-neutral12: #2b1c17;
+      --md-ref-palette-neutral17: #362620;
+      --md-ref-palette-neutral20: #3d2d27;
+      --md-ref-palette-neutral22: #42312b;
+      --md-ref-palette-neutral24: #47352f;
+      --md-ref-palette-neutral87: #f0d4cb;
+      --md-ref-palette-neutral90: #f9ddd3;
+      --md-ref-palette-neutral92: #ffe2d9;
+      --md-ref-palette-neutral94: #ffe9e3;
       --md-ref-palette-neutral95: #ffede7;
       --md-ref-palette-neutral96: #fff1ec;
       --md-ref-palette-neutral98: #fff8f6;
       --md-ref-palette-neutral100: #ffffff;
-      --md-ref-palette-neutral-variant30: #53433e;
-      --md-ref-palette-neutral-variant50: #85736d;
-      --md-ref-palette-neutral-variant60: #a08d86;
-      --md-ref-palette-neutral-variant80: #d8c2bb;
-      --md-ref-palette-neutral-variant90: #f5ded6;
+      --md-ref-palette-neutral-variant30: #5a4138;
+      --md-ref-palette-neutral-variant50: #8f7066;
+      --md-ref-palette-neutral-variant60: #aa8a7e;
+      --md-ref-palette-neutral-variant80: #e3bfb2;
+      --md-ref-palette-neutral-variant90: #ffdbcf;
     }
 
     /* —— Layer 1 · System color roles —— light（角色 -> ref tone 映射）—— */
@@ -107,85 +117,6 @@
       --md-sys-color-inverse-surface: var(--md-ref-palette-neutral20);
       --md-sys-color-inverse-on-surface: var(--md-ref-palette-neutral95);
       --md-sys-color-inverse-primary: var(--md-ref-palette-primary80);
-
-      /* —— Layer 1 · System elevation（官方阴影值）—— */
-      --md-sys-elevation-0: none;
-      --md-sys-elevation-1: 0 1px 2px 0 rgba(0,0,0,.30), 0 1px 3px 1px rgba(0,0,0,.15);
-      --md-sys-elevation-2: 0 1px 2px 0 rgba(0,0,0,.30), 0 2px 6px 2px rgba(0,0,0,.15);
-      --md-sys-elevation-3: 0 4px 8px 3px rgba(0,0,0,.15), 0 1px 3px 0 rgba(0,0,0,.30);
-      --md-sys-elevation-4: 0 6px 10px 4px rgba(0,0,0,.15), 0 2px 3px 0 rgba(0,0,0,.30);
-      --md-sys-elevation-5: 0 8px 12px 6px rgba(0,0,0,.15), 0 4px 4px 0 rgba(0,0,0,.30);
-
-      /* —— Layer 1 · System shape（官方 corner 档位）—— */
-      --md-sys-shape-corner-none: 0;
-      --md-sys-shape-corner-extra-small: 4px;
-      --md-sys-shape-corner-small: 8px;
-      --md-sys-shape-corner-medium: 12px;
-      --md-sys-shape-corner-large: 16px;
-      --md-sys-shape-corner-extra-large: 28px;
-      --md-sys-shape-corner-full: 999px;
-
-      /* —— Layer 1 · System motion（M3 Expressive 弹簧体系 · 官方 Web 转换表）——
-         值 = 「时长 + 曲线」，可直接作 transition/animation 简写。
-         expressive spatial 带过冲回弹（空间形变），effects 无过冲（颜色/透明度）；
-         standard 为无强调的对照组。本站机制红线（胶囊 left/width、预模糊退场等）
-         保留，仅曲线与时长换官方值。 */
-      --md-sys-motion-expressive-spatial-fast: 350ms cubic-bezier(0.42, 1.67, 0.21, 0.90);
-      --md-sys-motion-expressive-spatial-default: 500ms cubic-bezier(0.38, 1.21, 0.22, 1.00);
-      --md-sys-motion-expressive-spatial-slow: 650ms cubic-bezier(0.39, 1.29, 0.35, 0.98);
-      --md-sys-motion-expressive-effects-fast: 150ms cubic-bezier(0.31, 0.94, 0.34, 1.00);
-      --md-sys-motion-expressive-effects-default: 200ms cubic-bezier(0.34, 0.80, 0.34, 1.00);
-      --md-sys-motion-expressive-effects-slow: 300ms cubic-bezier(0.34, 0.88, 0.34, 1.00);
-      --md-sys-motion-standard-spatial-fast: 350ms cubic-bezier(0.27, 1.06, 0.18, 1.00);
-      --md-sys-motion-standard-spatial-default: 500ms cubic-bezier(0.27, 1.06, 0.18, 1.00);
-      --md-sys-motion-standard-spatial-slow: 750ms cubic-bezier(0.27, 1.06, 0.18, 1.00);
-      --md-sys-motion-standard-effects-fast: 150ms cubic-bezier(0.31, 0.94, 0.34, 1.00);
-      --md-sys-motion-standard-effects-default: 200ms cubic-bezier(0.34, 0.80, 0.34, 1.00);
-      --md-sys-motion-standard-effects-slow: 300ms cubic-bezier(0.34, 0.88, 0.34, 1.00);
-      /* 单体曲线（本站调谐时长如 420ms 主题过渡、90ms 残影专用） */
-      --md-sys-motion-easing-effects: cubic-bezier(0.34, 0.80, 0.34, 1.00);
-
-      /* —— Layer 2 · 毛玻璃（Android 17 glass × MD3 surface，随主题派生）—— */
-      --glass-fill: color-mix(in srgb, var(--md-sys-color-surface) 42%, transparent);
-      --glass-fill-strong: color-mix(in srgb, var(--md-sys-color-surface) 68%, transparent);
-      --glass-stroke: rgba(255, 255, 255, 0.55);   /* 玻璃高光边（非 MD 角色） */
-      --glass-tint: rgba(255, 255, 255, 0.25);
-      --glass-blur: 26px;
-      --glass-saturate: 155%;
-
-      /* —— Layer 2 · Component token（官方组件 token 命名，值引用系统层）—— */
-      --md-filled-button-container-color: var(--md-sys-color-primary);
-      --md-filled-button-label-text-color: var(--md-sys-color-on-primary);
-      --md-tonal-button-container-color: var(--md-sys-color-secondary-container);
-      --md-tonal-button-label-text-color: var(--md-sys-color-on-secondary-container);
-      --md-elevated-button-container-color: var(--md-sys-color-surface-container-low);
-      --md-elevated-button-label-text-color: var(--md-sys-color-primary);
-      --md-text-button-label-text-color: var(--md-sys-color-primary);
-      --md-button-container-height: 40px;
-      --md-button-container-shape: var(--md-sys-shape-corner-full);
-      --md-button-icon-size: 20px;
-      --md-fab-container-color: var(--md-sys-color-primary-container);
-      --md-fab-label-text-color: var(--md-sys-color-on-primary-container);
-      --md-fab-container-size: 56px;
-      --md-fab-container-shape: var(--md-sys-shape-corner-large);
-      --md-fab-icon-size: 24px;
-      --md-chip-container-height: 32px;
-      --md-chip-container-shape: var(--md-sys-shape-corner-full);
-      --md-chip-container-color: var(--md-sys-color-surface-container-high);
-      --md-chip-label-text-color: var(--md-sys-color-on-surface-variant);
-      --md-dialog-container-shape: var(--md-sys-shape-corner-extra-large);
-      --md-dialog-container-color: var(--md-sys-color-surface-container-high);
-      --md-nav-active-indicator-color: var(--md-sys-color-secondary-container);
-      --md-nav-active-indicator-height: 32px;
-
-      --font-ui: "Source Serif 4", "Noto Serif SC", Georgia, "Times New Roman", serif;
-      --nav-h: 4rem;
-      --hero-image: url("./image.webp");
-
-      --theme-shift: background-color 420ms var(--md-sys-motion-easing-effects),
-                     color 420ms var(--md-sys-motion-easing-effects),
-                     border-color 420ms var(--md-sys-motion-easing-effects),
-                     box-shadow 420ms var(--md-sys-motion-easing-effects);
     }
 
     /* —— Layer 1 · System color roles —— dark（角色 -> ref tone 映射）—— */
@@ -227,11 +158,313 @@
       --md-sys-color-inverse-surface: var(--md-ref-palette-neutral90);
       --md-sys-color-inverse-on-surface: var(--md-ref-palette-neutral20);
       --md-sys-color-inverse-primary: var(--md-ref-palette-primary40);
+      /* 深色蒙版 = .page-sheet::after 的 --page-bg-veil-dark 静态层（75 轮） */
+    }
 
-      --glass-fill: color-mix(in srgb, var(--md-sys-color-surface) 48%, transparent);
-      --glass-fill-strong: color-mix(in srgb, var(--md-sys-color-surface) 70%, transparent);
-      --glass-stroke: rgba(255, 255, 255, 0.14);
-      --glass-tint: rgba(255, 255, 255, 0.08);
+    /* ============ Layer 1 · Type scale（--md-typescale-* 系统 token）============
+       字体红线：全站衬线 —— Source Serif 4 + Noto Serif SC（400/500）。
+       字号 px、行高 px、字重/字距全按 md3_spec 字阶表（57/64 … 11/16）。 */
+    :root {
+      --md-ref-typeface-brand: "Source Serif 4", "Noto Serif SC", Georgia, serif;
+      --md-ref-typeface-plain: "Source Serif 4", "Noto Serif SC", Georgia, serif;
+
+      --md-typescale-display-large-font-family: var(--md-ref-typeface-brand);
+      --md-typescale-display-large-font-weight: 400;
+      --md-typescale-display-large-font-size: 57px;
+      --md-typescale-display-large-line-height: 64px;
+      --md-typescale-display-large-letter-spacing: -0.25px;
+
+      --md-typescale-display-medium-font-family: var(--md-ref-typeface-brand);
+      --md-typescale-display-medium-font-weight: 400;
+      --md-typescale-display-medium-font-size: 45px;
+      --md-typescale-display-medium-line-height: 52px;
+      --md-typescale-display-medium-letter-spacing: 0;
+
+      --md-typescale-display-small-font-family: var(--md-ref-typeface-brand);
+      --md-typescale-display-small-font-weight: 400;
+      --md-typescale-display-small-font-size: 36px;
+      --md-typescale-display-small-line-height: 44px;
+      --md-typescale-display-small-letter-spacing: 0;
+
+      --md-typescale-headline-large-font-family: var(--md-ref-typeface-brand);
+      --md-typescale-headline-large-font-weight: 400;
+      --md-typescale-headline-large-font-size: 32px;
+      --md-typescale-headline-large-line-height: 40px;
+      --md-typescale-headline-large-letter-spacing: 0;
+
+      --md-typescale-headline-medium-font-family: var(--md-ref-typeface-brand);
+      --md-typescale-headline-medium-font-weight: 400;
+      --md-typescale-headline-medium-font-size: 28px;
+      --md-typescale-headline-medium-line-height: 36px;
+      --md-typescale-headline-medium-letter-spacing: 0;
+
+      --md-typescale-headline-small-font-family: var(--md-ref-typeface-brand);
+      --md-typescale-headline-small-font-weight: 400;
+      --md-typescale-headline-small-font-size: 24px;
+      --md-typescale-headline-small-line-height: 32px;
+      --md-typescale-headline-small-letter-spacing: 0;
+
+      --md-typescale-title-large-font-family: var(--md-ref-typeface-brand);
+      --md-typescale-title-large-font-weight: 400;
+      --md-typescale-title-large-font-size: 22px;
+      --md-typescale-title-large-line-height: 28px;
+      --md-typescale-title-large-letter-spacing: 0;
+
+      --md-typescale-title-medium-font-family: var(--md-ref-typeface-brand);
+      --md-typescale-title-medium-font-weight: 500;
+      --md-typescale-title-medium-font-size: 16px;
+      --md-typescale-title-medium-line-height: 24px;
+      --md-typescale-title-medium-letter-spacing: 0.15px;
+
+      --md-typescale-title-small-font-family: var(--md-ref-typeface-brand);
+      --md-typescale-title-small-font-weight: 500;
+      --md-typescale-title-small-font-size: 14px;
+      --md-typescale-title-small-line-height: 20px;
+      --md-typescale-title-small-letter-spacing: 0.1px;
+
+      --md-typescale-body-large-font-family: var(--md-ref-typeface-plain);
+      --md-typescale-body-large-font-weight: 400;
+      --md-typescale-body-large-font-size: 16px;
+      --md-typescale-body-large-line-height: 24px;
+      --md-typescale-body-large-letter-spacing: 0.5px;
+
+      --md-typescale-body-medium-font-family: var(--md-ref-typeface-plain);
+      --md-typescale-body-medium-font-weight: 400;
+      --md-typescale-body-medium-font-size: 14px;
+      --md-typescale-body-medium-line-height: 20px;
+      --md-typescale-body-medium-letter-spacing: 0.25px;
+
+      --md-typescale-body-small-font-family: var(--md-ref-typeface-plain);
+      --md-typescale-body-small-font-weight: 400;
+      --md-typescale-body-small-font-size: 12px;
+      --md-typescale-body-small-line-height: 16px;
+      --md-typescale-body-small-letter-spacing: 0.4px;
+
+      --md-typescale-label-large-font-family: var(--md-ref-typeface-plain);
+      --md-typescale-label-large-font-weight: 500;
+      --md-typescale-label-large-font-size: 14px;
+      --md-typescale-label-large-line-height: 20px;
+      --md-typescale-label-large-letter-spacing: 0.1px;
+
+      --md-typescale-label-medium-font-family: var(--md-ref-typeface-plain);
+      --md-typescale-label-medium-font-weight: 500;
+      --md-typescale-label-medium-font-size: 12px;
+      --md-typescale-label-medium-line-height: 16px;
+      --md-typescale-label-medium-letter-spacing: 0.5px;
+
+      --md-typescale-label-small-font-family: var(--md-ref-typeface-plain);
+      --md-typescale-label-small-font-weight: 500;
+      --md-typescale-label-small-font-size: 11px;
+      --md-typescale-label-small-line-height: 16px;
+      --md-typescale-label-small-letter-spacing: 0.5px;
+    }
+
+    .display-large   { font-family: var(--md-typescale-display-large-font-family); font-size: var(--md-typescale-display-large-font-size); line-height: var(--md-typescale-display-large-line-height); letter-spacing: var(--md-typescale-display-large-letter-spacing); font-weight: var(--md-typescale-display-large-font-weight); }
+    .display-medium  { font-family: var(--md-typescale-display-medium-font-family); font-size: var(--md-typescale-display-medium-font-size); line-height: var(--md-typescale-display-medium-line-height); letter-spacing: var(--md-typescale-display-medium-letter-spacing); font-weight: var(--md-typescale-display-medium-font-weight); }
+    .display-small   { font-family: var(--md-typescale-display-small-font-family); font-size: var(--md-typescale-display-small-font-size); line-height: var(--md-typescale-display-small-line-height); letter-spacing: var(--md-typescale-display-small-letter-spacing); font-weight: var(--md-typescale-display-small-font-weight); }
+    .headline-large  { font-family: var(--md-typescale-headline-large-font-family); font-size: var(--md-typescale-headline-large-font-size); line-height: var(--md-typescale-headline-large-line-height); letter-spacing: var(--md-typescale-headline-large-letter-spacing); font-weight: var(--md-typescale-headline-large-font-weight); }
+    .headline-medium { font-family: var(--md-typescale-headline-medium-font-family); font-size: var(--md-typescale-headline-medium-font-size); line-height: var(--md-typescale-headline-medium-line-height); letter-spacing: var(--md-typescale-headline-medium-letter-spacing); font-weight: var(--md-typescale-headline-medium-font-weight); }
+    .headline-small  { font-family: var(--md-typescale-headline-small-font-family); font-size: var(--md-typescale-headline-small-font-size); line-height: var(--md-typescale-headline-small-line-height); letter-spacing: var(--md-typescale-headline-small-letter-spacing); font-weight: var(--md-typescale-headline-small-font-weight); }
+    .title-large     { font-family: var(--md-typescale-title-large-font-family); font-size: var(--md-typescale-title-large-font-size); line-height: var(--md-typescale-title-large-line-height); letter-spacing: var(--md-typescale-title-large-letter-spacing); font-weight: var(--md-typescale-title-large-font-weight); }
+    .title-medium    { font-family: var(--md-typescale-title-medium-font-family); font-size: var(--md-typescale-title-medium-font-size); line-height: var(--md-typescale-title-medium-line-height); letter-spacing: var(--md-typescale-title-medium-letter-spacing); font-weight: var(--md-typescale-title-medium-font-weight); }
+    .title-small     { font-family: var(--md-typescale-title-small-font-family); font-size: var(--md-typescale-title-small-font-size); line-height: var(--md-typescale-title-small-line-height); letter-spacing: var(--md-typescale-title-small-letter-spacing); font-weight: var(--md-typescale-title-small-font-weight); }
+    .body-large      { font-family: var(--md-typescale-body-large-font-family); font-size: var(--md-typescale-body-large-font-size); line-height: var(--md-typescale-body-large-line-height); letter-spacing: var(--md-typescale-body-large-letter-spacing); font-weight: var(--md-typescale-body-large-font-weight); }
+    .body-medium     { font-family: var(--md-typescale-body-medium-font-family); font-size: var(--md-typescale-body-medium-font-size); line-height: var(--md-typescale-body-medium-line-height); letter-spacing: var(--md-typescale-body-medium-letter-spacing); font-weight: var(--md-typescale-body-medium-font-weight); }
+    .body-small      { font-family: var(--md-typescale-body-small-font-family); font-size: var(--md-typescale-body-small-font-size); line-height: var(--md-typescale-body-small-line-height); letter-spacing: var(--md-typescale-body-small-letter-spacing); font-weight: var(--md-typescale-body-small-font-weight); }
+    .label-large     { font-family: var(--md-typescale-label-large-font-family); font-size: var(--md-typescale-label-large-font-size); line-height: var(--md-typescale-label-large-line-height); letter-spacing: var(--md-typescale-label-large-letter-spacing); font-weight: var(--md-typescale-label-large-font-weight); }
+    .label-medium    { font-family: var(--md-typescale-label-medium-font-family); font-size: var(--md-typescale-label-medium-font-size); line-height: var(--md-typescale-label-medium-line-height); letter-spacing: var(--md-typescale-label-medium-letter-spacing); font-weight: var(--md-typescale-label-medium-font-weight); }
+    .label-small     { font-family: var(--md-typescale-label-small-font-family); font-size: var(--md-typescale-label-small-font-size); line-height: var(--md-typescale-label-small-line-height); letter-spacing: var(--md-typescale-label-small-letter-spacing); font-weight: var(--md-typescale-label-small-font-weight); }
+
+    /* —— Layer 1 · System shape（官方 corner 档位）—— */
+    :root {
+      --md-sys-shape-corner-none: 0;
+      --md-sys-shape-corner-extra-small: 4px;
+      --md-sys-shape-corner-small: 8px;
+      --md-sys-shape-corner-medium: 12px;
+      --md-sys-shape-corner-large: 16px;
+      --md-sys-shape-corner-extra-large: 28px;
+      --md-sys-shape-corner-full: 9999px;
+
+      /* —— Layer 1 · System elevation（官方双层阴影）—— */
+      --md-sys-elevation-0: none;
+      --md-sys-elevation-1: 0 1px 2px 0 rgba(0, 0, 0, 0.30), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+      --md-sys-elevation-2: 0 1px 2px 0 rgba(0, 0, 0, 0.30), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+      --md-sys-elevation-3: 0 1px 3px 0 rgba(0, 0, 0, 0.30), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
+      --md-sys-elevation-4: 0 2px 3px 0 rgba(0, 0, 0, 0.30), 0 6px 10px 4px rgba(0, 0, 0, 0.15);
+      --md-sys-elevation-5: 0 4px 4px 0 rgba(0, 0, 0, 0.30), 0 8px 12px 6px rgba(0, 0, 0, 0.15);
+
+      /* —— Layer 1 · System motion（官方 emphasized/standard 曲线与时长）——
+         值 = 「时长 + 曲线」，可直接作 transition/animation 简写。
+         容器展开/生长用 emphasized-decelerate（快→慢），收起/退出用
+         emphasized-accelerate（慢→快），通用过渡用 emphasized。
+         禁弹簧过冲自定值——所有曲线与时长都是官方值 */
+      --md-sys-motion-duration-short4: 200ms;
+      --md-sys-motion-duration-medium1: 250ms;
+      --md-sys-motion-duration-medium2: 300ms;
+      --md-sys-motion-duration-medium3: 350ms;
+      --md-sys-motion-duration-medium4: 400ms;
+      --md-sys-motion-duration-long1: 450ms;
+      --md-sys-motion-duration-long2: 500ms;
+      --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+      --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+      --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+      --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+      --md-sys-motion-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+      --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+
+      /* —— Layer 1 · System state layer（hover 8% / focus 12% / pressed 12% / dragged 16%）—— */
+      --md-sys-state-hover-opacity: 0.08;
+      --md-sys-state-focus-opacity: 0.12;
+      --md-sys-state-pressed-opacity: 0.12;
+      --md-sys-state-dragged-opacity: 0.16;
+    }
+
+    /* —— Layer 2 · Component token（官方组件 token 命名，值引用系统层）—— */
+    :root {
+      /* Common button（40dp 高 / corner-full / label-large / icon 18） */
+      --md-button-container-height: 40px;
+      --md-button-container-shape: var(--md-sys-shape-corner-full);
+      --md-button-icon-size: 18px;
+      --md-button-label-text-font: var(--md-typescale-label-large-font-family);
+      --md-button-outline-width: 1px;
+      --md-filled-button-container-color: var(--md-sys-color-primary);
+      --md-filled-button-label-text-color: var(--md-sys-color-on-primary);
+      --md-tonal-button-container-color: var(--md-sys-color-secondary-container);
+      --md-tonal-button-label-text-color: var(--md-sys-color-on-secondary-container);
+      --md-elevated-button-container-color: var(--md-sys-color-surface-container-low);
+      --md-elevated-button-label-text-color: var(--md-sys-color-primary);
+      --md-outlined-button-outline-color: var(--md-sys-color-outline);
+      --md-outlined-button-label-text-color: var(--md-sys-color-primary);
+      --md-text-button-label-text-color: var(--md-sys-color-primary);
+      /* Icon button（48dp 触控 / 24dp 图标 / corner-full 状态层） */
+      --md-icon-button-icon-size: 24px;
+      --md-icon-button-state-layer-size: 48px;
+      --md-icon-button-label-text-color: var(--md-sys-color-on-surface-variant);
+      --md-filled-icon-button-container-color: var(--md-sys-color-secondary-container);
+      --md-filled-icon-button-icon-color: var(--md-sys-color-on-secondary-container);
+      /* FAB（56dp / corner-large 16 / icon 24 / elevation 3） */
+      --md-fab-container-color: var(--md-sys-color-primary-container);
+      --md-fab-label-text-color: var(--md-sys-color-on-primary-container);
+      --md-fab-container-size: 56px;
+      --md-fab-container-shape: var(--md-sys-shape-corner-large);
+      --md-fab-icon-size: 24px;
+      --md-fab-container-elevation: var(--md-sys-elevation-3);
+      --md-fab-hover-container-elevation: var(--md-sys-elevation-4);
+      /* Top app bar small（高 64 / 滚动后 surface-container + elevation 2） */
+      --md-top-app-bar-container-height: 64px;
+      --md-top-app-bar-title-font: var(--md-typescale-title-large-font-family);
+      /* Primary tab（高 48 / 指示器 32x3 / label-large） */
+      --md-tab-height: 48px;
+      --md-tab-indicator-width: 32px;
+      --md-tab-indicator-height: 3px;
+      --md-tab-indicator-shape: var(--md-sys-shape-corner-full);
+      --md-tab-active-label-text-color: var(--md-sys-color-primary);
+      --md-tab-inactive-label-text-color: var(--md-sys-color-on-surface-variant);
+      --md-tab-indicator-color: var(--md-sys-color-primary);
+      /* Elevated card（surface-container-low + elevation 1 + corner-medium 12） */
+      --md-elevated-card-container-color: var(--md-sys-color-surface-container-low);
+      --md-elevated-card-container-shape: var(--md-sys-shape-corner-medium);
+      --md-elevated-card-container-elevation: var(--md-sys-elevation-1);
+      /* Filled card（surface-container-highest + elevation 0 + corner-medium 12） */
+      --md-filled-card-container-color: var(--md-sys-color-surface-container-highest);
+      --md-filled-card-container-shape: var(--md-sys-shape-corner-medium);
+      --md-filled-card-container-elevation: var(--md-sys-elevation-0);
+      /* Chip（高 32 / corner-small 8 / assist 填充式） */
+      --md-chip-container-height: 32px;
+      --md-chip-container-shape: var(--md-sys-shape-corner-small);
+      --md-chip-container-color: var(--md-sys-color-surface-container-low);
+      --md-chip-label-text-color: var(--md-sys-color-on-surface);
+      --md-chip-trailing-supporting-text-color: var(--md-sys-color-on-surface-variant);
+      --md-chip-with-icon-icon-color: var(--md-sys-color-primary);
+      /* List item（高 56 / icon 24 / label body-large / supporting body-medium） */
+      --md-list-item-one-line-container-height: 56px;
+      --md-list-item-label-text-color: var(--md-sys-color-on-surface);
+      --md-list-item-supporting-text-color: var(--md-sys-color-on-surface-variant);
+      --md-list-item-trailing-supporting-text-color: var(--md-sys-color-on-surface-variant);
+      --md-list-item-leading-icon-color: var(--md-sys-color-on-surface-variant);
+      --md-list-item-leading-icon-size: 24px;
+      /* Checkbox（18dp / corner 2dp / outline 2dp） */
+      --md-checkbox-container-size: 18px;
+      --md-checkbox-container-shape: 2px;
+      --md-checkbox-icon-size: 18px;
+      --md-checkbox-outline-width: 2px;
+      --md-checkbox-outline-color: var(--md-sys-color-on-surface-variant);
+      --md-checkbox-selected-container-color: var(--md-sys-color-primary);
+      --md-checkbox-selected-icon-color: var(--md-sys-color-on-primary);
+      /* Linear progress（track 4dp；wavy 形制波幅/波长/末端 stop 圆点） */
+      --md-linear-progress-track-height: 4px;
+      --md-linear-progress-track-shape: var(--md-sys-shape-corner-full);
+      --md-linear-progress-track-color: var(--md-sys-color-surface-container-highest);
+      --md-linear-progress-active-indicator-height: 4px;
+      --md-linear-progress-active-indicator-color: var(--md-sys-color-primary);
+      --md-linear-progress-wave-amplitude: 2.5px;
+      --md-linear-progress-wave-length: 16px;
+      --md-linear-progress-stop-indicator-size: 8px;
+      /* Outlined segmented button（高 40 / corner-full / icon 18） */
+      --md-outlined-segmented-button-container-height: 40px;
+      --md-outlined-segmented-button-shape: var(--md-sys-shape-corner-full);
+      --md-outlined-segmented-button-outline-color: var(--md-sys-color-outline);
+      --md-outlined-segmented-button-icon-size: 18px;
+      --md-outlined-segmented-button-selected-container-color: var(--md-sys-color-secondary-container);
+      --md-outlined-segmented-button-selected-label-text-color: var(--md-sys-color-on-secondary-container);
+      --md-outlined-segmented-button-selected-icon-color: var(--md-sys-color-on-secondary-container);
+      --md-outlined-segmented-button-unselected-label-text-color: var(--md-sys-color-on-surface);
+      --md-outlined-segmented-button-unselected-icon-color: var(--md-sys-color-on-surface);
+      /* Dialog（corner-extra-large 28 / scrim 32% / padding 24 / actions gap 8） */
+      --md-dialog-container-shape: var(--md-sys-shape-corner-extra-large);
+      --md-dialog-container-color: var(--md-sys-color-surface-container-high);
+      --md-dialog-container-elevation: var(--md-sys-elevation-3);
+      --md-dialog-scrim-opacity: 0.32;
+      /* Menu（corner-extra-small 4 / elevation 2） */
+      --md-menu-container-shape: var(--md-sys-shape-corner-extra-small);
+      --md-menu-container-color: var(--md-sys-color-surface-container-high);
+      --md-menu-container-elevation: var(--md-sys-elevation-2);
+      /* Divider（1px outline-variant） */
+      --md-divider-color: var(--md-sys-color-outline-variant);
+      --md-divider-height: 1px;
+
+      --font-ui: "Source Serif 4", "Noto Serif SC", Georgia, serif;
+      --nav-h: var(--md-top-app-bar-container-height);
+      --hero-image: url("./image.webp");
+      /* hero 以下页面大背景 = 主图预烘焙模糊版（image-blur.webp，构建期
+         烘焙落盘，零运行时模糊），铺满 hero 以下除卡片外的全部背景
+         （替代旧波场的位置）；浅色蒙版（表面 55% 半透明，模糊图 45%
+         可见，对比度预算见 2026-10-05 日志），深色蒙版见下方覆盖块 */
+      --page-bg-image: url("./image-blur.webp");
+      /* 主题色蒙版 = 旧「55% surface 蒙版 + 7% primary 氛围 tint」双层的
+         数学合成：alpha 0.5815 = 0.07+0.55×0.93，色 =
+         88% surface + 12% primary = (0.55×0.93·S+0.07·P)/0.5815 ——
+         半透明叠加结合律，与旧双层逐像素等效（72 轮实测数据继续有效：
+         浅色明暗仅 -1.6%、对比度预算不变）。
+         🔴 撕裂修复二版（75 轮）：大面积背景层参与 background-color
+         过渡仍是逐帧重绘（74 轮拆层后安卓撕裂反而加剧的教训）——
+         veil 走「双静态色层 + opacity 交叉淡变」（见 .page-sheet
+         ::before/::after），颜色永不变化、零重绘，纯 GPU 层混合。
+         （78 轮：body::before/after 全程被 hero z1 / sheet z2 遮挡的
+         死重全屏层已清退，单层 --page-bg-veil 随之退役。） */
+      /* veil 静态双层色（75 轮）：固定 ref palette（不随主题解析），
+         浅 = 上式浅主题解析值（88% N98 + 12% P40 @ 58.15%），
+         深 = N6 @ 84%（深色蒙版原样）——两层仅 opacity 随主题交叉淡变 */
+      --page-bg-veil-light: color-mix(in srgb, color-mix(in srgb, var(--md-ref-palette-neutral98) 88%, var(--md-ref-palette-primary40)) 58.15%, transparent);
+      --page-bg-veil-dark: color-mix(in srgb, var(--md-ref-palette-neutral6) 84%, transparent);
+
+      /* 三层共享背景几何（71 轮定案）：hero 原图（.hero__bg）与两层烘焙
+         模糊（.hero__bg / .page-sheet）用同一组 size+position、同为
+         视口锚定 fixed 附着 —— 位置、尺寸、裁切范围像素级重合。
+         几何 = 16:9 源图 cover 再放大 1.08 的旧构图（旧 transform:
+         scale(1.08) 使原图与模糊层裁切不一致，已废）的解析等价：
+           宽 w = max(1.08W, 1.92H) = max(108vw, 192vh)，高按 16:9 自动；
+           左上角 = 绕视口中心缩放后落点：
+             x = (W-w)/2（即 background-position 50%）；
+             y = 44.6vh - 0.45h = 44.6vh - max(27.3375vw, 48.6vh)。 */
+      --page-bg-size: max(108vw, 192vh) auto;
+      --page-bg-pos: 50% calc(44.6vh - max(27.3375vw, 48.6vh));
+
+      /* 主题切换过渡（色面类属性，300ms standard 曲线） */
+      --theme-shift: background-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+                     color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+                     border-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+                     box-shadow var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -241,22 +474,49 @@
     body {
       margin: 0;
       font-family: var(--font-ui);
-      font-size: 16px;
-      line-height: 24px;
-      letter-spacing: 0.5px;
+      font-size: var(--md-typescale-body-large-font-size);
+      line-height: var(--md-typescale-body-large-line-height);
+      letter-spacing: var(--md-typescale-body-large-letter-spacing);
       color: var(--md-sys-color-on-surface);
-      /* 页面底色用 MD3 surface-dim（浅色 T87，同 N 中性色板、色相不变）：
-         比 surface（T98）更柔和不刺眼；深色主题下 surface-dim 与 surface
-         同值（#1a110e），故此改动只影响浅色模式。 */
-      background: var(--md-sys-color-surface-dim);
+      /* 页面底色 = MD3 surface（浅色 N98 / 深色 N6），随主图取色派生 */
+      background: var(--md-sys-color-surface);
       overflow-x: hidden;
       transition: var(--theme-shift);
+    }
+    /* 🔴 78 轮清退：原 body::before（模糊大图固定层）/body::after（veil
+       色层）全程被 .hero（sticky z1）与 .page-sheet（z2）遮挡，仅
+       overscroll 边界一瞬可见 —— 两个全屏 fixed 合成层是纯死重（大屏
+       高 DPR 设备每帧多合成 1300 万+ 像素，小米平板 7 Ultra 类设备的
+       合成负担/撕裂诱因之一），删除后视觉零变化（截图统计逐位验证），
+       overscroll 回弹露出 surface 底色（瞬态，可接受）。模糊大图与
+       veil 蒙版由 .hero__bg / .page-sheet 自带背景承担。 */
+    /* 深色蒙版（表面 84%）+ 裸背景辅助文字对比度兜底。
+       须晚于 Layer 2 :root —— 同优先级下源序后者胜（67 轮教训）。
+       蒙版预算（模糊图亮度实测 [0.14, 0.81]）：
+         浅 55% → 背景最亮 0.56，on-surface-variant ≥ 5.4:1；
+         深 84% → 背景最亮 0.14，on-surface ≥ 4.6:1，
+         深色下裸背景辅助文字升 on-surface 保可读。 */
+    /* （78 轮：原 [data-theme="dark"] --page-bg-veil 覆盖块随 body::after
+       一并退役 —— 深色蒙版由 .page-sheet::after 的 --page-bg-veil-dark
+       静态层承担。） */
+    [data-theme="dark"] .section-kicker p,
+    [data-theme="dark"] .progress__note,
+    [data-theme="dark"] .site-footer {
+      color: var(--md-sys-color-on-surface);
+    }
+    /* 深色封面标题文字加深一档颜色逻辑 level：inverse-on-surface（N20）
+       -> N10（surface-container-low 档），压住照片亮部 */
+    [data-theme="dark"] .hero h1 {
+      color: var(--md-ref-palette-neutral10);
+    }
+    [data-theme="dark"] .hero__subtitle {
+      color: color-mix(in srgb, var(--md-ref-palette-neutral10) 88%, transparent);
     }
 
     img { max-width: 100%; display: block; }
     a { color: inherit; text-decoration: none; }
     /* 安卓 WebView 系统点按高亮（蓝灰块）非 Material 规范 —— 禁用，
-       按压反馈由 MD3 状态层 + 微缩回弹承担 */
+       按压反馈由 MD3 状态层 + ripple 承担 */
     a, button { -webkit-tap-highlight-color: transparent; }
     button { font-family: inherit; }
 
@@ -269,122 +529,7 @@
       border-radius: var(--md-sys-shape-corner-extra-small);
     }
 
-    /* ============ MD3 Type Scale（--md-sys-typescale-* 系统 token）============
-       字体红线：全站衬线 —— brand / plain 同源（Source Serif 4 + Noto Serif SC）
-       自适应：字号 rem（跟随页面/系统缩放）、行高无单位比例自动跟随；
-       断点只覆写 token 值，类自动跟随（不直接改元素字号） */
-    :root {
-      --md-ref-typeface-brand: var(--font-ui);
-      --md-ref-typeface-plain: var(--font-ui);
-
-      --md-sys-typescale-display-large-font-family: var(--md-ref-typeface-brand);
-      --md-sys-typescale-display-large-font-weight: 400;
-      --md-sys-typescale-display-large-font-size: 3.5625rem;
-      --md-sys-typescale-display-large-line-height: 1.123;
-      --md-sys-typescale-display-large-letter-spacing: -0.25px;
-
-      --md-sys-typescale-display-medium-font-family: var(--md-ref-typeface-brand);
-      --md-sys-typescale-display-medium-font-weight: 400;
-      --md-sys-typescale-display-medium-font-size: 2.8125rem;
-      --md-sys-typescale-display-medium-line-height: 1.156;
-      --md-sys-typescale-display-medium-letter-spacing: 0;
-
-      --md-sys-typescale-display-small-font-family: var(--md-ref-typeface-brand);
-      --md-sys-typescale-display-small-font-weight: 400;
-      --md-sys-typescale-display-small-font-size: 2.25rem;
-      --md-sys-typescale-display-small-line-height: 1.222;
-      --md-sys-typescale-display-small-letter-spacing: 0;
-
-      --md-sys-typescale-headline-large-font-family: var(--md-ref-typeface-brand);
-      --md-sys-typescale-headline-large-font-weight: 400;
-      --md-sys-typescale-headline-large-font-size: 2rem;
-      --md-sys-typescale-headline-large-line-height: 1.25;
-      --md-sys-typescale-headline-large-letter-spacing: 0;
-
-      --md-sys-typescale-headline-medium-font-family: var(--md-ref-typeface-brand);
-      --md-sys-typescale-headline-medium-font-weight: 400;
-      --md-sys-typescale-headline-medium-font-size: 1.75rem;
-      --md-sys-typescale-headline-medium-line-height: 1.286;
-      --md-sys-typescale-headline-medium-letter-spacing: 0;
-
-      --md-sys-typescale-headline-small-font-family: var(--md-ref-typeface-brand);
-      --md-sys-typescale-headline-small-font-weight: 400;
-      --md-sys-typescale-headline-small-font-size: 1.5rem;
-      --md-sys-typescale-headline-small-line-height: 1.333;
-      --md-sys-typescale-headline-small-letter-spacing: 0;
-
-      --md-sys-typescale-title-large-font-family: var(--md-ref-typeface-brand);
-      --md-sys-typescale-title-large-font-weight: 400;
-      --md-sys-typescale-title-large-font-size: 1.375rem;
-      --md-sys-typescale-title-large-line-height: 1.273;
-      --md-sys-typescale-title-large-letter-spacing: 0;
-
-      --md-sys-typescale-title-medium-font-family: var(--md-ref-typeface-brand);
-      --md-sys-typescale-title-medium-font-weight: 500;
-      --md-sys-typescale-title-medium-font-size: 1rem;
-      --md-sys-typescale-title-medium-line-height: 1.5;
-      --md-sys-typescale-title-medium-letter-spacing: 0.15px;
-
-      --md-sys-typescale-title-small-font-family: var(--md-ref-typeface-brand);
-      --md-sys-typescale-title-small-font-weight: 500;
-      --md-sys-typescale-title-small-font-size: 0.875rem;
-      --md-sys-typescale-title-small-line-height: 1.429;
-      --md-sys-typescale-title-small-letter-spacing: 0.1px;
-
-      --md-sys-typescale-body-large-font-family: var(--md-ref-typeface-plain);
-      --md-sys-typescale-body-large-font-weight: 400;
-      --md-sys-typescale-body-large-font-size: 1rem;
-      --md-sys-typescale-body-large-line-height: 1.5;
-      --md-sys-typescale-body-large-letter-spacing: 0.5px;
-
-      --md-sys-typescale-body-medium-font-family: var(--md-ref-typeface-plain);
-      --md-sys-typescale-body-medium-font-weight: 400;
-      --md-sys-typescale-body-medium-font-size: 0.875rem;
-      --md-sys-typescale-body-medium-line-height: 1.429;
-      --md-sys-typescale-body-medium-letter-spacing: 0.25px;
-
-      --md-sys-typescale-body-small-font-family: var(--md-ref-typeface-plain);
-      --md-sys-typescale-body-small-font-weight: 400;
-      --md-sys-typescale-body-small-font-size: 0.75rem;
-      --md-sys-typescale-body-small-line-height: 1.333;
-      --md-sys-typescale-body-small-letter-spacing: 0.4px;
-
-      --md-sys-typescale-label-large-font-family: var(--md-ref-typeface-plain);
-      --md-sys-typescale-label-large-font-weight: 500;
-      --md-sys-typescale-label-large-font-size: 0.875rem;
-      --md-sys-typescale-label-large-line-height: 1.429;
-      --md-sys-typescale-label-large-letter-spacing: 0.1px;
-
-      --md-sys-typescale-label-medium-font-family: var(--md-ref-typeface-plain);
-      --md-sys-typescale-label-medium-font-weight: 500;
-      --md-sys-typescale-label-medium-font-size: 0.75rem;
-      --md-sys-typescale-label-medium-line-height: 1.333;
-      --md-sys-typescale-label-medium-letter-spacing: 0.5px;
-
-      --md-sys-typescale-label-small-font-family: var(--md-ref-typeface-plain);
-      --md-sys-typescale-label-small-font-weight: 500;
-      --md-sys-typescale-label-small-font-size: 0.6875rem;
-      --md-sys-typescale-label-small-line-height: 1.455;
-      --md-sys-typescale-label-small-letter-spacing: 0.5px;
-    }
-
-    .display-large   { font-family: var(--md-sys-typescale-display-large-font-family); font-size: var(--md-sys-typescale-display-large-font-size); line-height: var(--md-sys-typescale-display-large-line-height); letter-spacing: var(--md-sys-typescale-display-large-letter-spacing); font-weight: var(--md-sys-typescale-display-large-font-weight); }
-    .display-medium  { font-family: var(--md-sys-typescale-display-medium-font-family); font-size: var(--md-sys-typescale-display-medium-font-size); line-height: var(--md-sys-typescale-display-medium-line-height); letter-spacing: var(--md-sys-typescale-display-medium-letter-spacing); font-weight: var(--md-sys-typescale-display-medium-font-weight); }
-    .display-small   { font-family: var(--md-sys-typescale-display-small-font-family); font-size: var(--md-sys-typescale-display-small-font-size); line-height: var(--md-sys-typescale-display-small-line-height); letter-spacing: var(--md-sys-typescale-display-small-letter-spacing); font-weight: var(--md-sys-typescale-display-small-font-weight); }
-    .headline-large  { font-family: var(--md-sys-typescale-headline-large-font-family); font-size: var(--md-sys-typescale-headline-large-font-size); line-height: var(--md-sys-typescale-headline-large-line-height); letter-spacing: var(--md-sys-typescale-headline-large-letter-spacing); font-weight: var(--md-sys-typescale-headline-large-font-weight); }
-    .headline-medium { font-family: var(--md-sys-typescale-headline-medium-font-family); font-size: var(--md-sys-typescale-headline-medium-font-size); line-height: var(--md-sys-typescale-headline-medium-line-height); letter-spacing: var(--md-sys-typescale-headline-medium-letter-spacing); font-weight: var(--md-sys-typescale-headline-medium-font-weight); }
-    .headline-small  { font-family: var(--md-sys-typescale-headline-small-font-family); font-size: var(--md-sys-typescale-headline-small-font-size); line-height: var(--md-sys-typescale-headline-small-line-height); letter-spacing: var(--md-sys-typescale-headline-small-letter-spacing); font-weight: var(--md-sys-typescale-headline-small-font-weight); }
-    .title-large     { font-family: var(--md-sys-typescale-title-large-font-family); font-size: var(--md-sys-typescale-title-large-font-size); line-height: var(--md-sys-typescale-title-large-line-height); letter-spacing: var(--md-sys-typescale-title-large-letter-spacing); font-weight: var(--md-sys-typescale-title-large-font-weight); }
-    .title-medium    { font-family: var(--md-sys-typescale-title-medium-font-family); font-size: var(--md-sys-typescale-title-medium-font-size); line-height: var(--md-sys-typescale-title-medium-line-height); letter-spacing: var(--md-sys-typescale-title-medium-letter-spacing); font-weight: var(--md-sys-typescale-title-medium-font-weight); }
-    .title-small     { font-family: var(--md-sys-typescale-title-small-font-family); font-size: var(--md-sys-typescale-title-small-font-size); line-height: var(--md-sys-typescale-title-small-line-height); letter-spacing: var(--md-sys-typescale-title-small-letter-spacing); font-weight: var(--md-sys-typescale-title-small-font-weight); }
-    .body-large      { font-family: var(--md-sys-typescale-body-large-font-family); font-size: var(--md-sys-typescale-body-large-font-size); line-height: var(--md-sys-typescale-body-large-line-height); letter-spacing: var(--md-sys-typescale-body-large-letter-spacing); font-weight: var(--md-sys-typescale-body-large-font-weight); }
-    .body-medium     { font-family: var(--md-sys-typescale-body-medium-font-family); font-size: var(--md-sys-typescale-body-medium-font-size); line-height: var(--md-sys-typescale-body-medium-line-height); letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing); font-weight: var(--md-sys-typescale-body-medium-font-weight); }
-    .body-small      { font-family: var(--md-sys-typescale-body-small-font-family); font-size: var(--md-sys-typescale-body-small-font-size); line-height: var(--md-sys-typescale-body-small-line-height); letter-spacing: var(--md-sys-typescale-body-small-letter-spacing); font-weight: var(--md-sys-typescale-body-small-font-weight); }
-    .label-large     { font-family: var(--md-sys-typescale-label-large-font-family); font-size: var(--md-sys-typescale-label-large-font-size); line-height: var(--md-sys-typescale-label-large-line-height); letter-spacing: var(--md-sys-typescale-label-large-letter-spacing); font-weight: var(--md-sys-typescale-label-large-font-weight); }
-    .label-medium    { font-family: var(--md-sys-typescale-label-medium-font-family); font-size: var(--md-sys-typescale-label-medium-font-size); line-height: var(--md-sys-typescale-label-medium-line-height); letter-spacing: var(--md-sys-typescale-label-medium-letter-spacing); font-weight: var(--md-sys-typescale-label-medium-font-weight); }
-    .label-small     { font-family: var(--md-sys-typescale-label-small-font-family); font-size: var(--md-sys-typescale-label-small-font-size); line-height: var(--md-sys-typescale-label-small-line-height); letter-spacing: var(--md-sys-typescale-label-small-letter-spacing); font-weight: var(--md-sys-typescale-label-small-font-weight); }
-
-    /* ============ MD3 状态层：8% / 10% / 10% ============ */
+    /* ============ MD3 状态层：hover 8% / focus 12% / pressed 12% / dragged 16% ============ */
     .sl { position: relative; overflow: hidden; }
     .sl::before {
       content: "";
@@ -393,253 +538,186 @@
       border-radius: inherit;
       background: currentColor;
       opacity: 0;
-      transition: opacity 120ms linear;
+      transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
       pointer-events: none;
     }
-    .sl:hover::before { opacity: 0.08; }
-    .sl:focus-visible::before { opacity: 0.10; }
-    .sl:active::before { opacity: 0.10; }
+    .sl:hover::before { opacity: var(--md-sys-state-hover-opacity); }
+    .sl:focus-visible::before { opacity: var(--md-sys-state-focus-opacity); }
+    .sl:active::before { opacity: var(--md-sys-state-pressed-opacity); }
 
     .ripple {
       position: absolute;
       border-radius: 50%;
       transform: scale(0);
-      animation: md-ripple 600ms var(--md-sys-motion-easing-effects);
+      animation: md-ripple var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
       background: currentColor;
-      opacity: 0.12;
+      opacity: var(--md-sys-state-pressed-opacity);
       pointer-events: none;
     }
     @keyframes md-ripple { to { transform: scale(4); opacity: 0; } }
 
-    /* ============ Material Expressive · 悬浮控件簇 ============
-       · 不做整条 tab 栏：右侧悬浮「鹅卵石」导航（connected button group）
-         + 独立圆形日夜切换（同半径），整体为一个悬浮控件簇
-       · 高度 48dp，圆角 full（两边半圆的胶囊），间距 8dp */
+    /* ============ 顶部悬浮控件（MD3 elevated 浮动形制）============
+       悬浮透明容器：左 logo badge，右 tabs 胶囊 + 日夜圆钮；各带
+       surface-container-high 容器 + elevation 2 层级阴影，直接浮在
+       封面/磨砂面板之上（无实心顶栏）。JS 滚动态 .is-scrolled 仅
+       抬升阴影层级。 */
     .top-bar {
       position: fixed;
       inset: 0 0 auto 0;
       z-index: 40;
-      height: var(--nav-h);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 0 clamp(16px, 4vw, 40px);
-      background: transparent;
-      border-bottom: 0;
-      pointer-events: none;              /* 仅控件簇接收指针事件 */
-      transition: background-color 420ms var(--md-sys-motion-easing-effects), box-shadow 420ms var(--md-sys-motion-easing-effects),
-                  border-color 420ms var(--md-sys-motion-easing-effects), color 420ms var(--md-sys-motion-easing-effects);
-    }
-    .top-bar > * { pointer-events: auto; }
-    /* 滚动后品牌一侧抬出玻璃底（surface container + elevation 2） */
-    .top-bar.is-scrolled .brand {
-      background: color-mix(in srgb, var(--md-sys-color-surface-container) 82%, transparent);
-      border-color: var(--md-sys-color-outline-variant);
-      box-shadow: var(--md-sys-elevation-2);
-    }
-
-    .brand {
+      height: var(--md-top-app-bar-container-height);
       display: flex;
       align-items: center;
       gap: 12px;
-      min-width: 0;
-      height: 48px;
-      padding: 0 20px 0 14px;
-      border-radius: var(--md-sys-shape-corner-full);
-      border: 1px solid transparent;
-      background: color-mix(in srgb, var(--md-sys-color-surface) 38%, transparent);
-      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-      /* 品牌标签只在第二页起展示：hero 封面页隐去，内容面板滑过时淡入。
-         显隐走 effect 类动画（透明度+微位移，平滑无弹） */
-      opacity: 0;
-      visibility: hidden;
-      transform: translateX(-14px);
-      pointer-events: none;
-      transition: opacity 280ms var(--md-sys-motion-easing-effects), transform 320ms var(--md-sys-motion-easing-effects),
-                  visibility 0s linear 320ms,
-                  background-color 420ms var(--md-sys-motion-easing-effects), border-color 420ms var(--md-sys-motion-easing-effects),
-                  box-shadow 420ms var(--md-sys-motion-easing-effects);
-    }
-    .top-bar .brand.is-shown {
-      opacity: 1;
-      visibility: visible;
-      transform: none;
-      pointer-events: auto;
-      transition: opacity 280ms var(--md-sys-motion-easing-effects), transform 320ms var(--md-sys-motion-easing-effects),
-                  visibility 0s,
-                  background-color 420ms var(--md-sys-motion-easing-effects), border-color 420ms var(--md-sys-motion-easing-effects),
-                  box-shadow 420ms var(--md-sys-motion-easing-effects);
-    }
-    /* logo 徽标：28dp 圆形徽记（primary-container 色对 · corner-full）
-       —— MD3 色彩配对规则（容器/on-容器）保障任意主题下 3:1 对比 */
-    .brand__badge {
-      flex: none;
-      display: grid;
-      place-items: center;
-      width: 28px;
-      height: 28px;
-      border-radius: var(--md-sys-shape-corner-full);
-      background: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-      font-weight: 600;
+      padding: 0 clamp(16px, 4vw, 32px);
+      background: transparent;
       transition: var(--theme-shift);
+    }
+    .top-bar.is-scrolled .brand,
+    .top-bar.is-scrolled .tabs,
+    .top-bar.is-scrolled .theme-toggle {
+      box-shadow: var(--md-sys-elevation-3);
+    }
+
+    /* 左上 logo badge：悬浮胶囊（surface-container-high + elevation 2），
+       方块标记走 primary 强调色；hero 区隐藏，滚至 intro 浮入出场 */
+    .brand {
+      order: 1;
+      margin-right: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 48px;
+      padding: 0 18px 0 12px;
+      border-radius: var(--md-sys-shape-corner-full);
+      background: var(--md-sys-color-surface-container-high);
+      box-shadow: var(--md-sys-elevation-2);
+      color: var(--md-sys-color-on-surface);
+      min-width: 0;
+      transition: var(--theme-shift),
+                  opacity var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate),
+                  transform var(--md-sys-motion-duration-long1) var(--md-sys-motion-easing-emphasized-decelerate);
+    }
+    .brand__mark {
+      flex: none;
+      width: 26px;
+      height: 26px;
+      color: var(--md-sys-color-primary);
     }
     .brand__name {
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-      font-family: var(--font-ui);       /* 衬线体 */
     }
-    /* 宽度不足以同时容纳品牌 + 导航簇时，品牌整体隐去（JS 测量后加此类） */
+    /* 宽度不足以同时容纳品牌 + tabs + 主题键时，品牌整体隐去（JS 测量后加此类） */
     .brand.is-hidden { display: none; }
-
-    /* ============ Material Expressive · 鹅卵石导航簇 ============
-       connected button group：全圆角胶囊，48dp 高；激活项抬为 secondary-container
-       主题切换为独立圆形控件（同半径），置于导航组右侧 */
-    .nav-cluster {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .nav {
-      position: relative;      /* 共享胶囊的定位锚（按钮 offsetLeft 的参照系） */
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      height: 48px;
-      padding: 4px;
-      border-radius: var(--md-sys-shape-corner-full);
-      background: color-mix(in srgb, var(--md-sys-color-surface-container-high) 72%, transparent);
-      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-      border: 1px solid var(--glass-stroke);
-      box-shadow: var(--md-sys-elevation-2), inset 0 1px 0 var(--glass-tint);
-      transition: background-color 420ms var(--md-sys-motion-easing-effects), border-color 420ms var(--md-sys-motion-easing-effects);
-      /* 滑动交互：横向拖动归手势（不选中文字），纵向仍交还页面滚动（pan-y） */
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-touch-callout: none;
-      touch-action: pan-y;
-    }
-    .nav__link {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 40px;
-      min-width: 64px;
-      padding: 0 18px;
-      border-radius: var(--md-sys-shape-corner-full);
-      color: var(--md-sys-color-on-surface-variant);
-      cursor: grab;
-      transition: color var(--md-sys-motion-expressive-effects-default),
-                  transform var(--md-sys-motion-expressive-spatial-fast);
-      will-change: transform;
-    }
-    /* Expressive：按压微缩回弹 */
-    .nav__link:active { transform: scale(0.94); }
-    .nav.is-dragging .nav__link { cursor: grabbing; }
-
-    /* Expressive 激活指示器（active indicator）· 共享胶囊版（第三十一轮重构）：
-       官方规格 56×32dp 全圆角胶囊 / secondaryContainer 色 / 50% 圆角。
-       结构：单一 .nav__pill（JS 驱动 left/width）+ .nav__pill-ghost（关闭残影）。
-       · 点击切换：旧胶囊以极短渐变（~90ms）消失（ghost 残影，无收起形变），
-         同时新胶囊在目标按钮中心从 width 0→满宽展开 —— 不经中间按钮过渡
-       · 展开曲线 = M3 Expressive spatial fast（官方弹簧 Web 转换表，带轻微过冲）
-       · 拖动滑块：胶囊 1:1 跟手（.is-anim-off 零过渡），松手磁吸回按钮
-       · 禁 scaleX 缩放形变（圆角被压扁成竖缝/门板="翻页"感），
-         胶囊形体动画只能用 left/width 尺寸形变保轮廓 */
-    .nav__pill, .nav__pill-ghost {
-      position: absolute;
-      top: 4px;
-      bottom: 4px;
-      left: 0;
-      width: 0;
-      border-radius: var(--md-sys-shape-corner-full);
-      background: var(--md-sys-color-secondary-container);
+    /* hero 区隐藏态（JS 按滚动阈值加/去）：出场 = 自上浮入（见 .brand 过渡） */
+    .brand.is-away {
+      opacity: 0;
+      transform: translateY(-16px) scale(0.92);
       pointer-events: none;
     }
-    .nav__pill {
-      z-index: 0;
-      transition: left var(--md-sys-motion-expressive-spatial-fast),
-                  width var(--md-sys-motion-expressive-spatial-fast),
-                  opacity 120ms linear;
-    }
-    .nav__pill-ghost {
-      z-index: 0;
-      opacity: 0;
-      transition: opacity 90ms linear;
-    }
-    .nav__pill.is-anim-off, .nav__pill-ghost.is-anim-off { transition: none; }
 
-    .nav__link { overflow: visible; }
-    .nav__label { position: relative; z-index: 1; }
-    .nav__link.is-active { color: var(--md-sys-color-on-secondary-container); }
-    /* 拖动态反馈：按钮微缩 + 状态层压深（MD3 pressed 观感） */
-    .nav.is-dragging .nav__link { transform: scale(0.95); }
-    .nav.is-dragging .nav__link::before { opacity: 0.10; }
-
-    /* ============ 主题切换：独立圆形控件（48dp · 同半径） ============ */
-    .theme-toggle {
-      position: relative;
+    /* ============ MD3 Icon Button（48dp 触控 / 24dp 图标 / corner-full 状态层）============ */
+    .icon-btn {
       flex: none;
-      width: 48px;
-      height: 48px;
-      display: grid;
-      place-items: center;
+      width: var(--md-icon-button-state-layer-size);
+      height: var(--md-icon-button-state-layer-size);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       padding: 0;
-      border: 1px solid var(--glass-stroke);
+      border: 0;
       border-radius: var(--md-sys-shape-corner-full);
-      background: color-mix(in srgb, var(--md-sys-color-surface-container-high) 72%, transparent);
-      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-      box-shadow: var(--md-sys-elevation-2), inset 0 1px 0 var(--glass-tint);
-      color: var(--md-sys-color-on-surface);
+      background: transparent;
+      color: var(--md-icon-button-label-text-color);
       cursor: pointer;
-      transition: background-color 420ms var(--md-sys-motion-easing-effects), border-color 420ms var(--md-sys-motion-easing-effects),
-                  box-shadow 420ms var(--md-sys-motion-easing-effects), transform var(--md-sys-motion-expressive-spatial-fast);
+      transition: var(--theme-shift);
     }
-    .theme-toggle:hover { box-shadow: var(--md-sys-elevation-3), inset 0 1px 0 var(--glass-tint); }
-    .theme-toggle:active { transform: scale(0.92); }
+
+    /* 日夜切换：太阳/月亮图标互换（只动 opacity + transform）；
+       悬浮圆钮（surface-container-high + elevation 2） */
+    .theme-toggle {
+      order: 3;
+      background: var(--md-sys-color-surface-container-high);
+      box-shadow: var(--md-sys-elevation-2);
+      transition: var(--theme-shift);
+    }
     .theme-toggle__icon {
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      transition: opacity var(--md-sys-motion-expressive-effects-slow), transform var(--md-sys-motion-expressive-spatial-default);
+      width: var(--md-icon-button-icon-size);
+      height: var(--md-icon-button-icon-size);
+      grid-area: 1 / 1;
+      transition: opacity var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+                  transform var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard);
     }
+    .theme-toggle { display: inline-grid; place-content: center; }
     .theme-toggle__icon--sun { opacity: 1; transform: rotate(0deg) scale(1); }
     .theme-toggle__icon--moon { opacity: 0; transform: rotate(-70deg) scale(0.5); }
-    [data-theme="dark"] .theme-toggle__icon--sun { opacity: 0; transform: rotate(90deg) scale(0.5); }
+    [data-theme="dark"] .theme-toggle__icon--sun { opacity: 0; transform: rotate(70deg) scale(0.5); }
     [data-theme="dark"] .theme-toggle__icon--moon { opacity: 1; transform: rotate(0deg) scale(1); }
 
-    /* ============ MD3 Buttons（五色式 · S 号 40dp · round 形状 = full corner）============
-       规格对位（m3.material.io/components/buttons）：
-       · 容器高 40dp（M2 36dp → M3 40dp 起步），图标 20dp，标签 label-large
-       · 五色式：Elevated = surfaceContainerLow + primary · elev1 /
-         Filled = primary + onPrimary / Tonal = secondaryContainer /
-         Outlined = outline 描边 + onSurface / Text = primary
-       · 状态层 hover 8% · focus 10% · pressed 10%（.sl）；hover 抬升 1 级阴影
-       · round 形状按压不改圆角（Corner 表：Round = Full 恒定） */
+    /* ============ MD3 Primary Tab Row（高 48 / 指示器 32x3 / label-large）============
+       激活态由滚动位置驱动（单一判定出口，见 main.js）；
+       指示器动画只用 left/width 过渡（禁横向缩放伪影）。 */
+    .tabs {
+      order: 2;
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: var(--md-tab-height);
+      padding: 0 8px;
+      border-radius: var(--md-sys-shape-corner-full);
+      background: var(--md-sys-color-surface-container-high);
+      box-shadow: var(--md-sys-elevation-2);
+      transition: var(--theme-shift);
+    }
+    .tabs__tab {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-width: 56px;
+      padding: 0 16px;
+      color: var(--md-tab-inactive-label-text-color);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .tabs__tab.is-active { color: var(--md-tab-active-label-text-color); }
+    .tabs__indicator {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: var(--md-tab-indicator-width);
+      height: var(--md-tab-indicator-height);
+      border-radius: var(--md-tab-indicator-shape);
+      background: var(--md-tab-indicator-color);
+      pointer-events: none;
+      transition: left var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
+                  width var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
+                  background-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .tabs__indicator.is-anim-off { transition: none; }
+
+    /* ============ MD3 Buttons（common 40dp / corner-full / label-large / icon 18）============
+       水平内距 24dp（带前导图标 16dp 起步 + 8dp 间距）、min-width 64dp */
     .btn {
       position: relative;
-      overflow: hidden;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      height: var(--md-button-container-height);
       min-width: 64px;
+      height: var(--md-button-container-height);
       padding: 0 24px;
       border: 0;
       border-radius: var(--md-button-container-shape);
+      font-family: var(--md-button-label-text-font);
       cursor: pointer;
       white-space: nowrap;
-      transition: box-shadow var(--md-sys-motion-expressive-effects-default),
-                  background-color 420ms var(--md-sys-motion-easing-effects),
-                  color 420ms var(--md-sys-motion-easing-effects),
-                  border-color 420ms var(--md-sys-motion-easing-effects);
+      transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
     }
     .btn__icon {
       flex: none;
@@ -647,32 +725,36 @@
       height: var(--md-button-icon-size);
       fill: currentColor;
     }
+    .btn .btn__icon:first-child { margin-left: -8px; }   /* 前导图标内距 16dp */
+
     .btn--filled {
       background: var(--md-filled-button-container-color);
       color: var(--md-filled-button-label-text-color);
       box-shadow: var(--md-sys-elevation-0);
     }
     .btn--filled:hover { box-shadow: var(--md-sys-elevation-1); }
+
     .btn--tonal {
       background: var(--md-tonal-button-container-color);
       color: var(--md-tonal-button-label-text-color);
       box-shadow: var(--md-sys-elevation-0);
     }
     .btn--tonal:hover { box-shadow: var(--md-sys-elevation-1); }
+
     .btn--elevated {
       background: var(--md-elevated-button-container-color);
       color: var(--md-elevated-button-label-text-color);
       box-shadow: var(--md-sys-elevation-1);
     }
     .btn--elevated:hover { box-shadow: var(--md-sys-elevation-2); }
+
     .btn--outlined {
       background: transparent;
-      border: 1px solid var(--md-sys-color-outline);
-      color: var(--md-sys-color-on-surface);
+      color: var(--md-outlined-button-label-text-color);
+      border: var(--md-button-outline-width) solid var(--md-outlined-button-outline-color);
+      padding: 0 23px;
     }
-    .btn--outlined:hover { box-shadow: var(--md-sys-elevation-1); }
 
-    /* ============ MD3 Text Button（40dp · 水平 inset 12dp · 无容器） ============ */
     .btn--text {
       background: transparent;
       color: var(--md-text-button-label-text-color);
@@ -680,59 +762,66 @@
       box-shadow: var(--md-sys-elevation-0);
     }
 
-    /* ============ MD3 Button Disabled（容器 onSurface 12% · 标签 onSurface 38%） ============ */
+    /* 禁用态：容器 onSurface 12% / 标签 onSurface 38%，无状态层 */
     .btn:disabled {
       background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
       color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
       box-shadow: none;
       cursor: default;
     }
-    .btn:disabled::before { content: none; }   /* 禁用态无状态层 */
+    .btn:disabled::before { content: none; }
 
-    /* ============ MD3 Extended FAB（56dp 容器 · 24dp 图标 · corner-large）============
-       规格对位（m3.material.io/components/floating-action-button）：
-       · 容器 primaryContainer / onPrimaryContainer，elevation 3，hover 抬升 4
-       · 状态层 hover 8% · focus / pressed 10%
-       · 常驻右下安全边距，滚过 hero 封面后以 Expressive spatial 浮现 */
+    /* ============ MD3 Extended FAB（56dp / corner-large 16 / icon 24 / elevation 3）============
+       页底 footer 避让（纯布局）：.fab-dock 零高度 sticky，footer 上探时
+       由布局把 FAB 顶起——与 footer 边缘天然同速零延迟 */
+    .fab-dock {
+      --fab-safe: 24px;                       /* 静息安全边距（手机 16px） */
+      --fab-gap: 12px;                        /* 被顶起后与 footer 顶边的间隙 */
+      position: sticky;
+      bottom: calc(var(--fab-safe) - var(--fab-gap));
+      height: 0;
+      display: flow-root;
+      z-index: 30;
+    }
     .fab {
-      position: fixed;
-      right: 24px;
-      bottom: 24px;
+      position: absolute;
+      right: var(--fab-safe);
+      bottom: var(--fab-gap);
       z-index: 30;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 12px;
       height: var(--md-fab-container-size);
-      padding: 0 20px;
+      padding: 0 20px 0 16px;
       border: 0;
       border-radius: var(--md-fab-container-shape);
       background: var(--md-fab-container-color);
       color: var(--md-fab-label-text-color);
-      box-shadow: var(--md-sys-elevation-3);
+      box-shadow: var(--md-fab-container-elevation);
       cursor: pointer;
       opacity: 0;
       visibility: hidden;
       transform: translateY(88px);
-      transition: opacity var(--md-sys-motion-expressive-effects-slow),
-                  transform var(--md-sys-motion-expressive-spatial-default),
-                  visibility 0s linear 500ms,
-                  box-shadow var(--md-sys-motion-expressive-effects-default),
-                  background-color 420ms var(--md-sys-motion-easing-effects),
-                  color 420ms var(--md-sys-motion-easing-effects);
+      transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  transform var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate),
+                  visibility 0s linear var(--md-sys-motion-duration-medium4),
+                  box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  background-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+                  color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
     .fab.is-shown {
       opacity: 1;
       visibility: visible;
       transform: none;
-      transition: opacity var(--md-sys-motion-expressive-effects-slow),
-                  transform var(--md-sys-motion-expressive-spatial-default),
+      transition: opacity var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+                  transform var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate),
                   visibility 0s,
-                  box-shadow var(--md-sys-motion-expressive-effects-default),
-                  background-color 420ms var(--md-sys-motion-easing-effects),
-                  color 420ms var(--md-sys-motion-easing-effects);
+                  box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  background-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+                  color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
-    .fab:hover { box-shadow: var(--md-sys-elevation-4); }
+    .fab:hover { box-shadow: var(--md-fab-hover-container-elevation); }
     .fab__icon {
       flex: none;
       width: var(--md-fab-icon-size);
@@ -742,15 +831,9 @@
     .fab__label { position: relative; }
 
     /* ============ MD3 Basic Dialog ============
-       规格对位（m3.material.io/components/dialogs）：
-       · 容器：surfaceContainerHigh · elevation 3 · 形状 extra large（28dp）
-       · 宽度：min 280dp / max 560dp，外边距 24dp
-       · 遮罩：scrim 32%
-       · 内边距 24dp；图标 24dp；图标→标题 16dp；标题→正文 16dp；正文→按钮排 24dp
-       · 按钮排：右对齐（LTR），按钮间距 8dp
-       · 字阶：标题 headline-small · 正文 body-medium · 按钮 label-large
-       · 动效：容器淡入+放大（emphasized decelerate · medium 300ms），
-         退场淡出+缩小（emphasized accelerate · short 200ms） */
+       容器 surface-container-high / elevation 3 / corner-extra-large 28；
+       宽 min(560px, 100% - 48px)；遮罩 scrim 32%；内边距 24；
+       标题 headline-small、正文 body-medium、按钮 label-large、actions gap 8 */
     .dlg {
       border: 0;
       padding: 0;
@@ -760,8 +843,8 @@
       overflow: visible;
     }
     .dlg::backdrop {
-      background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent);
-      animation: dlg-scrim-in var(--md-sys-motion-expressive-effects-slow) both;
+      background: color-mix(in srgb, var(--md-sys-color-scrim) calc(var(--md-dialog-scrim-opacity) * 100%), transparent);
+      animation: dlg-scrim-in var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard) both;
     }
     .dlg__container {
       box-sizing: border-box;
@@ -769,10 +852,10 @@
       max-width: min(560px, calc(100vw - 48px));
       margin: 24px;
       padding: 24px;
-      border-radius: var(--md-sys-shape-corner-extra-large);
-      background: var(--md-sys-color-surface-container-high);
-      box-shadow: var(--md-sys-elevation-3);
-      animation: dlg-in var(--md-sys-motion-expressive-spatial-fast) both;
+      border-radius: var(--md-dialog-container-shape);
+      background: var(--md-dialog-container-color);
+      box-shadow: var(--md-dialog-container-elevation);
+      animation: dlg-in var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate) both;
     }
     .dlg__icon {
       display: block;
@@ -801,14 +884,14 @@
       gap: 8px;
       margin-top: 24px;
     }
-    .dlg .btn:focus-visible {
-      outline: 3px solid var(--md-sys-color-primary);
-      outline-offset: 2px;
-    }
 
-    /* 退场（JS 加 .is-closing，短时后 close()） */
-    .dlg.is-closing::backdrop { animation: dlg-scrim-out var(--md-sys-motion-expressive-effects-default) both; }
-    .dlg.is-closing .dlg__container { animation: dlg-out var(--md-sys-motion-expressive-effects-default) both; }
+    /* 退场（JS 加 .is-closing，短时后 close()；200ms short4） */
+    .dlg.is-closing::backdrop {
+      animation: dlg-scrim-out var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard) both;
+    }
+    .dlg.is-closing .dlg__container {
+      animation: dlg-out var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-accelerate) both;
+    }
 
     @keyframes dlg-in {
       from { opacity: 0; transform: scale(0.8); }
@@ -826,23 +909,21 @@
       .dlg.is-closing .dlg__container, .dlg.is-closing::backdrop { animation: none; }
     }
 
-    /* ============ 信息胶囊（32dp · corner-full 填充式） ============
-       2026-10-02 用户定稿：空心描边框（outline chip）显丑，改填充胶囊 ——
-       surfaceContainerHigh 色对；静态信息展示无悬停反馈（状态层只用于可交互控件） */
+    /* ============ MD3 Chip（高 32 / corner-small 8 / assist 填充式）============ */
     .chip {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      height: 32px;
+      height: var(--md-chip-container-height);
       padding: 0 16px;
       border: 0;
-      border-radius: var(--md-sys-shape-corner-full);
-      background: var(--md-sys-color-surface-container-high);
-      color: var(--md-sys-color-on-surface-variant);
+      border-radius: var(--md-chip-container-shape);
+      background: var(--md-chip-container-color);
+      color: var(--md-chip-label-text-color);
       cursor: default;
       transition: var(--theme-shift);
     }
-    .chip__val { color: var(--md-sys-color-on-surface); }
+    .chip__val { color: var(--md-chip-trailing-supporting-text-color); }
     /* 待公布 = MD3 禁用文本规格（onSurface 38%），斜体作占位语义强调 */
     .chip__val--pending {
       color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
@@ -852,9 +933,8 @@
     /* ============ Hero · 独立封面页 ============
        一页式封面（pinned cover）：position: sticky 钉住，滚动期间
        封面本体零平移 —— 没有随滚动的位移，就没有层间剪切；
-       由下方 .page-sheet 内容面板从其上滑过完成交接。
-       封面完全独立于波浪背景与后续内容：底色为不透明暖黑
-       （与照片暗部同调），任何透明度下都看不到封面背后的世界 */
+       交接 = 圆角下页从其上滑过物理覆盖（封面照片自始至终原图，
+       零淡出、零位移、零模糊、零烘焙）。 */
     .hero {
       position: sticky;
       top: 0;
@@ -863,60 +943,32 @@
       min-height: 640px;
       overflow: hidden;
       isolation: isolate;
-      background: #120e08;   /* 封面底色 = 遮罩同调暖黑：模糊渐隐收尾于自身暗调 */
+      /* 封面底色随 .hero__visual 整体淡出（原挂本层不淡出，
+         会残留暖黑片盖住模糊大背景） */
+      background: transparent;
     }
-    /* 图像 + 遮罩 + 颗粒 = 合成层，退场整体渐隐 + 缓推 scale；
-       "模糊消隐"由预模糊分层交叉淡化完成（见 hero__blur-stage）——
-       遮罩与图像同生共死，从构造上杜绝"图片隐去、色带残留"的生硬边缘 */
+    /* 图像 + 遮罩 = 合成层（自始至终原图，不做淡出） */
     .hero__visual {
       position: absolute;
       inset: 0;
       z-index: 0;
-      will-change: opacity, transform; /* 退场只动 opacity/transform，合成器零重绘 */
     }
     .hero__bg {
       width: 100%;
       height: 100%;
+      /* 封面底色 = 遮罩同调暖黑（照片暗部基调），挂本层随视觉整体淡出 */
+      background-color: #120e08;
+      /* 照片 = 封面底图：三层共享几何（--page-bg-size/pos + fixed 附着），
+         与 .page-sheet 的烘焙模糊层像素重合；等效旧构图
+         cover×1.08（旧 transform: scale(1.08) 与模糊层裁切不一致，已废）；
+         --hero-image 与主题源色同源 */
       background-image: var(--hero-image);
-      background-size: cover;
-      background-position: center 45%;
-      transform: scale(1.08);
+      background-size: var(--page-bg-size);
+      background-position: var(--page-bg-pos);
+      background-repeat: no-repeat;
+      background-attachment: fixed;
     }
-    /* 退场"模糊消隐"的预模糊分层（GoogleChromeLabs ui-element-samples
-       · animated-blur 技法，Apache-2.0，页脚开源致谢）：
-       · 模糊半径按档递增的静态模糊副本（σ 12/32/64），退场时在清晰层上
-         依次淡入，视觉等效于模糊半径连续递增 —— 逐帧只改 opacity
-       · 关键坑（Chrome 官方实测）：模糊副本自身绝不能升层 ——
-         升层后 GPU 会按帧对未模糊纹理重跑卷积；正确做法是"升层父容器、
-         模糊烘焙进父层纹理缓存一次"（模糊在 pad 上，stage 只动 opacity）
-       · pad 补白对齐（第三十五轮）：模糊烘在负向外扩 --bpad 的 pad 层上，
-         光晕衰减区推到 hero 裁剪区之外；内层 .hero__bg 与基准图同盒同位
-         （含 scale 1.08）—— 副本零缩放零错位（旧 scale(1.13) 放大副本
-         导致交叉淡化起步即跳变，已废弃） */
-    .hero__blur-stage {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      opacity: 0;
-      will-change: opacity;
-    }
-    .hero__blur-pad {
-      position: absolute;
-      inset: calc(-1 * var(--bpad));
-      filter: blur(var(--brad));
-    }
-    .hero__blur-pad .hero__bg {
-      position: absolute;
-      inset: var(--bpad);
-      width: auto;
-      height: auto;
-    }
-    .hero__blur-pad--b1 { --bpad: 48px; --brad: 12px; }
-    .hero__blur-pad--b2 { --bpad: 120px; --brad: 32px; }
-    .hero__blur-pad--b3 { --bpad: 200px; --brad: 64px; }
-    /* 可读性遮罩（scrim）：全部 stop 同一暖黑、只变 alpha，向内全透明收尾 ——
-       遮罩是"分离层"不是"遮蔽层"，绝不留色带与硬边；
-       不再向 --md-sys-color-surface 过渡（那条表面色带就是旧版生硬边缘的来源） */
+    /* 可读性遮罩（scrim）：全部 stop 同一暖黑、只变 alpha，向内全透明收尾 */
     .hero__veil {
       position: absolute;
       inset: 0;
@@ -931,17 +983,7 @@
           rgba(18, 14, 8, 0.48) 100%),
         radial-gradient(88% 58% at 50% 30%, transparent 46%, rgba(14, 10, 5, 0.34) 100%);
     }
-    .hero__grain {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      pointer-events: none;
-      opacity: 0.06;
-      mix-blend-mode: overlay;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
-    /* 杂志封面式排版：文字直接压在游戏截图的拱门阴影区（无卡片底），
-       字色走 inverse 角色对随主题翻转（见 hero__cover），配柔光底板保对比 */
+    /* 封面文字压在照片上（无卡片底），字色走 inverse 角色对 */
     .hero__stage {
       position: relative;
       z-index: 3;
@@ -950,41 +992,13 @@
       align-items: flex-start;
       justify-content: center;
       padding: calc(var(--nav-h) + clamp(28px, 6vh, 60px)) 24px 0;
-      will-change: opacity, transform; /* 退场只动 opacity/transform（lift），合成器零重绘 */
     }
-    /* 文字退场预模糊残影：静态模糊的封面克隆（JS 注入）浮在清晰版上，
-       退场时淡入 —— 视觉等效"文字渐进模糊"，但零逐帧滤镜开销。
-       模糊在内层 hero__stage-ghostblur 上（不升层，烘焙进升层父层），
-       外层只动 opacity */
-    .hero__stage-ghost {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: calc(var(--nav-h) + clamp(28px, 6vh, 60px)) 24px 0;
-      opacity: 0;
-      will-change: opacity;
-      pointer-events: none;
-    }
-    .hero__stage-ghostblur {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-    }
-    /* 双级残影：g1 轻糊接管清晰字、g2 重糊收尾（第三十五轮，
-       σ 16/40 —— 旧 13px 单级对 68px 大字仍可辨认） */
-    .hero__stage-ghostblur--g1 { filter: blur(16px); }
-    .hero__stage-ghostblur--g2 { filter: blur(40px); }
-    /* 封面文字 = MD3 inverse 角色对（随主题翻转，第四十一轮用户定稿）：
-       inverse-surface 柔光底板（无硬边径向渐变）压在照片上，inverse-on-surface
-       文字保证任意主题下 ΔT 对比度 —— 浅色=暖白字压暗板，深色=暗字压亮板 */
     .hero__cover {
       position: relative;
       width: min(920px, 100%);
       text-align: center;
     }
+    /* 柔光底板：inverse-surface 无硬边径向渐变压在照片上保对比度 */
     .hero__cover::before {
       content: "";
       position: absolute;
@@ -992,17 +1006,21 @@
       z-index: -1;
       background: radial-gradient(72% 64% at 50% 40%,
         color-mix(in srgb, var(--md-sys-color-inverse-surface) 46%, transparent) 0%,
-        color-mix(in srgb, var(--md-sys-color-inverse-surface) 22%, transparent) 52%,
-        transparent 76%);
+        color-mix(in srgb, var(--md-sys-color-inverse-surface) 32%, transparent) 24%,
+        color-mix(in srgb, var(--md-sys-color-inverse-surface) 20%, transparent) 38%,
+        color-mix(in srgb, var(--md-sys-color-inverse-surface) 10%, transparent) 48%,
+        color-mix(in srgb, var(--md-sys-color-inverse-surface) 4%, transparent) 55%,
+        transparent 60%);
       pointer-events: none;
     }
     .hero h1 {
       margin: 0;
       color: var(--md-sys-color-inverse-on-surface);
-      font-family: var(--font-ui);
-      font-size: clamp(36px, 5.6vw, 68px);   /* 封面大字：自上而下第一视觉 */
-      line-height: 1.12;
-      letter-spacing: 0.01em;
+      font-family: var(--md-typescale-display-large-font-family);
+      font-size: var(--md-typescale-display-large-font-size);
+      line-height: var(--md-typescale-display-large-line-height);
+      letter-spacing: var(--md-typescale-display-large-letter-spacing);
+      font-weight: var(--md-typescale-display-large-font-weight);
       text-shadow:
         0 2px 26px color-mix(in srgb, var(--md-sys-color-inverse-surface) 55%, transparent),
         0 1px 4px color-mix(in srgb, var(--md-sys-color-inverse-surface) 42%, transparent);
@@ -1010,8 +1028,11 @@
     .hero__subtitle {
       margin: 14px 0 0;
       color: color-mix(in srgb, var(--md-sys-color-inverse-on-surface) 88%, transparent);
-      font-family: var(--font-ui);
-      font-size: clamp(15px, 1.8vw, 21px);
+      font-family: var(--md-typescale-title-large-font-family);
+      font-size: var(--md-typescale-title-large-font-size);
+      line-height: var(--md-typescale-title-large-line-height);
+      letter-spacing: var(--md-typescale-title-large-letter-spacing);
+      font-weight: var(--md-typescale-title-large-font-weight);
       text-shadow:
         0 1px 18px color-mix(in srgb, var(--md-sys-color-inverse-surface) 50%, transparent),
         0 1px 3px color-mix(in srgb, var(--md-sys-color-inverse-surface) 40%, transparent);
@@ -1020,29 +1041,47 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 12px;
-      margin-top: clamp(22px, 3.4vh, 34px);
+      gap: 8px;
+      margin-top: clamp(24px, 3.4vh, 32px);
     }
-
     .scroll-hint {
       position: absolute;
       left: 50%;
-      bottom: 18px;
+      /* 贴首屏视口底而非 hero 盒底：hero min-height 640 在矮视口下高于
+         100svh，锚盒底会把胶囊顶到折叠线以下（实测 y>innerHeight 教训） */
+      bottom: calc(100% - 100svh + 20px);
       z-index: 4;
       transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
-      /* 封面区控件同走 inverse 角色对（同 h1 教义，随主题翻转） */
-      color: color-mix(in srgb, var(--md-sys-color-inverse-on-surface) 78%, transparent);
-      text-shadow: 0 1px 12px color-mix(in srgb, var(--md-sys-color-inverse-surface) 50%, transparent);
+      gap: 8px;
     }
+    /* 滴线：2dp 亮线自上而下滴入胶囊（drip 循环） */
     .scroll-hint__line {
-      width: 1px;
-      height: 34px;
-      background: linear-gradient(180deg, var(--md-sys-color-inverse-on-surface), transparent);
-      animation: drip 1.9s var(--md-sys-motion-easing-effects) infinite;
+      width: 2px;
+      height: 30px;
+      border-radius: var(--md-sys-shape-corner-extra-small);
+      background: linear-gradient(180deg, transparent, var(--md-sys-color-inverse-on-surface));
+      animation: drip 1.9s var(--md-sys-motion-easing-standard) infinite;
+    }
+    /* 提示胶囊：inverse 角色对半实底（双主题均高对比），
+       文字 + 下箭头图标，修"太不显眼" */
+    .scroll-hint__pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--md-sys-shape-corner-full);
+      background: color-mix(in srgb, var(--md-sys-color-inverse-surface) 58%, transparent);
+      color: var(--md-sys-color-inverse-on-surface);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.28);
+      text-shadow: none;
+    }
+    .scroll-hint__chevron {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
     }
     @keyframes drip {
       0% { transform: scaleY(0.4); opacity: 0; transform-origin: top; }
@@ -1050,12 +1089,72 @@
       100% { transform: scaleY(1); opacity: 0; transform-origin: top; }
     }
 
-    /* ============ Sections ============
-       背景透明 —— 露出波浪线场；内容置于玻璃卡片，形成前后层级 */
+    /* ============================================================
+       内容面板（Sheet）：带着圆角的下页 —— 从露出的第一帧起背景就是
+       完整的烘焙模糊图（替代旧波场底，卡片浮于其上），由底部上滑
+       物理覆盖封面完成交接（封面照片自始至终原图，不做淡出）。
+       模糊背景 background-attachment: fixed 与 .hero__bg 像素对齐，
+       且只在 sheet 框内绘制 —— 圆角接缝以上露出的仍是封面原图。
+       ============================================================ */
+    .page-sheet {
+      position: relative;
+      z-index: 2;              /* 高于钉住的封面（z1），滑过时完整遮住它 */
+      /* 磨砂模糊大背景 = 静态 url 层（主题无关、永不参与过渡）；
+         几何同 .hero__bg（--page-bg-size/pos + fixed
+         附着，与 .hero__bg 原图像素重合）；蒙版/氛围色
+         由下方 ::before/::after veil 静态双层以 opacity 交叉淡变承担 */
+      background-image: var(--page-bg-image);
+      background-size: var(--page-bg-size);
+      background-position: var(--page-bg-pos);
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
+      /* 柔和边界：1px outline-variant 细线（随主题） */
+      border-top: var(--md-divider-height) solid color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent);
+      /* 层级上投影：elevation 2 镜像 + 更深的外扩投影营造"拉起"感 */
+      box-shadow:
+        0 -1px 2px 0 rgba(0, 0, 0, 0.30),
+        0 -2px 6px 2px rgba(0, 0, 0, 0.15),
+        0 -16px 48px 12px rgba(0, 0, 0, 0.18);
+      transition: var(--theme-shift);
+    }
+    /* veil 静态双层（75 轮二版 / 76 轮动画架构）：浅/深两张固定色层
+       叠放，background-color 永不变化、零重绘。主题切换的渐变由动画
+       架构分级承担（76 轮）：VT 路径=快照 crossfade（双层 opacity 瞬时
+       落定进新快照，故常规 transition 必须为 none，避免快照捕获到
+       中间态）；桌面降级路径=is-theme-shifting 的 * 规则压平 opacity
+       300ms 交叉淡变；安卓无 VT=硬切。z-index -1 压在本体模糊图
+       之上、sheet 内容之下；终态与旧单层 veil 逐像素等效 */
+    .page-sheet::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background-color: var(--page-bg-veil-light);
+      opacity: 1;
+      transition: none;
+      pointer-events: none;
+    }
+    .page-sheet::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background-color: var(--page-bg-veil-dark);
+      opacity: 0;
+      transition: none;
+      pointer-events: none;
+    }
+    [data-theme="dark"] .page-sheet::before { opacity: 0; }
+    [data-theme="dark"] .page-sheet::after { opacity: 1; }
+
+    /* ============ Sections ============ */
     .section {
       position: relative;
       z-index: 5;
-      padding: clamp(88px, 13vh, 144px) clamp(20px, 5vw, 72px);
+      padding: 96px clamp(16px, 4vw, 32px);
       background: transparent;
       scroll-margin-top: calc(var(--nav-h) + 12px);
       overflow: clip;
@@ -1067,20 +1166,18 @@
     .section-kicker h2 { margin: 0; color: var(--md-sys-color-on-surface); }
     .section-kicker p { margin: 16px 0 0; color: var(--md-sys-color-on-surface-variant); }
 
-    /* kicker 标签 = 填充胶囊（corner-full）——2026-10-02 用户定稿：空心描边框改填充式；
-       同日二次调：纯 primaryContainer 金在浅色下饱和度偏高显跳脱，向
-       surfaceContainerHigh tonal 拉淡 45% 保金色调性、压饱和度（深色随之微柔） */
+    /* 区块标签 = MD3 chip（高 32 / corner-small 8 / tonal 容器） */
     .kicker-tag {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      height: 32px;
+      height: var(--md-chip-container-height);
       margin-bottom: 16px;
       padding: 0 16px;
       border: 0;
-      border-radius: var(--md-sys-shape-corner-full);
-      background: color-mix(in srgb, var(--md-sys-color-primary-container) 55%, var(--md-sys-color-surface-container-high));
-      color: var(--md-sys-color-on-primary-container);
+      border-radius: var(--md-chip-container-shape);
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
       transition: var(--theme-shift);
     }
     /* 区块标签图标（Material Symbols 18dp）：非色彩区分的第一线索 */
@@ -1091,120 +1188,68 @@
       fill: currentColor;
     }
 
-    /* 滚动监听：上浮淡入 / 离开收回（可重复触发，两个方向都带动画；
-       绝不对玻璃元素祖先使用 opacity/will-change:opacity） */
-    .reveal {
+    /* 滚动监听：上浮淡入 / 离开收回（可重复触发，两个方向都带动画）。
+       🔴 选择器双类提特异性（.reveal.reveal）：Elevated Card 基座在本规则
+       之后以 transition: var(--theme-shift) 同特异性覆盖，会把 opacity/
+       transform 上浮过渡整个顶掉（卡片闪现、无自身 transition 的标题正常
+       的根因）——双类 (0,2,0) 稳压基座 (0,1,0)；本列表已含色类四项，
+       卡片主题渐变由此接管不丢失。is-theme-shifting 的压平规则带
+       !important，仍能覆盖本条 */
+    .reveal.reveal {
       opacity: 0;
       transform: translate3d(0, 42px, 0);
-      transition: opacity var(--md-sys-motion-expressive-spatial-slow), transform var(--md-sys-motion-expressive-spatial-slow),
-                  background-color 420ms var(--md-sys-motion-easing-effects), border-color 420ms var(--md-sys-motion-easing-effects),
-                  box-shadow 420ms var(--md-sys-motion-easing-effects), color 420ms var(--md-sys-motion-easing-effects);
+      transition: opacity var(--md-sys-motion-duration-long2) var(--md-sys-motion-easing-emphasized-decelerate),
+                  transform var(--md-sys-motion-duration-long2) var(--md-sys-motion-easing-emphasized-decelerate),
+                  background-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+                  border-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+                  box-shadow var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+                  color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
     .reveal.is-visible { opacity: 1; transform: translate3d(0, 0, 0); }
     .reveal[data-delay="1"] { transition-delay: 110ms; }
     .reveal[data-delay="2"] { transition-delay: 220ms; }
     .reveal[data-delay="3"] { transition-delay: 330ms; }
-    /* 玻璃卡片自身的上浮淡入：只做 transform、禁 opacity 过渡 ——
-       opacity 动画的元素带 backdrop-filter 时，毛玻璃逐帧重算+重取样，
-       竖向滚屏每帧全量重合成（第十三轮卡顿根源之一） */
-    .intro__layout.reveal, .join__card.reveal {
-      opacity: 1;
-      transition: transform var(--md-sys-motion-expressive-spatial-slow),
-                  background-color 420ms var(--md-sys-motion-easing-effects), border-color 420ms var(--md-sys-motion-easing-effects),
-                  box-shadow 420ms var(--md-sys-motion-easing-effects);
-    }
     /* 退场不带入场的 stagger 延迟 —— 收回要比出场干脆（放最后覆盖 data-delay） */
     .reveal:not(.is-visible) { transition-delay: 0ms; }
 
-    /* ============================================================
-       内容面板（Sheet）：圆角顶边 + 上投影的不透明面板，滚动时
-       从钉住的封面之上滑过完成交接（MD3 sheet 形制）。
-       波浪线场活在面板内部 —— 封面与波场互不相见，
-       封面任何透明度下都看不到"背后滚动的背景"
-       ============================================================ */
-    .page-sheet {
-      position: relative;
-      z-index: 2;              /* 高于钉住的封面（z1），滑过时完整遮住它 */
-      background: var(--md-sys-color-surface-dim);  /* 与 body 同底色（浅色 T87） */
-      border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
-      box-shadow: 0 -20px 54px rgba(10, 7, 3, 0.38);
-      transition: var(--theme-shift);
-    }
-
-    /* ============================================================
-       动态背景：纵向波线场（canvas · longitudinal wave）
-       · 上百条等距细竖线共享同一平滑位移场，随高度左右偏移
-       · 相邻线相位连续，聚散成疏密带，密度差营造体积感
-       · 鼠标靠近时竖线被"拨开"，产生水波荡漾般的排斥涟漪
-       · 随滚动以 0.12 倍速漂移 —— 与前景卡片形成层级视差
-       · 波场画布活在 .wave-clip 里：clip-path 圆角矩形与面板同款
-         圆角、随面板一起滚动，画布 sticky 钉在视口顶被其裁切 ——
-         线条层与面板滑界在同一绘制流程里原子同步，任何渲染压力
-         下都不可能错位。旧版 fixed 画布 + JS clip-path 逐帧对齐
-         滑界的方案已废弃：裁切值一旦迟到一帧就露出色带空隙
-       ============================================================ */
-    .wave-clip {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      -webkit-clip-path: inset(0 round var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0);
-      clip-path: inset(0 round var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0);
-    }
-    .wave-canvas {
-      position: sticky;
-      top: 0;
-      display: block;
-      width: 100%;
-      height: 100vh;          /* resize() 按精确像素覆写 + 负 margin 抵消占位 */
-      margin-bottom: -100vh;  /* 波场不参与文档流：面板内容排版不受影响 */
-      pointer-events: none;
-    }
-
-    /* ============ 内容卡片基座（Intro / Join 共用） ============
-       形制（2026-10-02 用户定稿）：大 R 角 extra-large 28px + elevation 3 ——
-       12px/elev-1 的 MD3 Card 标准档曾于第三十七轮试用，用户嫌方正显丑回滚；
-       容器毛玻璃语言（Android 17 glass × MD3 surface）不变：glass-fill + blur，
-       1dp glass-stroke 为玻璃高光边（非 MD3 outline 角色）
-       间距走 8dp 网格——卡片外距 48dp、内边距 24–40dp、段落间距 24dp */
+    /* ============ Elevated Card 基座（Intro / Join / Spec / Progress 共用）============
+       MD3 elevated card：surface-container-low + elevation 1；圆角统一
+       corner-extra-large 28（= 警告须知弹窗 --md-dialog-container-shape，
+       71 轮定案：hero 以下所有卡片与弹窗同圆角，保证视觉一致），
+       8dp 网格间距（卡片外距 48、内边距 24、段落间距 24） */
     .intro__layout,
-    .join__card {
-      border-radius: var(--md-sys-shape-corner-extra-large);
-      background: var(--glass-fill);
-      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-      border: 1px solid var(--glass-stroke);
-      box-shadow: var(--md-sys-elevation-3), inset 0 1px 0 var(--glass-tint);
-      transition: background-color 420ms var(--md-sys-motion-easing-effects), border-color 420ms var(--md-sys-motion-easing-effects),
-                  box-shadow 420ms var(--md-sys-motion-easing-effects);
+    .join__card, .spec-card, .progress-card {
+      border-radius: var(--md-dialog-container-shape);
+      background: var(--md-elevated-card-container-color);
+      box-shadow: var(--md-elevated-card-container-elevation);
+      transition: var(--theme-shift);
     }
 
     /* ============ Intro ============ */
     .intro__layout {
       margin-top: 48px;
       max-width: 760px;
-      padding: clamp(24px, 4vw, 40px);
-      text-align: left;   /* 卡片居中、文字靠左（2026-10-02 用户定稿） */
+      padding: 24px;
+      text-align: left;   /* 卡片居中、文字靠左 */
     }
     .intro__layout p { margin: 0 0 24px; }
     .intro__layout p:last-child { margin-bottom: 0; }
     .intro__lead { color: var(--md-sys-color-on-surface); }
     .intro__body { color: var(--md-sys-color-on-surface-variant); }
-    .accent { color: var(--md-sys-color-primary); transition: color 420ms var(--md-sys-motion-easing-effects); }
+    .accent { color: var(--md-sys-color-primary); transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard); }
 
-    /* 免责声明：简介的收尾段落，非独立卡片 ——
-       2026-10-02 定稿：分隔线+图标的横条呈现有"页脚感"显怪，改软性 tonal
-       提示块（primary 6% 叠色 + corner-lg 圆角容器），与正文同左对齐基线 */
+    /* 免责声明：软性 tonal 提示块（surface-container-high；圆角与弹窗同值 28） */
     .disclaimer {
       display: flex;
       align-items: flex-start;
       gap: 12px;
       margin-top: 32px;
       padding: 16px 20px;
-      border-radius: var(--md-sys-shape-corner-large);
-      background: color-mix(in srgb, var(--md-sys-color-primary) 6%, transparent);
+      border-radius: var(--md-dialog-container-shape);
+      background: var(--md-sys-color-surface-container-high);
       color: var(--md-sys-color-on-surface);
       text-align: left;
+      transition: var(--theme-shift);
     }
     .disclaimer__icon {
       flex: none;
@@ -1212,102 +1257,458 @@
       height: 24px;
       fill: currentColor;
       color: var(--md-sys-color-primary);
-      transition: color 420ms var(--md-sys-motion-easing-effects);
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
     .disclaimer__text { margin: 0; font-weight: 500; }
 
     /* ============ Progress ============ */
     .progress__frame-wrap { display: flex; justify-content: center; margin-top: 48px; }
-    /* 媒体容器形制（2026-10-02 用户定稿）：大 R 角 extra-large 28px +
-       1dp outline-variant 描边 + elevation 3 + 9% primary 叠色 ——
-       12px/elev-1 的 MD3 Card 标准档曾于第三十七轮试用，用户嫌方正显丑回滚；
-       深色下叠色改 surfaceContainerHigh 直给（深色叠色发浑） */
+    /* 地图预览容器：MD3 filled card 形制（圆角与弹窗同值 28 / outline-variant 描边） */
     .map-shell {
       position: relative;
-      /* 顶出 section__inner 的 1120px 内容容器 —— BlueMap 窗口尽量放大 */
-      width: min(92vw, 1320px);
+      width: min(88vw, 1120px);
       max-width: none;
       height: 720px;
-      border-radius: var(--md-sys-shape-corner-extra-large);
+      border-radius: var(--md-dialog-container-shape);
       overflow: hidden;
       border: 1px solid var(--md-sys-color-outline-variant);
-      background: color-mix(in srgb, var(--md-sys-color-primary) 9%, var(--md-sys-color-surface-container));
-      box-shadow: var(--md-sys-elevation-3);
+      background: var(--md-sys-color-surface-container-low);
+      box-shadow: var(--md-sys-elevation-1);
       transition: var(--theme-shift);
     }
-    [data-theme="dark"] .map-shell { background: var(--md-sys-color-surface-container-high); }
     .map-shell iframe { display: block; border: 0; background: transparent; }
-    /* 角标 = 填充胶囊（corner-full · secondaryContainer 色对，静态展示 elevation 0）——
-       2026-10-02 用户定稿：空心描边框一律改填充式，实线空心框非目标形态 */
-    .map-shell__badge {
+    /* 全屏键 = MD3 filled tonal icon button（48dp 触控 / 24dp 图标 /
+       corner-full / secondary-container 色对），悬浮右上角 */
+    .map-fs {
       position: absolute;
-      top: 16px;
-      left: 16px;
+      top: 56px;
+      right: 16px;
       z-index: 2;
+      width: var(--md-icon-button-state-layer-size);
+      height: var(--md-icon-button-state-layer-size);
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      height: 32px;
-      padding: 0 16px;
+      justify-content: center;
+      padding: 0;
+      border: 0;
       border-radius: var(--md-sys-shape-corner-full);
-      background: var(--md-sys-color-secondary-container);
-      color: var(--md-sys-color-on-secondary-container);
-      pointer-events: none;
+      background: var(--md-filled-icon-button-container-color);
+      color: var(--md-filled-icon-button-icon-color);
+      cursor: pointer;
+      box-shadow: var(--md-sys-elevation-0);
       transition: var(--theme-shift);
     }
-    .map-shell__badge::before {
+    /* MD3 icon button 状态层：hover 8% / focus 12% / pressed 12% */
+    .map-fs::after {
       content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: var(--md-sys-shape-corner-full);
-      background: var(--md-sys-color-primary);
-      animation: pulse 2.2s var(--md-sys-motion-easing-effects) infinite;
-      transition: background-color 420ms var(--md-sys-motion-easing-effects);
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: currentColor;
+      opacity: 0;
+      transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+      pointer-events: none;
     }
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--md-sys-color-primary) 45%, transparent); }
-      55% { box-shadow: 0 0 0 8px transparent; }
+    .map-fs:hover::after { opacity: var(--md-sys-state-hover-opacity); }
+    .map-fs:focus-visible::after { opacity: var(--md-sys-state-focus-opacity); }
+    .map-fs:active::after { opacity: var(--md-sys-state-pressed-opacity); }
+    .map-fs__icon {
+      width: var(--md-icon-button-icon-size);
+      height: var(--md-icon-button-icon-size);
+      fill: currentColor;
     }
+    .map-fs__icon--exit { display: none; }
+    /* 全屏态：容器满屏去圆角，图标切 exit */
+    .map-shell:fullscreen { width: 100vw; height: 100vh; border-radius: 0; border: 0; }
+    .map-shell:fullscreen .map-fs__icon--enter { display: none; }
+    .map-shell:fullscreen .map-fs__icon--exit { display: block; }
     .progress__note {
       margin: 24px auto 0;
       max-width: 680px;
       color: var(--md-sys-color-on-surface-variant);
       text-align: center;
-      transition: color 420ms var(--md-sys-motion-easing-effects);
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    /* 正文内链 = MD3 文字链接形制（primary 色 + 下划线，
+       hover 加 8% primary 状态层圆角底） */
+    .progress__note a {
+      color: var(--md-sys-color-primary);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      border-radius: 4px;
+      padding: 0 2px;
+      transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .progress__note a:hover {
+      background-color: color-mix(in srgb, var(--md-sys-color-primary) var(--md-sys-state-hover-opacity), transparent);
+    }
+
+    /* ============ 补充信息卡（MD3 List · one-line list item） ============ */
+    .spec-card {
+      width: min(760px, 100%);
+      margin: 48px auto 0;
+      padding: 24px;
+      text-align: left;
+    }
+    .spec-card__title {
+      margin: 0 0 8px;
+      color: var(--md-sys-color-on-surface);
+    }
+    .spec-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .spec-list__item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: var(--md-list-item-one-line-container-height);
+    }
+    .spec-list__icon {
+      flex: none;
+      width: var(--md-list-item-leading-icon-size);
+      height: var(--md-list-item-leading-icon-size);
+      fill: currentColor;
+      color: var(--md-list-item-leading-icon-color);
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .spec-list__name {
+      flex: 1 1 auto;
+      margin: 0;
+      color: var(--md-sys-color-on-surface-variant);
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .spec-list__value {
+      margin: 0;
+      color: var(--md-list-item-label-text-color);
+      text-align: right;
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+
+    /* ============ 建造进度卡（Wavy Linear Progress + 折叠面板
+       （Segmented Button + Checkbox List）） ============ */
+    .progress-card {
+      width: min(760px, 100%);
+      margin: 48px auto 0;
+      padding: 24px;
+      text-align: left;
+    }
+    .progress-card__head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+    }
+    .progress-card__title {
+      margin: 0;
+      color: var(--md-sys-color-on-surface);
+    }
+    .progress-card__sub {
+      margin: 4px 0 0;
+      max-width: 40ch;
+      color: var(--md-sys-color-on-surface-variant);
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .progress-card__pct {
+      margin: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+      color: var(--md-sys-color-primary);
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+
+    /* —— MD3 Wavy Linear Progress Indicator（determinate）——
+       波浪 track + 同形波浪 active + 末端 stop 圆点（粗短线 round cap 实现，
+       y 自动贴合波形）。pathLength=100 归一：active 以 dashoffset 100→85 做
+       入场生长（15%），stop 用 dashoffset calc(off-100) 同步移动。
+       path d 由 main.js 按容器宽度生成（正弦采样），ResizeObserver 重算。 */
+    .lp {
+      margin-top: 20px;
+    }
+    .lp--wavy {
+      /* 波高 2×振幅 + 线宽，容纳波形与 round cap */
+      height: calc(var(--md-linear-progress-wave-amplitude) * 2 + var(--md-linear-progress-track-height) + 2px);
+    }
+    .lp__svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+    .lp__track,
+    .lp__active,
+    .lp__stop {
+      fill: none;
+      stroke-linecap: round;
+    }
+    .lp__track {
+      stroke: var(--md-linear-progress-track-color);
+      stroke-width: var(--md-linear-progress-track-height);
+      transition: stroke var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .lp__active {
+      stroke: var(--md-linear-progress-active-indicator-color);
+      stroke-width: var(--md-linear-progress-active-indicator-height);
+      stroke-dasharray: 100 100;
+      stroke-dashoffset: 100;
+      /* 入场随卡片 reveal 从 0 长到 --lp-value（350ms medium3），
+         曲线用 emphasized decelerate（快→慢无过冲） */
+      transition: stroke-dashoffset var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate),
+                  stroke var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .lp__stop {
+      stroke: var(--md-linear-progress-active-indicator-color);
+      stroke-width: var(--md-linear-progress-stop-indicator-size);
+      /* 极短 dash + round cap = 圆点，y 自动贴波形。
+         dasharray 是周期平铺的：dashoffset 行程必须小于周期，否则 dash 段
+         会绕出界再从另一侧出现。定稿：offset 0→-15（dash 位置 0→15，
+         恒在路径内），与 active 末端位置 15t 严格同步；初始隐藏由 opacity
+         承担（dash 无法移出路径，平铺语义决定） */
+      stroke-dasharray: 0.01 100;
+      stroke-dashoffset: 0;
+      opacity: 0;
+      transition: stroke-dashoffset var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate),
+                  opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  stroke var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .progress-card.is-visible .lp__active { stroke-dashoffset: var(--lp-off, 85); }
+    .progress-card.is-visible .lp__stop {
+      stroke-dashoffset: calc(var(--lp-off, 85) - 100);
+      opacity: 1;
+    }
+    /* 尺寸重算时禁过渡，防拖拽窗口出现追赶动画 */
+    .lp.is-resizing .lp__active,
+    .lp.is-resizing .lp__stop { transition: none; }
+
+    /* —— 建造清单折叠面板（MD3 expansion/collapsible 形制）——
+       触发器 = 全宽 list item（56dp 行高 + 状态层），chevron 180° 旋转，
+       面板 grid-rows 0fr→1fr 展开 */
+    .clp {
+      margin-top: 8px;
+      border-top: var(--md-divider-height) solid var(--md-divider-color);
+      transition: border-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .clp__trigger {
+      width: 100%;
+      min-height: var(--md-list-item-one-line-container-height);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 8px;
+      border: 0;
+      border-radius: var(--md-sys-shape-corner-medium);
+      background: transparent;
+      color: var(--md-sys-color-on-surface);
+      font-family: var(--font-ui);
+      text-align: left;
+      cursor: pointer;
+      /* 明确交互反馈：hover 8% / pressed 12% 状态层 */
+      transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .clp__trigger:hover {
+      background: color-mix(in srgb, var(--md-sys-color-on-surface) var(--md-sys-state-hover-opacity), transparent);
+    }
+    .clp__trigger:active {
+      background: color-mix(in srgb, var(--md-sys-color-on-surface) var(--md-sys-state-pressed-opacity), transparent);
+    }
+    .clp__trigger:focus-visible {
+      outline: 2px solid var(--md-sys-color-primary);
+      outline-offset: -2px;
+    }
+    .clp__label {
+      flex: 1 1 auto;
+      margin: 0;
+    }
+    .clp.is-open .clp__label { color: var(--md-sys-color-primary); }
+    .clp__meta {
+      margin: 0;
+      color: var(--md-sys-color-on-surface-variant);
+      white-space: nowrap;
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .clp__chev {
+      flex: none;
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+      color: var(--md-sys-color-on-surface-variant);
+      transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .clp.is-open .clp__chev {
+      transform: rotate(180deg);
+      color: var(--md-sys-color-primary);
+    }
+    /* 展开/收起动画（官方 emphasized 进出曲线，无过冲回弹）：
+       收起 = accelerate（慢→快收进去），展开 = decelerate（快→慢停稳）；
+       内容上浮淡入滞后 60ms */
+    .clp__panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-accelerate);
+    }
+    .clp.is-open .clp__panel {
+      grid-template-rows: 1fr;
+      transition: grid-template-rows var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
+    }
+    .clp__inner {
+      min-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+                  transform var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard);
+    }
+    .clp.is-open .clp__inner {
+      opacity: 1;
+      transform: none;
+      transition-delay: 60ms;   /* 面板展开后再淡入内容 */
+    }
+
+    /* —— MD3 Outlined Segmented Button（single-select · 清单筛选）—— */
+    .seg {
+      display: flex;
+      margin-top: 16px;   /* 折叠面板内首元素，8dp 网格 */
+      height: var(--md-outlined-segmented-button-container-height);
+      border: 1px solid var(--md-outlined-segmented-button-outline-color);
+      border-radius: var(--md-outlined-segmented-button-shape);
+      overflow: hidden;
+      transition: border-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .seg__btn {
+      flex: 1 1 0;
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;   /* 勾的间距走 margin，未选中（0 宽）不留幽灵 gap */
+      height: 100%;
+      padding: 0 12px;
+      border: 0;
+      background: transparent;
+      color: var(--md-outlined-segmented-button-unselected-label-text-color);
+      font-family: var(--font-ui);
+      cursor: pointer;
+      transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    /* 官方 outlined 形制：每段各带 1px 外框，相邻重叠成一条分隔线（恒显，
+       选中段不隐藏分隔线） */
+    .seg__btn + .seg__btn {
+      border-left: 1px solid var(--md-outlined-segmented-button-outline-color);
+    }
+    .seg__btn:hover:not(.is-selected) {
+      background: color-mix(in srgb, var(--md-sys-color-on-surface) var(--md-sys-state-hover-opacity), transparent);
+    }
+    .seg__btn:focus-visible {
+      outline: 2px solid var(--md-sys-color-primary);
+      outline-offset: -2px;
+    }
+    .seg__btn.is-selected {
+      background: var(--md-outlined-segmented-button-selected-container-color);
+      color: var(--md-outlined-segmented-button-selected-label-text-color);
+    }
+    /* 选中段前的勾（官方：checkmark 与 label 同现，宽度 150ms 收展） */
+    .seg__check {
+      flex: none;
+      width: 0;
+      margin-right: 0;
+      overflow: hidden;
+      fill: currentColor;
+      transition: width var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  margin-right var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .seg__btn.is-selected .seg__check {
+      width: var(--md-outlined-segmented-button-icon-size);
+      height: var(--md-outlined-segmented-button-icon-size);
+      margin-right: 6px;
+    }
+
+    /* —— MD3 Checkbox 清单（状态展示）—— */
+    .todo-list {
+      list-style: none;
+      margin: 16px 0 0;
+      padding: 0;
+    }
+    .todo-list__item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: var(--md-list-item-one-line-container-height);
+      padding: 0 8px;
+    }
+    .todo-list__item[hidden] { display: none; }   /* display:flex 会盖掉 [hidden] */
+    .todo-box {
+      position: relative;
+      flex: none;
+      width: var(--md-checkbox-container-size);
+      height: var(--md-checkbox-container-size);
+      border: var(--md-checkbox-outline-width) solid var(--md-checkbox-outline-color);
+      border-radius: var(--md-checkbox-container-shape);
+      box-sizing: border-box;
+      transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .todo-box svg {
+      position: absolute;
+      inset: calc(-1 * var(--md-checkbox-outline-width));
+      width: var(--md-checkbox-icon-size);
+      height: var(--md-checkbox-icon-size);
+      fill: currentColor;
+      color: var(--md-checkbox-selected-icon-color);
+      opacity: 0;
+      transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .todo-list__item.is-done .todo-box {
+      background: var(--md-checkbox-selected-container-color);
+      border-color: var(--md-checkbox-selected-container-color);
+    }
+    .todo-list__item.is-done .todo-box svg { opacity: 1; }
+    .todo-list__label {
+      flex: 1 1 auto;
+      margin: 0;
+      color: var(--md-list-item-label-text-color);
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .todo-list__item.is-done .todo-list__label {
+      color: var(--md-sys-color-on-surface-variant);
+    }
+    .todo-list__status {
+      margin: 0;
+      color: var(--md-list-item-trailing-supporting-text-color);
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
 
     /* ============ Join Us ============ */
-    /* 卡片表面/圆角/阴影走共用 Elevated Card 基座（见 Intro 区） */
     .join__card {
       width: min(680px, 100%);
       margin-top: 48px;
-      padding: clamp(24px, 4vw, 40px);
+      padding: 24px;
     }
     .join__requirement { margin: 0 auto; max-width: 520px; }
     .join__requirement strong {
       color: var(--md-sys-color-primary);
       font-weight: 500;
-      transition: color 420ms var(--md-sys-motion-easing-effects);
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
     .join__note {
       margin: 16px auto 0;
       max-width: 520px;
       color: var(--md-sys-color-on-surface-variant);
-      transition: color 420ms var(--md-sys-motion-easing-effects);
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
-    .join__divider {
-      width: 56px;
-      height: 2px;
-      margin: 32px auto;
-      border-radius: var(--md-sys-shape-corner-full);
-      background: var(--md-sys-color-primary);
-      opacity: 0.55;
-      transition: background-color 420ms var(--md-sys-motion-easing-effects);
+    .join__contact {
+      /* 组间距 32px（4×8dp）：MD 用留白与字阶层级分组 */
+      margin-top: 32px;
     }
     .join__contact-title {
       margin: 0 0 16px;
       color: var(--md-sys-color-on-surface-variant);
-      transition: color 420ms var(--md-sys-motion-easing-effects);
+      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
     .contact-list {
       display: flex;
@@ -1322,10 +1723,12 @@
     /* ============ Footer ============ */
     .site-footer {
       position: relative;
-      z-index: 5;                      /* 与内容层同层，压住波浪画布 */
-      padding: 28px clamp(20px, 5vw, 72px) 36px;
-      border-top: 1px solid var(--md-sys-color-outline-variant);
-      background: var(--md-sys-color-surface-dim);  /* 与页面底色一致，避免亮带 */
+      z-index: 5;
+      padding: 28px clamp(16px, 4vw, 32px) 36px;
+      border-top: var(--md-divider-height) solid var(--md-divider-color);
+      /* 非卡片区域 —— 不叠底色，模糊大背景直透（深色文字兜底见
+         [data-theme="dark"] .site-footer 颜色覆盖规则） */
+      background: transparent;
       color: var(--md-sys-color-on-surface-variant);
       transition: var(--theme-shift);
     }
@@ -1345,22 +1748,26 @@
       flex-wrap: wrap;
     }
 
-    /* ============ 开源致谢下拉（MD3 details menu） ============ */
+    /* ============ 开源致谢下拉（MD3 menu） ============
+       菜单展开时 footer 层叠上下文提到 FAB（z30）之上：下拉菜单是临时
+       浮层，图层必须压过常驻 FAB。菜单自身 z-index 跳不出 footer 的
+       层叠上下文，故提升 footer 本体；:has() 纯 CSS 开合即时生效 */
+    .site-footer:has(.oss[open]) { z-index: 40; }
     .oss { position: relative; }
-    /* 开源致谢下拉触发器 = 填充胶囊（2026-10-02 定稿：空心描边框改填充式） */
+    /* 开源致谢下拉触发器 = MD3 chip（高 32 / corner-small 8） */
     .oss__summary {
       cursor: pointer;
       list-style: none;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 14px;
-      border-radius: var(--md-sys-shape-corner-full);
+      height: var(--md-chip-container-height);
+      padding: 0 16px;
+      border-radius: var(--md-chip-container-shape);
       border: 0;
-      background: var(--md-sys-color-surface-container-high);
-      color: var(--md-sys-color-on-surface-variant);
-      transition: background-color var(--md-sys-motion-expressive-effects-default),
-                  color var(--md-sys-motion-expressive-effects-default);
+      background: var(--md-chip-container-color);
+      color: var(--md-chip-label-text-color);
+      transition: var(--theme-shift);
     }
     .oss__summary::-webkit-details-marker { display: none; }
     .oss__summary::after {
@@ -1370,9 +1777,11 @@
       border-right: 1.5px solid currentColor;
       border-bottom: 1.5px solid currentColor;
       transform: rotate(45deg) translateY(-2px);
-      transition: transform var(--md-sys-motion-expressive-effects-default);
+      transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
     }
-    .oss__summary:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 10%, var(--md-sys-color-surface-container-high)); }
+    .oss__summary:hover {
+      background: color-mix(in srgb, var(--md-sys-color-on-surface) var(--md-sys-state-hover-opacity), var(--md-sys-color-surface-container-low));
+    }
     .oss[open] .oss__summary {
       background: var(--md-sys-color-secondary-container);
       color: var(--md-sys-color-on-secondary-container);
@@ -1384,10 +1793,9 @@
       bottom: calc(100% + 10px);
       width: min(320px, 74vw);
       padding: 16px 18px;
-      border-radius: var(--md-sys-shape-corner-large);
-      background: var(--md-sys-color-surface-container-high);
-      border: 1px solid var(--md-sys-color-outline-variant);
-      box-shadow: var(--md-sys-elevation-3);
+      border-radius: var(--md-menu-container-shape);
+      background: var(--md-menu-container-color);
+      box-shadow: var(--md-menu-container-elevation);
       text-align: left;
       transition: var(--theme-shift);
     }
@@ -1404,7 +1812,7 @@
       gap: 1px;
       color: var(--md-sys-color-on-surface-variant);
     }
-    .oss__list strong { color: var(--md-sys-color-on-surface); font-weight: 600; }
+    .oss__list strong { color: var(--md-sys-color-on-surface); font-weight: 500; }
     .oss__by { color: var(--md-sys-color-on-surface-variant); }
     .oss__lic { color: var(--md-sys-color-outline); }
 
@@ -1417,51 +1825,127 @@
       border-radius: var(--md-sys-shape-corner-small);
       background: var(--md-sys-color-inverse-surface);
       color: var(--md-sys-color-inverse-on-surface);
-      transition: top var(--md-sys-motion-expressive-effects-default), background-color 420ms var(--md-sys-motion-easing-effects), color 420ms var(--md-sys-motion-easing-effects);
+      transition: top var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                  background-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+                  color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
     .skip-link:focus { top: 16px; }
 
-    /* ============ 响应式（桌面 / 平板 / 手机） ============ */
+    /* ============================================================
+       主题切换 = 全页一次性同步渐变（71 轮定案）
+       切换瞬间 JS 给 html 挂 is-theme-shifting（约 340ms 后摘除），
+       本块把全页所有元素（含伪元素）的颜色类属性过渡压平为同一条
+       300ms standard 曲线、delay 一律 0：禁止按层级或分区域的异步/
+       分批切换，避免部分设备上的渲染异常。!important 压平既有
+       transition 的分批时长/延迟（含 .reveal 的 stagger）。
+       background-image 故意不列（74 轮教训）；大面积背景层的
+       background-color 也不参与（75 轮二版：逐帧重绘大面积区域仍会
+       触发安卓合成器撕裂）——背景变色走 veil 双静态层的 opacity
+       交叉淡变（零重绘层混合）与小面积硬切，前景颜色渐变不受影响。
+       ============================================================ */
+    html.is-theme-shifting,
+    html.is-theme-shifting *,
+    html.is-theme-shifting *::before,
+    html.is-theme-shifting *::after {
+      transition:
+        background-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        border-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        outline-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        fill var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        stroke var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        box-shadow var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        text-shadow var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        opacity var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard) !important;
+      transition-delay: 0s !important;
+    }
+    /* body 底色几乎全程被 hero/sheet 遮住（仅 overscroll 边缘可见）——
+       排除 background-color 过渡改硬切（75 轮）：省一次全屏重绘动画，
+       撕裂触发条件消除；其上文字/内容的颜色渐变照常（下面特例只摘
+       background-color 一项） */
+    html.is-theme-shifting body {
+      transition:
+        color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        border-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        outline-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        fill var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        stroke var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        box-shadow var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        text-shadow var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        opacity var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+        transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard) !important;
+      transition-delay: 0s !important;
+    }
+    /* View Transitions 快照 crossfade 参数（76 轮路径①）：新旧整页快照的
+       GPU 纹理混合，时长/曲线与全站主题渐变对齐（300ms MD3 standard）。
+       零逐元素动画、零逐帧重绘 —— 撕裂（层瞬时缺失）在此路径下物理上
+       不可能发生 */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: var(--md-sys-motion-duration-medium2);
+      animation-timing-function: var(--md-sys-motion-easing-standard);
+      animation-delay: 0s;
+    }
+    /* 🔴 79 轮：VT 快照落定层 —— 补全 76 轮 veil "瞬时落定进快照"原则。
+       veil 双层靠 transition: none 落定，但卡片等大面积色面仍挂
+       --theme-shift（background-color/color/border-color/box-shadow
+       300ms 插值）：VT 的新快照捕获在插值起点（≈旧色）→ crossfade
+       两端同色、落幕瞬间整页"弹"出新主题 —— 大面积色面（Elevated
+       Card 基座）最明显，即"卡片区轻微闪烁"的根源。路径①期间全页
+       色面过渡瞬时落定（渐变 100% 交给快照 GPU crossfade）；
+       transition-property 保留 opacity/transform，reveal 上浮/收起
+       与显隐动画不受影响。与 is-theme-shifting 互斥（路径①/②分流，
+       不会同挂），无源序冲突 */
+    html.is-vt-landing,
+    html.is-vt-landing *,
+    html.is-vt-landing *::before,
+    html.is-vt-landing *::after {
+      transition-property: opacity, transform !important;
+    }
+
+    /* ============ 响应式（桌面 / 平板 / 手机；断点只改 token 与间距） ============ */
     @media (max-width: 960px) {
       .map-shell { height: 580px; }
     }
     @media (max-width: 840px) {
-      .brand { display: none; }                          /* 顶栏放不下品牌+导航簇 → 品牌整体隐去（含圆点） */
-      .nav-cluster { margin-left: auto; }                /* 导航簇保持右对齐 */
-      .nav__link { min-width: 52px; padding: 0 12px; }   /* 鹅卵石按钮收紧 */
-      /* 小屏字阶自适应：headline-large 降到 headline-medium 档（只改 token） */
-      .section-kicker h2 {
-        --md-sys-typescale-headline-large-font-size: var(--md-sys-typescale-headline-medium-font-size);
-        --md-sys-typescale-headline-large-line-height: var(--md-sys-typescale-headline-medium-line-height);
+      .brand { padding: 0 12px; gap: 0; }               /* logo badge 收为纯标记 */
+      .brand__name { display: none; }
+      .tabs__tab { min-width: 48px; padding: 0 12px; }   /* tab 收紧 */
+      /* 小屏字阶自适应：display/headline 降档（只改 token） */
+      .hero h1 {
+        --md-typescale-display-large-font-size: var(--md-typescale-display-medium-font-size);
+        --md-typescale-display-large-line-height: var(--md-typescale-display-medium-line-height);
       }
-      .hero__blur-pad--b1 { --brad: 8px; }               /* 移动端模糊档收窄（审美取值） */
-      .hero__blur-pad--b2 { --brad: 20px; }
-      .hero__blur-pad--b3 { --brad: 40px; }
-      .hero__stage-ghostblur--g1 { filter: blur(11px); }
-      .hero__stage-ghostblur--g2 { filter: blur(26px); }
+      .section-kicker h2 {
+        --md-typescale-headline-large-font-size: var(--md-typescale-headline-medium-font-size);
+        --md-typescale-headline-large-line-height: var(--md-typescale-headline-medium-line-height);
+      }
     }
     @media (max-width: 600px) {
       .hero { min-height: 560px; }
-      .hero__stage, .hero__stage-ghost { padding-top: calc(var(--nav-h) + 22px); }
-      /* 手机字阶自适应：headline-large 降到 headline-small 档（只改 token） */
+      .hero h1 {
+        --md-typescale-display-large-font-size: var(--md-typescale-display-small-font-size);
+        --md-typescale-display-large-line-height: var(--md-typescale-display-small-line-height);
+      }
+      /* 手机字阶自适应：headline-large 降到 headline-small 档 */
       .section-kicker h2 {
-        --md-sys-typescale-headline-large-font-size: var(--md-sys-typescale-headline-small-font-size);
-        --md-sys-typescale-headline-large-line-height: var(--md-sys-typescale-headline-small-line-height);
+        --md-typescale-headline-large-font-size: var(--md-typescale-headline-small-font-size);
+        --md-typescale-headline-large-line-height: var(--md-typescale-headline-small-line-height);
       }
       .map-shell { width: 100%; height: 440px; }
       .hero__actions .btn { flex: 1 1 100%; }
-      .nav__link { min-width: 44px; padding: 0 10px; }
-      .fab { right: 16px; bottom: 16px; }   /* 手机安全边距 */
+      .tabs__tab { min-width: 44px; padding: 0 10px; }
+      .fab-dock { --fab-safe: 16px; }   /* 手机安全边距 */
     }
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       .hero__visual, .hero__stage, .reveal, .theme-toggle__icon,
-      .scroll-hint__line, .ripple, .map-shell__badge::before,
-      .brand, .nav__pill, .nav__pill-ghost, .nav__link, .fab {
+      .scroll-hint__line, .ripple, .map-fs, .map-fs::after,
+      .tabs__indicator, .tabs__tab, .fab, .clp__chev {
         animation: none !important;
         transition: none !important;
-        will-change: auto;
       }
-      .reveal { opacity: 1; transform: none; }
+      .reveal.reveal { opacity: 1; transform: none; }
     }

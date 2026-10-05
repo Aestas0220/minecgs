@@ -7,8 +7,9 @@
   <meta name="description" content="MineCGS —— 以 1:2 比例在 Minecraft 中严谨复刻广东碧桂园学校校园的学生自发项目。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet" />
+  <!-- ?v= 资源版本号：发布站无缓存响应头时击穿浏览器启发式缓存，改版即换号 -->
+  <link rel="stylesheet" href="style.css?v=80" />
 
 </head>
 <body>
@@ -16,25 +17,17 @@
 
   <!-- MD3 Top App Bar（small） -->
   <header class="top-bar" id="topBar">
-    <!-- 左上 logo 徽标：28dp 圆形徽记（primary-container 色对）+ 品牌名 -->
-    <a class="brand" href="#hero" aria-label="MineCGS 首页">
-      <span class="brand__badge label-large" aria-hidden="true">M</span>
-      <span class="brand__name title-large">MineCGS</span>
+    <!-- 左上 logo badge（悬浮胶囊：方块标记 + 品牌名）；hero 区隐藏
+         （is-away），滚至 intro 浮入出场 -->
+    <a class="brand is-away" href="#hero" aria-label="MineCGS 首页">
+      <svg class="brand__mark" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2.4 21 7.2v9.6L12 21.6 3 16.8V7.2l9-4.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M3.3 7.35 12 12l8.7-4.65M12 12v9.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand__name title-medium">MineCGS</span>
     </a>
-    <div class="nav-cluster">
-      <nav class="nav" id="nav" aria-label="主导航">
-        <!-- 激活指示器：单一共享鹅卵石胶囊（JS 驱动几何）+ 关闭残影。
-             展开=点击/滚动激活时从按钮中心生长；拖动时 1:1 跟手 -->
-        <span class="nav__pill" id="navPill" aria-hidden="true"></span>
-        <span class="nav__pill-ghost" id="navPillGhost" aria-hidden="true"></span>
-        <a class="nav__link sl label-large is-active" href="#hero" data-section="hero"><span class="nav__label">首屏</span></a>
-        <a class="nav__link sl label-large" href="#intro" data-section="intro"><span class="nav__label">简介</span></a>
-        <a class="nav__link sl label-large" href="#progress" data-section="progress"><span class="nav__label">进度</span></a>
-        <a class="nav__link sl label-large" href="#join" data-section="join"><span class="nav__label">加入</span></a>
-      </nav>
-
-      <!-- 主题切换：独立圆形控件，置于导航鹅卵石右侧 -->
-      <button class="theme-toggle sl" id="themeToggle" type="button" aria-label="切换深浅色模式" title="切换深浅色模式">
+    <!-- 主题切换：MD3 icon button（48dp 触控 / 24dp 图标 / corner-full 状态层） -->
+    <button class="icon-btn theme-toggle" id="themeToggle" type="button" aria-label="切换深浅色模式" title="切换深浅色模式">
         <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <circle cx="12" cy="12" r="4.2"></circle>
           <path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4L17 7M7 17l-1.6 1.6"></path>
@@ -42,24 +35,26 @@
         <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6Z"></path>
         </svg>
-      </button>
-    </div>
+    </button>
+
+    <!-- MD3 Primary tab row（48dp 高 / 32×3 指示器 / label-large）：滚动同步激活 -->
+    <nav class="tabs" id="tabs" aria-label="主导航">
+      <span class="tabs__indicator" id="tabsIndicator" aria-hidden="true"></span>
+      <a class="tabs__tab label-large is-active" href="#hero" data-section="hero">首屏</a>
+      <a class="tabs__tab label-large" href="#intro" data-section="intro">简介</a>
+      <a class="tabs__tab label-large" href="#progress" data-section="progress">进度</a>
+      <a class="tabs__tab label-large" href="#join" data-section="join">加入</a>
+    </nav>
   </header>
 
   <main>
     <!-- 一、首屏 Hero · 独立封面页（sticky 钉住，内容面板滑过交接） -->
     <section class="hero" id="hero">
-      <!-- 合成层：图像 + 遮罩 + 颗粒整体退场（模糊/渐隐/缓推），
-           遮罩不单独残留 —— 旧版"图片隐去后色带悬空"的根源就在此 -->
+      <!-- 合成层：图像 + 遮罩（自始至终原图不做淡出，交接由圆角下页
+           上滑物理覆盖完成；遮罩不单独残留） -->
       <div class="hero__visual" id="heroVisual" aria-hidden="true">
         <div class="hero__bg"></div>
-        <!-- 退场预模糊分层：静态模糊副本（pad 补白零错位对齐），
-             JS 以 opacity 交叉淡化（零逐帧滤镜） -->
-        <div class="hero__blur-stage" id="heroBlur1"><div class="hero__blur-pad hero__blur-pad--b1"><div class="hero__bg"></div></div></div>
-        <div class="hero__blur-stage" id="heroBlur2"><div class="hero__blur-pad hero__blur-pad--b2"><div class="hero__bg"></div></div></div>
-        <div class="hero__blur-stage" id="heroBlur3"><div class="hero__blur-pad hero__blur-pad--b3"><div class="hero__bg"></div></div></div>
         <div class="hero__veil"></div>
-        <div class="hero__grain"></div>
       </div>
 
       <div class="hero__stage" id="heroStage">
@@ -90,30 +85,19 @@
             </a>
           </div>
         </article>
-        <!-- 文字退场双级预模糊残影：JS 注入封面克隆（静态模糊），
-             清晰字快退后 g1 轻糊接管、g2 重糊收尾（第三十五轮） -->
-        <div class="hero__stage-ghost" id="heroGhost1" aria-hidden="true">
-          <div class="hero__stage-ghostblur hero__stage-ghostblur--g1" id="heroGhostBlur1"></div>
-        </div>
-        <div class="hero__stage-ghost" id="heroGhost2" aria-hidden="true">
-          <div class="hero__stage-ghostblur hero__stage-ghostblur--g2" id="heroGhostBlur2"></div>
-        </div>
       </div>
 
       <div class="scroll-hint label-small" aria-hidden="true">
-        <span>Scroll</span>
         <span class="scroll-hint__line"></span>
+        <span class="scroll-hint__pill">
+          <svg class="scroll-hint__chevron" viewBox="0 -960 960 960"><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"/></svg>
+          Scroll
+        </span>
       </div>
     </section>
 
-    <!-- 二~四、内容面板：从封面之上滑过的 sheet（圆角顶边 + 上投影）。
-         波浪线场活在面板内部的独立层里，封面永远看不到它 -->
+    <!-- 二~四、内容面板：从封面之上滑过的 sheet（圆角顶边 + 上投影） -->
     <div class="page-sheet" id="pageSheet">
-      <!-- 动态背景：流动波浪线场。.wave-clip 的圆角裁切与面板同形同步滚动，
-           画布 sticky 钉在视口顶 —— 线条层与面板结构化绑定，不可能错位 -->
-      <div class="wave-clip" aria-hidden="true">
-        <canvas class="wave-canvas" id="waveCanvas"></canvas>
-      </div>
 
     <!-- 二、项目简介 Intro -->
     <section class="section section--center intro" id="intro">
@@ -128,7 +112,7 @@
 
         <div class="intro__layout reveal" data-delay="1">
           <p class="intro__lead body-large">MineCGS 是一项始于 2024 年 9 月的校园建筑复刻工程：以 <span class="accent">1:2 比例</span>在 Minecraft 中严谨重建广东碧桂园学校，两格方块对应现实中的一米。项目起源于一次突发奇想，2026 学年重启后持续推进。</p>
-          <p class="intro__body body-large">建模以 Google Earth 高清卫星图为底图，投射到超平坦地形上作为平面基准；其余数据来自现场测绘——拍照、量取尺寸，记录每栋建筑的轴线、层高与立面做法，再逐块在游戏中对齐。目前大门与行政楼外立面已经完成，小学部与初中部在建；山体、AP 楼、国际高中楼、少年宫、两个操场、剧院与宿舍列入待建名单，整体进度约 15–20%。</p>
+          <p class="intro__body body-large">建模以 Google Earth 高清卫星图为底图，投射到超平坦地形上作为平面基准；其余数据来自现场测绘——拍照、量取尺寸，记录每栋建筑的轴线、层高与立面做法，再逐块在游戏中对齐。</p>
           <p class="intro__body body-large">1:2 的尺度意味着持续的换算与取舍，也让许多平日被忽略的细节进入记录——不同年代翻新留下的墙面色差、连廊的宽度、台阶的高度。这座校园的形体与它的细节，都将在 Minecraft 中被一并留存。</p>
 
           <div class="disclaimer">
@@ -136,6 +120,31 @@
             <svg class="disclaimer__icon" viewBox="0 -960 960 960" aria-hidden="true"><path d="M504.5-288.63q8.5-8.62 8.5-21.37v-180q0-12.75-8.68-21.38-8.67-8.62-21.5-8.62-12.82 0-21.32 8.62-8.5 8.63-8.5 21.38v180q0 12.75 8.68 21.37 8.67 8.63 21.5 8.63 12.82 0 21.32-8.63Zm-1-314.57q9.5-9.2 9.5-22.8 0-14.45-9.48-24.22-9.48-9.78-23.5-9.78t-23.52 9.78Q447-640.45 447-626q0 13.6 9.48 22.8 9.48 9.2 23.5 9.2t23.52-9.2ZM480.27-80q-82.74 0-155.5-31.5Q252-143 197.5-197.5t-86-127.34Q80-397.68 80-480.5t31.5-155.66Q143-709 197.5-763t127.34-85.5Q397.68-880 480.5-880t155.66 31.5Q709-817 763-763t85.5 127Q880-563 880-480.27q0 82.74-31.5 155.5Q817-252 763-197.68q-54 54.31-127 86Q563-80 480.27-80Zm.23-60Q622-140 721-239.5t99-241Q820-622 721.19-721T480-820q-141 0-240.5 98.81T140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z"/></svg>
             <p class="disclaimer__text title-medium">本项目由学生自发发起，与学校官方无关。</p>
           </div>
+        </div>
+
+        <!-- 补充信息卡（MD3 List · one-line list item）：游戏版本 / 服务端 / 建造工具 -->
+        <div class="spec-card reveal" data-delay="2">
+          <p class="spec-card__title title-large">项目规格</p>
+          <ul class="spec-list">
+            <li class="spec-list__item">
+              <!-- Material Symbols Rounded · sports_esports -->
+              <svg class="spec-list__icon" viewBox="0 -960 960 960" aria-hidden="true"><path d="M147-200q-38 0-59.5-25.5T72-296l48-335q8-53 49.5-91t94.5-38h433q53 0 94.5 38t49.5 91l47 335q6 45-15.5 70.5T813-200q-23 0-39-7.5T747-226L643-330H317L213-226q-11 11-27 18.5t-39 7.5Zm18-64 126-126h378l126 126q5 5 18 9 9 0 13.5-9t2.5-18l-48-339q-5-35-29.5-57T697-700H263q-30 0-54.5 22T179-621l-48 339q-2 9 2.5 18t13.5 9q7 0 18-9Zm535-176q16 0 28-12t12-28q0-16-12-28t-28-12q-16 0-28 12t-12 28q0 16 12 28t28 12Zm-85-130q16 0 28-12t12-28q0-16-12-28t-28-12q-16 0-28 12t-12 28q0 16 12 28t28 12Zm-135 92Zm-180-42v50q0 10.83 7.12 17.92 7.11 7.08 18 7.08 10.88 0 17.88-7.08 7-7.09 7-17.92v-50h50q10.83 0 17.92-7.12 7.08-7.11 7.08-18 0-10.88-7.08-17.88-7.09-7-17.92-7h-50v-50q0-10.83-7.12-17.92-7.11-7.08-18-7.08-10.88 0-17.88 7.08-7 7.09-7 17.92v50h-50q-10.83 0-17.92 7.12-7.08 7.11-7.08 18 0 10.88 7.08 17.88 7.09 7 17.92 7h50Z"/></svg>
+              <span class="spec-list__name body-large">当前游戏版本</span>
+              <span class="spec-list__value title-medium">Minecraft 26.2</span>
+            </li>
+            <li class="spec-list__item">
+              <!-- Material Symbols Rounded · dns -->
+              <svg class="spec-list__icon" viewBox="0 -960 960 960" aria-hidden="true"><path d="M286.88-717q-20.88 0-35.38 14.62-14.5 14.62-14.5 35.5 0 20.88 14.62 35.38 14.62 14.5 35.5 14.5 20.88 0 35.38-14.62 14.5-14.62 14.5-35.5 0-20.88-14.62-35.38-14.62-14.5-35.5-14.5Zm0 414q-20.88 0-35.38 14.62-14.5 14.62-14.5 35.5 0 20.88 14.62 35.38 14.62 14.5 35.5 14.5 20.88 0 35.38-14.62 14.5-14.62 14.5-35.5 0-20.88-14.62-35.38-14.62-14.5-35.5-14.5ZM154-839h651q16 0 25.5 9.5t9.5 25.81V-535q0 17.42-9.5 29.21T805-494H154q-15 0-24.5-11.79T120-535v-268.69q0-16.31 9.5-25.81T154-839Zm26 60v225h600v-225H180Zm-26 353h647q15 0 27 12.5t12 28.53V-121q0 20-12 30.5T801-80H159q-16 0-27.5-10.5T120-121v-263.97q0-16.03 9.5-28.53T154-426Zm26 60v226h600v-226H180Zm0-413v225-225Zm0 413v226-226Z"/></svg>
+              <span class="spec-list__name body-large">服务端</span>
+              <span class="spec-list__value title-medium">Fabric</span>
+            </li>
+            <li class="spec-list__item">
+              <!-- Material Symbols Rounded · construction -->
+              <svg class="spec-list__icon" viewBox="0 -960 960 960" aria-hidden="true"><path d="M740-149 517-371l57-57 223 223q12 12 12 28t-12 28q-12 12-28.5 12T740-149Zm-581 0q-12-12-12-28.5t12-28.5l261-261-107-107-2 2q-9 9-21 9t-21-9l-23-23v97q0 10-9.5 13.5T220-488L102-606q-7-7-3.5-16.5T112-632h98l-27-27q-9-9-9-21t9-21l110-110q17-17 37-23t44-6q21 0 36 5.5t32 18.5q5 5 5.5 11t-4.5 11l-95 95 27 27q9 9 9 21t-9 21l-3 3 104 104 122-122q-8-13-12.5-30t-4.5-36q0-53 38.5-91.5T711-841q8 0 14.5.5T737-838q6 3 7.5 9.5T741-817l-61 61q-5 5-5 11t5 11l53 53q5 5 11 5t11-5l59-59q5-5 13-4t11 8q2 6 2.5 12.5t.5 14.5q0 53-38.5 91.5T711-579q-18 0-31-2.5t-24-7.5L215-148q-12 12-28 11.5T159-149Z"/></svg>
+              <span class="spec-list__name body-large">建造工具</span>
+              <span class="spec-list__value title-medium">WorldEdit · Axiom</span>
+            </li>
+          </ul>
         </div>
       </div>
     </section>
@@ -148,20 +157,139 @@
             <svg class="kicker-tag__icon" viewBox="0 -960 960 960" aria-hidden="true"><path d="M220-180h150v-220q0-12.75 8.63-21.38Q387.25-430 400-430h160q12.75 0 21.38 8.62Q590-412.75 590-400v220h150v-390L480-765 220-570v390Zm-60 0v-390q0-14.25 6.38-27 6.37-12.75 17.62-21l260-195q15.68-12 35.84-12Q500-825 516-813l260 195q11.25 8.25 17.63 21 6.37 12.75 6.37 27v390q0 24.75-17.62 42.37Q764.75-120 740-120H560q-12.75 0-21.37-8.63Q530-137.25 530-150v-220H430v220q0 12.75-8.62 21.37Q412.75-120 400-120H220q-24.75 0-42.37-17.63Q160-155.25 160-180Zm320-293Z"/></svg>
             当前进度
           </span>
-          <h2 class="headline-large">实时三维档案视图</h2>
-          <p class="body-large">下面这块区域留给未来的 BlueMap 渲染引擎，接入后可以直接在网页里漫游已经建好的部分。</p>
+          <h2 class="headline-large">地图预览</h2>
+          <p class="body-large">内嵌地图预览，可以直接在网页里漫游已经建好的部分。可拖动旋转、滚轮缩放；若浏览器鼠标手势占用右键，按住 Alt+左键拖动即可旋转视角。</p>
         </div>
 
         <div class="progress__frame-wrap reveal" data-delay="1">
           <div class="map-shell">
-            <span class="map-shell__badge label-large">BlueMap · 引擎占位</span>
-            <!-- BlueMap 引擎占位。注意：src="#" 会把页面自身递归载入
-                 iframe（无限套娃、每层副本都在跑动画），必须用 about:blank -->
-            <iframe src="about:blank" title="BlueMap 渲染引擎占位" width="100%" height="100%"></iframe>
+            <!-- MD3 标准 icon button（48dp 触控 / 24dp 图标 / corner-full 状态层）：
+                 全屏预览开关，悬浮右上角；fullscreenchange 切换图标与 aria-label -->
+            <button class="map-fs" id="mapFsBtn" type="button" aria-label="全屏预览地图" title="全屏预览">
+              <svg class="map-fs__icon map-fs__icon--enter" viewBox="0 -960 960 960" aria-hidden="true"><path d="M200-200h80q17 0 28.5 11.5T320-160q0 17-11.5 28.5T280-120H160q-17 0-28.5-11.5T120-160v-120q0-17 11.5-28.5T160-320q17 0 28.5 11.5T200-280v80Zm560 0v-80q0-17 11.5-28.5T800-320q17 0 28.5 11.5T840-280v120q0 17-11.5 28.5T800-120H680q-17 0-28.5-11.5T640-160q0 17 11.5-28.5T680-200h80ZM200-760v80q0 17-11.5 28.5T160-640q-17 0-28.5-11.5T120-680v-120q0-17 11.5-28.5T160-840h120q17 0 28.5 11.5T320-800q0 17-11.5 28.5T280-760h-80Zm560 0h-80q-17 0-28.5-11.5T640-800q0-17 11.5-28.5T680-840h120q17 0 28.5 11.5T840-800v120q0 17-11.5 28.5T800-640q-17 0-28.5-11.5T760-680v-80Z"/></svg>
+              <svg class="map-fs__icon map-fs__icon--exit" viewBox="0 -960 960 960" aria-hidden="true"><path d="M240-240h-80q-17 0-28.5-11.5T120-280q0-17 11.5-28.5T160-320h120q17 0 28.5 11.5T320-280v120q0 17-11.5 28.5T280-120q-17 0-28.5-11.5T240-160v-80Zm480 0v80q0 17-11.5 28.5T680-120q-17 0-28.5-11.5T640-160v-120q0-17 11.5-28.5T680-320h120q17 0 28.5 11.5T840-280q0 17-11.5 28.5T800-240h-80ZM240-720v-80q0-17 11.5-28.5T280-840q17 0 28.5 11.5T320-800v120q0 17-11.5 28.5T280-640H160q-17 0-28.5-11.5T120-680q0-17 11.5-28.5T160-720h80Zm480 0h80q17 0 28.5 11.5T840-680q0 17-11.5 28.5T800-640H680q-17 0-28.5-11.5T640-680v-120q0-17 11.5-28.5T680-840q17 0 28.5 11.5T720-800v80Z"/></svg>
+            </button>
+            <!-- 地图预览内嵌（自建服务 map.minecgs.com，Cloudflare + HTTPS）。
+                 默认加载状态：不带任何视角/缩放/定位预设参数（71 轮定案，
+                 降低默认渲染压力）。历史教训：src="#" 会把页面自身递归
+                 载入 iframe（无限套娃），任何占位/内嵌都禁用 "#" -->
+            <iframe
+              src="https://map.minecgs.com/"
+              title="MineCGS 校园地图预览"
+              width="100%" height="100%" loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"></iframe>
           </div>
         </div>
 
-        <p class="progress__note body-medium reveal" data-delay="2">渲染引擎接入后，此处将展示校园三维地图，支持自由视角浏览与建筑标注。</p>
+        <p class="progress__note body-medium reveal" data-delay="2"><a href="https://map.minecgs.com/" target="_blank" rel="noopener">在新窗口打开地图</a>。</p>
+
+        <!-- 建造进度卡（MD3 Linear Progress + Outlined Segmented Button + Checkbox List） -->
+        <div class="progress-card reveal" data-delay="3">
+          <div class="progress-card__head">
+            <div class="progress-card__intro">
+              <p class="progress-card__title title-large">建造进度</p>
+              <p class="progress-card__sub body-medium">保守估算的完成度，建造清单随后续测绘持续更新。</p>
+            </div>
+            <p class="progress-card__pct headline-large"><span class="progress-card__num">15</span><span class="progress-card__unit label-large">%</span></p>
+          </div>
+
+          <!-- MD3 Expressive Wavy Linear Progress Indicator · determinate 15%
+               （波浪 track + 波浪 active + 末端 stop 圆点；path 由 main.js 按容器宽度生成） -->
+          <div class="lp lp--wavy" style="--lp-value: 15%" role="progressbar" aria-label="整体建造进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="15">
+            <svg class="lp__svg" aria-hidden="true" focusable="false"></svg>
+          </div>
+
+          <!-- 建造清单折叠面板（默认收起，展开显示筛选 + 清单） -->
+          <div class="clp">
+            <button class="clp__trigger" type="button" aria-expanded="false" aria-controls="clpPanel">
+              <span class="clp__label label-large">建造清单</span>
+              <span class="clp__meta body-medium">11 项 · 2 项已完成</span>
+              <!-- Material Symbols Rounded · expand_more -->
+              <svg class="clp__chev" viewBox="0 -960 960 960" aria-hidden="true"><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"/></svg>
+            </button>
+            <div class="clp__panel" id="clpPanel">
+              <div class="clp__inner">
+
+          <!-- MD3 Outlined Segmented Button · single-select（清单筛选） -->
+          <div class="seg" role="radiogroup" aria-label="按状态筛选建造清单">
+            <button class="seg__btn label-large is-selected" type="button" role="radio" aria-checked="true" data-filter="all">
+              <!-- Material Symbols Rounded · check（与勾选框同一 path） -->
+              <svg class="seg__check" viewBox="0 -960 960 960" aria-hidden="true"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg>
+              <span>全部</span>
+            </button>
+            <button class="seg__btn label-large" type="button" role="radio" aria-checked="false" data-filter="done">
+              <svg class="seg__check" viewBox="0 -960 960 960" aria-hidden="true"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg>
+              <span>已完成</span>
+            </button>
+            <button class="seg__btn label-large" type="button" role="radio" aria-checked="false" data-filter="todo">
+              <svg class="seg__check" viewBox="0 -960 960 960" aria-hidden="true"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg>
+              <span>未完成</span>
+            </button>
+          </div>
+
+          <!-- MD3 Checkbox 清单（状态展示：勾选=已完成） -->
+          <ul class="todo-list" aria-label="建造清单">
+            <li class="todo-list__item is-done">
+              <span class="todo-box" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg></span>
+              <span class="todo-list__label body-large">大门 · 外立面</span>
+              <span class="todo-list__status body-medium">已完成</span>
+            </li>
+            <li class="todo-list__item is-done">
+              <span class="todo-box" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg></span>
+              <span class="todo-list__label body-large">行政楼 · 外立面</span>
+              <span class="todo-list__status body-medium">已完成</span>
+            </li>
+            <li class="todo-list__item">
+              <span class="todo-box" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg></span>
+              <span class="todo-list__label body-large">小学部</span>
+              <span class="todo-list__status body-medium">在建中</span>
+            </li>
+            <li class="todo-list__item">
+              <span class="todo-box" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg></span>
+              <span class="todo-list__label body-large">初中部</span>
+              <span class="todo-list__status body-medium">在建中</span>
+            </li>
+            <li class="todo-list__item">
+              <span class="todo-box" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg></span>
+              <span class="todo-list__label body-large">山体</span>
+              <span class="todo-list__status body-medium">待建</span>
+            </li>
+            <li class="todo-list__item">
+              <span class="todo-box" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg></span>
+              <span class="todo-list__label body-large">AP 楼</span>
+              <span class="todo-list__status body-medium">待建</span>
+            </li>
+            <li class="todo-list__item">
+              <span class="todo-box" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg></span>
+              <span class="todo-list__label body-large">国际高中楼</span>
+              <span class="todo-list__status body-medium">待建</span>
+            </li>
+            <li class="todo-list__item">
+              <span class="todo-box" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg></span>
+              <span class="todo-list__label body-large">少年宫</span>
+              <span class="todo-list__status body-medium">待建</span>
+            </li>
+            <li class="todo-list__item">
+              <span class="todo-box" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg></span>
+              <span class="todo-list__label body-large">两个操场</span>
+              <span class="todo-list__status body-medium">待建</span>
+            </li>
+            <li class="todo-list__item">
+              <span class="todo-box" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg></span>
+              <span class="todo-list__label body-large">剧院</span>
+              <span class="todo-list__status body-medium">待建</span>
+            </li>
+            <li class="todo-list__item">
+              <span class="todo-box" aria-hidden="true"><svg viewBox="0 -960 960 960"><path d="m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z"/></svg></span>
+              <span class="todo-list__label body-large">宿舍</span>
+              <span class="todo-list__status body-medium">待建</span>
+            </li>
+          </ul>
+
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -170,7 +298,7 @@
       <div class="section__inner">
         <div class="section-kicker reveal">
           <span class="kicker-tag label-large">
-            <svg class="kicker-tag__icon" viewBox="0 -960 960 960" aria-hidden="true"><path d="M850.33-123q-5.33 0-10.83-2t-10.5-7L721-240H300q-24.75 0-42.37-17.63Q240-275.25 240-300v-80h440q24.75 0 42.38-17.63Q740-415.25 740-440v-280h80q24.75 0 42.38 17.62Q880-684.75 880-660v507q0 14-9.5 22t-20.17 8ZM140-425l75-75h405v-320H140v395Zm-30.33 103Q99-322 89.5-330q-9.5-8-9.5-22v-468q0-24.75 17.63-42.38Q115.25-880 140-880h480q24.75 0 42.38 17.62Q680-844.75 680-820v320q0 24.75-17.62 42.37Q644.75-440 620-440H240L131-331q-5 5-10.5 7t-10.83 2ZM140-500v-320 320Z"/></svg>
+            <svg class="kicker-tag__icon" viewBox="0 -960 960 960" aria-hidden="true"><path d="M140-160q-24.75 0-42.37-17.63Q80-195.25 80-220v-34q0-34 17-62.5t51-43.5q72-32 132-46t120-14q14 0 29 .75t27 2.25q12.12 1.55 20.56 11.64 8.44 10.08 6.44 22.5-2 10.86-11.5 18.36T450-358q-14-1-27-1.5t-23-.5q-58 0-105.5 10.5T172-306q-17 8-24.5 23t-7.5 29v34h319q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H140Zm485-68 192-192q9-9 21-9t21 9q9 9 9 21t-9 21L646-165q-9 9-21 9t-21-9l-99-99q-9-9-9-21t9-21q9-9 21-9t21 9l78 78ZM292-524q-42-42-42-108t42-108q42-42 108-42t108 42q42 42 42 108t-42 108q-42 42-108 42t-108-42Zm153 290Zm19.5-333.5Q490-593 490-632t-25.5-64.5Q439-722 400-722t-64.5 25.5Q310-671 310-632t25.5 64.5Q361-542 400-542t64.5-25.5ZM400-632Z"/></svg>
             加入我们
           </span>
           <h2 class="headline-large">与我们一起建造</h2>
@@ -179,21 +307,33 @@
 
         <div class="join__card reveal" data-delay="1">
           <p class="join__requirement body-large">申请主要看<strong>建筑功底</strong>或<strong>相关经验</strong>，发几张自己的作品照片即可。</p>
-          <p class="join__note body-medium">加入前我们会简单聊聊，双方都觉得合适再进服务器。</p>
+          <p class="join__note body-medium">若您拥有激光雷达、无人机等设备可辅助勘测，也欢迎与我们联系。</p>
+          <p class="join__note body-medium">加入前我们会简单聊聊，双方都觉得合适再给管理员权限。</p>
 
-          <div class="join__divider" aria-hidden="true"></div>
-
-          <p class="join__contact-title label-large">联系方式 · Contact</p>
-          <ul class="contact-list">
-            <li class="chip label-large"><span>QQ 群</span><span class="chip__val chip__val--pending">待公布</span></li>
-            <li class="chip label-large"><span>电子邮箱</span><span class="chip__val chip__val--pending">待公布</span></li>
-            <li class="chip label-large"><span>社交账号</span><span class="chip__val chip__val--pending">待公布</span></li>
-          </ul>
+          <div class="join__contact">
+            <p class="join__contact-title label-large">联系方式 · Contact</p>
+            <ul class="contact-list">
+              <li class="chip label-large"><span>QQ 群</span><span class="chip__val chip__val--pending">待公布</span></li>
+              <li class="chip label-large"><span>电子邮箱</span><span class="chip__val chip__val--pending">待公布</span></li>
+              <li class="chip label-large"><span>社交账号</span><span class="chip__val chip__val--pending">待公布</span></li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
     </div><!-- /.page-sheet -->
   </main>
+
+  <!-- Extended FAB「下载进服包」dock（MD3 FAB：56dp 容器 / 24dp 图标 / corner-large）：
+       零高度 sticky dock —— 滚过 hero 后浮现（JS 只管显隐）；页底 footer
+       上探时由布局直接顶起（与 footer 边缘同速零延迟），触发与 hero
+       下载按钮相同的免责弹窗流程 -->
+  <div class="fab-dock">
+    <button class="fab fab--extended sl" id="fabDownload" type="button" aria-label="下载进服包">
+      <svg class="fab__icon" viewBox="0 -960 960 960" aria-hidden="true"><path d="M469-327q-5-2-10-7L308-485q-9-9.27-8.5-21.64.5-12.36 9.11-21.36 9.39-9 21.89-9t21.5 9l98 99v-341q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v341l99-99q8.8-9 20.9-8.5 12.1.5 21.49 9.5 8.61 9 8.61 21.5t-9 21.5L501-334q-5 5-10.13 7-5.14 2-11 2-5.87 0-10.87-2ZM220-160q-24 0-42-18t-18-42v-113q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v113h520v-113q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v113q0 24-18 42t-42 18H220Z"/></svg>
+      <span class="fab__label label-large">下载进服包</span>
+    </button>
+  </div>
 
   <footer class="site-footer">
     <div class="site-footer__inner">
@@ -206,22 +346,15 @@
             <p class="oss__title label-large">本站使用的开源项目</p>
             <ul class="oss__list body-small">
               <li><strong>Material Color Utilities</strong><span class="oss__by">Google</span><span class="oss__lic">Apache License 2.0</span></li>
-              <li><strong>simplex-noise</strong><span class="oss__by">Jonas Wagner</span><span class="oss__lic">MIT License</span></li>
-              <li><strong>ui-element-samples · animated-blur</strong><span class="oss__by">GoogleChromeLabs · Surma &amp; Yi Gu</span><span class="oss__lic">Apache License 2.0</span></li>
-              <li><strong>Source Serif 4 · Noto Serif SC</strong><span class="oss__by">Adobe · Google Fonts</span><span class="oss__lic">SIL Open Font License 1.1</span></li>
+              <li><strong>Material Symbols</strong><span class="oss__by">Google</span><span class="oss__lic">Apache License 2.0</span></li>
+              <li><strong>地图预览引擎</strong><span class="oss__by">BlueColored</span><span class="oss__lic">MIT License</span></li>
+              <li><strong>Source Serif 4 · Noto Serif SC</strong><span class="oss__by">Google Fonts</span><span class="oss__lic">SIL Open Font License 1.1</span></li>
             </ul>
           </div>
         </details>
       </div>
     </div>
   </footer>
-
-  <!-- Extended FAB「下载进服包」（MD3 FAB：56dp 容器 / 24dp 图标 / corner-large）：
-       滚过 hero 封面后自右下浮现，触发与 hero 下载按钮相同的免责弹窗流程 -->
-  <button class="fab fab--extended sl" id="fabDownload" type="button" aria-label="下载进服包">
-    <svg class="fab__icon" viewBox="0 -960 960 960" aria-hidden="true"><path d="M469-327q-5-2-10-7L308-485q-9-9.27-8.5-21.64.5-12.36 9.11-21.36 9.39-9 21.89-9t21.5 9l98 99v-341q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v341l99-99q8.8-9 20.9-8.5 12.1.5 21.49 9.5 8.61 9 8.61 21.5t-9 21.5L501-334q-5 5-10.13 7-5.14 2-11 2-5.87 0-10.87-2ZM220-160q-24 0-42-18t-18-42v-113q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v113h520v-113q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v113q0 24-18 42t-42 18H220Z"/></svg>
-    <span class="fab__label label-large">下载进服包</span>
-  </button>
 
   <!-- 下载确认弹窗（MD3 Basic dialog）：免责提示 + 3 秒冷静期倒计时，
        确认后才触发 minecgs-modpack.mrpack 直链下载 -->
@@ -244,10 +377,10 @@
     </div>
   </dialog>
 
-  <!-- 开源库 libs.js：simplex-noise（MIT）+ Material Color Utilities（Apache-2.0） -->
-  <script src="libs.js"></script>
-  <!-- 站点逻辑 main.js：波场渲染 + 主题切换 + 页面交互 -->
-  <script src="main.js"></script>
+  <!-- 开源库 libs.js：Material Color Utilities（Apache-2.0）—— simplex-noise 已随波场迭代移除 -->
+  <script src="libs.js?v=80"></script>
+  <!-- 站点逻辑 main.js：动态取色 + 主题切换 + 页面交互 -->
+  <script src="main.js?v=80"></script>
 
 </body>
 </html>
