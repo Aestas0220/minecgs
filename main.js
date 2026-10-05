@@ -441,6 +441,14 @@
       var ticking = false;
       var heroH = 0;             /* 缓存 hero 高度 —— 滚动热路径禁读 offsetHeight（强制布局） */
       var hintOpacity = -1;
+      /* 81 轮接缝裁切：.page-bg（视口冻结模糊层）以 clip-path 裁进 sheet
+         圆角轮廓 —— --sheet-seam = sheet 顶边的视口 y（iOS WebKit 无
+         background-attachment: fixed，此为跨平台等效）。滚动热路径禁读
+         offsetTop（强制布局）→ 缓存 + resize/load 重测 */
+      var pageBgEl = document.querySelector(".page-bg");
+      var sheetEl = document.getElementById("pageSheet");
+      var sheetTop = 0;
+      var seamLast = null;
       /* Extended FAB「下载进服包」：滚过 hero 封面后自右下浮现（阈值迟滞防临界闪烁）。
          页底 footer 避让 = .fab-dock 纯布局（sticky 被顶起），JS 只管显隐 */
       var fabEl = document.getElementById("fabDownload");
@@ -452,6 +460,18 @@
         if (heroSection) {
           if (!heroH) { heroH = heroSection.offsetHeight || window.innerHeight; measureNav(); }
           var p = Math.min(Math.max(y / heroH, 0), 1);
+
+          /* 81 轮：接缝 = sheet 顶边视口 y，clamp ≥ -64（28px 圆角推出视口
+             即足，更深滚动值恒定零抖动）；值不变不动 style */
+          if (pageBgEl && sheetEl) {
+            if (!sheetTop) { sheetTop = sheetEl.offsetTop || 0; }
+            var seam = sheetTop - y;
+            if (seam < -64) { seam = -64; }
+            if (seam !== seamLast) {
+              seamLast = seam;
+              pageBgEl.style.setProperty("--sheet-seam", seam + "px");
+            }
+          }
 
           /* 导航激活态：统一滚动位置判定（见上方 updateNav） */
           updateNav(y);
@@ -490,8 +510,8 @@
         if (!ticking) { ticking = true; window.requestAnimationFrame(updateParallax); }
       }
       window.addEventListener("scroll", requestParallax, { passive: true });
-      window.addEventListener("resize", function () { heroH = 0; requestParallax(); }, { passive: true });
-      window.addEventListener("load", function () { heroH = 0; requestParallax(); });  /* 图片/字体落位后重测 */
+      window.addEventListener("resize", function () { heroH = 0; sheetTop = 0; requestParallax(); }, { passive: true });
+      window.addEventListener("load", function () { heroH = 0; sheetTop = 0; requestParallax(); });  /* 图片/字体落位后重测 */
       updateParallax();
 
       /* ============================================================
