@@ -1706,16 +1706,18 @@
     .join__card {
       width: min(680px, 100%);
       margin-top: 48px;
-      padding: 24px;
+      padding: clamp(24px, 4vw, 32px);
+      text-align: left;
     }
-    .join__requirement { margin: 0 auto; max-width: 520px; }
+    .join__details-title { margin: 0 0 16px; }
+    .join__requirement { margin: 0; max-width: 520px; }
     .join__requirement strong {
       color: var(--md-sys-color-primary);
       font-weight: 500;
       transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
     .join__note {
-      margin: 16px auto 0;
+      margin: 16px 0 0;
       max-width: 520px;
       color: var(--md-sys-color-on-surface-variant);
       transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
@@ -1723,20 +1725,38 @@
     .join__contact {
       /* 组间距 32px（4×8dp）：MD 用留白与字阶层级分组 */
       margin-top: 32px;
+      padding-top: 24px;
+      border-top: var(--md-divider-height) solid var(--md-divider-color);
     }
     .join__contact-title {
       margin: 0 0 16px;
-      color: var(--md-sys-color-on-surface-variant);
+      color: var(--md-sys-color-on-surface);
       transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
     .contact-list {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+      gap: 16px;
       margin: 0;
       padding: 0;
       list-style: none;
+    }
+    .contact-list__item {
+      min-width: 0;
+      padding: 16px;
+      display: grid;
+      align-content: start;
+      gap: 8px;
+      border-radius: var(--md-sys-shape-corner-medium);
+      background: var(--md-sys-color-surface-container-high);
+      transition: var(--theme-shift);
+    }
+    .contact-list__label { color: var(--md-sys-color-on-surface-variant); }
+    .contact-list__account {
+      color: var(--md-sys-color-primary);
+      overflow-wrap: anywhere;
+      user-select: all;
+      -webkit-user-select: all;
     }
 
     /* ============ Footer ============ */
