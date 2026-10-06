@@ -1003,16 +1003,6 @@
       text-align: center;
     }
     /* 首屏文字固定为浅色主题的色对，避免照片上的对比度随主题改变。 */
-    .hero__eyebrow {
-      margin: 0;
-      color: color-mix(in srgb, var(--md-ref-palette-neutral95) 82%, transparent);
-      font-family: var(--md-typescale-label-small-font-family);
-      font-size: 11px;
-      line-height: 20px;
-      letter-spacing: 0.16em;
-      font-weight: 400;
-    }
-    .hero__eyebrow span { margin-inline: 0.35em; }
     .hero h1 {
       margin: 14px 0 0;
       color: var(--md-ref-palette-neutral95);
@@ -1027,7 +1017,7 @@
         0 1px 4px color-mix(in srgb, var(--md-ref-palette-neutral20) 42%, transparent);
     }
     .hero__subtitle {
-      margin: 22px 0 0;
+      margin: 0;
       color: color-mix(in srgb, var(--md-ref-palette-neutral95) 88%, transparent);
       font-family: var(--md-typescale-title-large-font-family);
       font-size: clamp(16px, 1.5vw, 20px);
@@ -1988,8 +1978,7 @@
     @media (max-width: 600px) {
       .hero { min-height: 560px; }
       .hero h1 { font-size: clamp(48px, 15vw, 68px); }
-      .hero__eyebrow { font-size: 9px; letter-spacing: 0.11em; }
-      .hero__subtitle { margin-top: 18px; font-size: 14px; letter-spacing: 0; }
+      .hero__subtitle { font-size: 14px; letter-spacing: 0; }
       .hero__school-full { display: none; }
       .hero__school-compact { display: inline; }
       .hero__subtitle-separator { margin-inline: 0.35em; }
@@ -2018,9 +2007,7 @@
 
     @media (max-height: 540px) and (min-width: 601px) {
       .hero__stage { padding-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + 12px); }
-      .hero__eyebrow { display: none; }
-      .hero h1 { font-size: 56px; margin-top: 0; }
-      .hero__subtitle { margin-top: 8px; }
+      .hero h1 { font-size: 56px; margin-top: 8px; }
       .language-switch { margin-top: 0; }
       .hero__actions { margin-top: 16px; }
     }

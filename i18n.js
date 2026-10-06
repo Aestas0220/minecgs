@@ -2,8 +2,6 @@
   "use strict";
   // Keys retain the original Chinese copy; text nodes preserve icons and emphasis.
   var english = {
-    "校园建筑复刻": "CAMPUS RECONSTRUCTION",
-    "始于 2024": "EST. 2024",
     "下滑": "Scroll",
     "MineCGS —— 以 1:2 比例在 Minecraft 中严谨复刻广东碧桂园学校校园的学生自发项目。": "MineCGS is a student-led project faithfully recreating the campus of Guangdong Country Garden School (GCGS) in Minecraft at a 1:2 scale.",
     "跳至项目简介": "Skip to project overview",
