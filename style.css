@@ -1460,8 +1460,9 @@
 
     /* —— MD3 Wavy Linear Progress Indicator（determinate）——
        波浪 track + 同形波浪 active + 末端 stop 圆点（粗短线 round cap 实现，
-       y 自动贴合波形）。pathLength=100 归一：active 以 dashoffset 100→85 做
-       入场生长（15%），stop 用 dashoffset calc(off-100) 同步移动。
+       y 自动贴合波形）。使用真实路径长 L：active 以 dashoffset L→0.85L
+       做入场生长（15%），stop 用 dashoffset calc(off-L) 同步移动。
+       不用 pathLength 归一，规避部分 WebKit 重复平铺亮色段的问题。
        path d 由 main.js 按容器宽度生成（正弦采样），ResizeObserver 重算。 */
     .lp {
       margin-top: 20px;
@@ -1490,8 +1491,9 @@
     .lp__active {
       stroke: var(--md-linear-progress-active-indicator-color);
       stroke-width: var(--md-linear-progress-active-indicator-height);
-      stroke-dasharray: 100 100;
-      stroke-dashoffset: 100;
+      stroke-dasharray: var(--lp-length, 100) var(--lp-length, 100);
+      stroke-dashoffset: var(--lp-length, 100);
+      opacity: var(--lp-visible, 0);
       /* 入场随卡片 reveal 从 0 长到 --lp-value（350ms medium3），
          曲线用 emphasized decelerate（快→慢无过冲） */
       transition: stroke-dashoffset var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate),
@@ -1502,20 +1504,20 @@
       stroke-width: var(--md-linear-progress-stop-indicator-size);
       /* 极短 dash + round cap = 圆点，y 自动贴波形。
          dasharray 是周期平铺的：dashoffset 行程必须小于周期，否则 dash 段
-         会绕出界再从另一侧出现。定稿：offset 0→-15（dash 位置 0→15，
-         恒在路径内），与 active 末端位置 15t 严格同步；初始隐藏由 opacity
+         会绕出界再从另一侧出现。offset 0→-0.15L（dash 位置 0→0.15L，
+         恒在路径内），与 active 末端位置严格同步；初始隐藏由 opacity
          承担（dash 无法移出路径，平铺语义决定） */
-      stroke-dasharray: 0.01 100;
+      stroke-dasharray: 0.01 var(--lp-length, 100);
       stroke-dashoffset: 0;
       opacity: 0;
       transition: stroke-dashoffset var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate),
                   opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
                   stroke var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
-    .progress-card.is-visible .lp__active { stroke-dashoffset: var(--lp-off, 85); }
+    .progress-card.is-visible .lp__active { stroke-dashoffset: var(--lp-off, 100); }
     .progress-card.is-visible .lp__stop {
-      stroke-dashoffset: calc(var(--lp-off, 85) - 100);
-      opacity: 1;
+      stroke-dashoffset: calc(var(--lp-off, 100) - var(--lp-length, 100));
+      opacity: var(--lp-visible, 0);
     }
     /* 尺寸重算时禁过渡，防拖拽窗口出现追赶动画 */
     .lp.is-resizing .lp__active,

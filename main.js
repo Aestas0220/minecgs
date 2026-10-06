@@ -748,7 +748,8 @@
     })();
 
     /* —— MD3 Wavy Linear Progress：正弦波 path 生成 ——
-       track/active/stop 三 path 同形（pathLength=100 归一），dash 动画见
+       track/active/stop 三 path 同形，dash 使用实际路径长度，避免部分
+       WebKit 忽略 pathLength 归一后把亮色虚线重复平铺。dash 动画见
        style.css；ResizeObserver 重算（is-resizing 关过渡防追赶动画）。 */
     (function () {
       var lp = document.querySelector(".lp--wavy");
@@ -762,8 +763,6 @@
       track.setAttribute("class", "lp__track");
       active.setAttribute("class", "lp__active");
       stop.setAttribute("class", "lp__stop");
-      active.setAttribute("pathLength", "100");
-      stop.setAttribute("pathLength", "100");
       svg.appendChild(track);
       svg.appendChild(active);
       svg.appendChild(stop);
@@ -794,11 +793,20 @@
         track.setAttribute("d", d);
         active.setAttribute("d", d);
         stop.setAttribute("d", d);
-        /* --lp-value（如 15%）→ dashoffset 100-15=85（CSS 兜底值同） */
-        var v = num(cs.getPropertyValue("--lp-value")) || 15;
-        lp.style.setProperty("--lp-off", String(100 - v));
+        /* 所有 dash 度量都用 SVG 用户单位，不依赖 pathLength。
+           一个 dash + 一个整路径长的 gap，保证全路径只出现一段亮色。
+           显式解析并夹紧进度：0% 必须保持为 0，不能被默认值替换。 */
+        var pathSize = active.getTotalLength();
+        var v = parseFloat(cs.getPropertyValue("--lp-value"));
+        if (!isFinite(v)) v = 15;
+        v = Math.max(0, Math.min(100, v));
         if (!animate) {
           lp.classList.add("is-resizing");
+        }
+        lp.style.setProperty("--lp-length", String(pathSize));
+        lp.style.setProperty("--lp-off", String(pathSize * (1 - v / 100)));
+        lp.style.setProperty("--lp-visible", v > 0 ? "1" : "0");
+        if (!animate) {
           void lp.offsetWidth;   /* 强制回流，瞬时完成重算 */
           requestAnimationFrame(function () { lp.classList.remove("is-resizing"); });
         }
