@@ -747,27 +747,28 @@
       select(initial);
     })();
 
-    /* —— MD3 Wavy Linear Progress：正弦波 path 生成 ——
-       track/active/stop 三 path 同形，dash 使用实际路径长度，避免部分
-       WebKit 忽略 pathLength 归一后把亮色虚线重复平铺。dash 动画见
-       style.css；ResizeObserver 重算（is-resizing 关过渡防追赶动画）。 */
+    /* —— MD3 Wavy Linear Progress：直接绘制连续前缀，不使用 dash/pathLength。
+       有限 rAF 入场动画同步更新 path 终点和独立 circle；结束即停止。 */
     (function () {
       var lp = document.querySelector(".lp--wavy");
       if (!lp) return;
       var svg = lp.querySelector(".lp__svg");
       if (!svg) return;
+      var card = lp.closest(".progress-card");
       var NS = "http://www.w3.org/2000/svg";
-      var track = document.createElementNS(NS, "path");
-      var active = document.createElementNS(NS, "path");
-      var stop = document.createElementNS(NS, "path");
-      track.setAttribute("class", "lp__track");
-      active.setAttribute("class", "lp__active");
-      stop.setAttribute("class", "lp__stop");
-      svg.appendChild(track);
-      svg.appendChild(active);
-      svg.appendChild(stop);
-
+      function shape(tag, cls) {
+        var el = document.createElementNS(NS, tag);
+        el.setAttribute("class", cls);
+        svg.appendChild(el);
+        return el;
+      }
+      var track = shape("path", "lp__track");
+      var active = shape("path", "lp__active");
+      var stop = shape("circle", "lp__stop");
+      var width = 0, mid = 0, amp = 0, len = 0;
+      var value = 15, shown = 0, frame = 0;
       function num(v) { return parseFloat(v) || 0; }
+      function waveY(x) { return mid - amp * Math.sin((x / len) * Math.PI * 2); }
       function waveD(w, mid, amp, len) {
         var d = "M0 " + mid.toFixed(2);
         for (var x = 2; x < w; x += 2) {
@@ -775,48 +776,55 @@
           d += " L" + x.toFixed(2) + " " + y.toFixed(2);
         }
         var yEnd = mid - amp * Math.sin((w / len) * Math.PI * 2);
-        d += " L" + w.toFixed(2) + " " + yEnd.toFixed(2);
-        return d;
+        return d + " L" + w.toFixed(2) + " " + yEnd.toFixed(2);
       }
-      function render(animate) {
+      function draw(percent) {
+        shown = percent;
+        var x = width * percent / 100;
+        active.setAttribute("d", waveD(x, mid, amp, len));
+        stop.setAttribute("cx", x.toFixed(2));
+        stop.setAttribute("cy", waveY(x).toFixed(2));
+        active.style.opacity = stop.style.opacity = percent > 0 ? "1" : "0";
+      }
+      function visible() { return !card || card.classList.contains("is-visible"); }
+      function reveal() {
+        if (frame) { cancelAnimationFrame(frame); frame = 0; }
+        var target = visible() ? value : 0;
+        if (reduceMotion || target === 0 || target === shown) { draw(target); return; }
+        var from = shown, start = null;
+        var duration = num(getComputedStyle(lp).getPropertyValue("--md-sys-motion-duration-medium3")) || 350;
+        function step(now) {
+          if (start === null) start = now;
+          var t = Math.min(1, (now - start) / duration);
+          draw(from + (target - from) * (1 - Math.pow(1 - t, 3)));
+          frame = t < 1 ? requestAnimationFrame(step) : 0;
+        }
+        frame = requestAnimationFrame(step);
+      }
+      function render() {
         var cs = getComputedStyle(lp);
-        var w = lp.clientWidth;
-        if (!w) return;
-        var amp = num(cs.getPropertyValue("--md-linear-progress-wave-amplitude"));
-        var len = num(cs.getPropertyValue("--md-linear-progress-wave-length"));
-        var stroke = num(cs.getPropertyValue("--md-linear-progress-track-height"));
-        if (!amp || !len) return;
-        var H = amp * 2 + stroke + 2;
-        var mid = H / 2;
-        svg.setAttribute("viewBox", "0 0 " + w + " " + H);
-        var d = waveD(w, mid, amp, len);
-        track.setAttribute("d", d);
-        active.setAttribute("d", d);
-        stop.setAttribute("d", d);
-        /* 所有 dash 度量都用 SVG 用户单位，不依赖 pathLength。
-           一个 dash + 一个整路径长的 gap，保证全路径只出现一段亮色。
-           显式解析并夹紧进度：0% 必须保持为 0，不能被默认值替换。 */
-        var pathSize = active.getTotalLength();
-        var v = parseFloat(cs.getPropertyValue("--lp-value"));
-        if (!isFinite(v)) v = 15;
-        v = Math.max(0, Math.min(100, v));
-        if (!animate) {
-          lp.classList.add("is-resizing");
-        }
-        lp.style.setProperty("--lp-length", String(pathSize));
-        lp.style.setProperty("--lp-off", String(pathSize * (1 - v / 100)));
-        lp.style.setProperty("--lp-visible", v > 0 ? "1" : "0");
-        if (!animate) {
-          void lp.offsetWidth;   /* 强制回流，瞬时完成重算 */
-          requestAnimationFrame(function () { lp.classList.remove("is-resizing"); });
-        }
+        width = lp.clientWidth;
+        amp = num(cs.getPropertyValue("--md-linear-progress-wave-amplitude"));
+        len = num(cs.getPropertyValue("--md-linear-progress-wave-length"));
+        if (!width || !amp || !len) return;
+        var H = amp * 2 + num(cs.getPropertyValue("--md-linear-progress-track-height")) + 2;
+        mid = H / 2;
+        svg.setAttribute("viewBox", "0 0 " + width + " " + H);
+        track.setAttribute("d", waveD(width, mid, amp, len));
+        stop.setAttribute("r", String(num(cs.getPropertyValue("--md-linear-progress-stop-indicator-size")) / 2));
+        var parsed = parseFloat(cs.getPropertyValue("--lp-value"));
+        value = Math.max(0, Math.min(100, isFinite(parsed) ? parsed : 15));
+        draw(shown);
+        if (!frame) reveal();
       }
-      render(true);
+      render();
+      if (card) {
+        new MutationObserver(reveal).observe(card, { attributes: true, attributeFilter: ["class"] });
+      }
       if (typeof ResizeObserver !== "undefined") {
-        var ro = new ResizeObserver(function () { render(false); });
-        ro.observe(lp);
+        new ResizeObserver(render).observe(lp);
       } else {
-        window.addEventListener("resize", function () { render(false); });
+        window.addEventListener("resize", render, { passive: true });
       }
     })();
 
