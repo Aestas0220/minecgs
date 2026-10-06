@@ -1726,12 +1726,22 @@
       z-index: 5;
       padding: 28px clamp(16px, 4vw, 32px) 36px;
       border-top: var(--md-divider-height) solid var(--md-divider-color);
-      /* 位于 .page-sheet 之外，须遮住 .page-bg 视口冻结层的裸模糊图
-         （无 veil 染色，直透会过艳）；叠 surface 底色与此前透出的
-         body 底色逐像素一致（深色文字兜底见
-         [data-theme="dark"] .site-footer 颜色覆盖规则） */
-      background: var(--md-sys-color-surface);
+      /* 色面单独裁切，避免滚动时高层级 footer 背景溢绘到内容区。
+         footer 本体不裁切，保留向上展开的致谢菜单。 */
+      isolation: isolate;
       color: var(--md-sys-color-on-surface-variant);
+      transition: var(--theme-shift);
+    }
+    .site-footer::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: var(--md-sys-color-surface);
+      /* 裁切只约束背景色面，不影响菜单和 FAB 避让布局。 */
+      contain: paint;
+      clip-path: inset(0);
       transition: var(--theme-shift);
     }
     .site-footer__inner {
