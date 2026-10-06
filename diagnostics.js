@@ -7,7 +7,7 @@
     "html{background:#ffff00!important}" +
     "body{background:#00ffff!important}" +
     ".site-footer{background:#ff00ff!important}" +
-    ".page-bg{background-image:none!important;background-color:#00ff00!important}";
+    ".page-bg__surface{background-image:none!important;background-color:#00ff00!important}";
   document.head.appendChild(style);
   var panel = document.createElement("pre");
   panel.style.cssText = "position:fixed;top:calc(90px + env(safe-area-inset-top,0px));left:12px;z-index:1000;margin:0;padding:10px;border-radius:8px;background:#000;color:#fff;font:12px/1.5 monospace;pointer-events:none;white-space:pre-wrap;max-width:calc(100vw - 24px)";
@@ -28,7 +28,7 @@
     pending = false;
     var vv = window.visualViewport;
     var cs = getComputedStyle(probe);
-    panel.textContent = "诊断 v91：请录下底边色带\n" +
+    panel.textContent = "诊断 v93：请录下接缝或底边色带\n" +
       "紫=Footer  青=body  黄=html  绿=固定背景\n" +
       "innerH=" + window.innerHeight + " clientH=" + document.documentElement.clientHeight + "\n" +
       "visualH=" + (vv ? round(vv.height) : "n/a") + " offsetTop=" + (vv ? round(vv.offsetTop) : "n/a") + "\n" +

@@ -1131,11 +1131,31 @@
       height: calc(100lvh + env(safe-area-inset-bottom, 0px));
       z-index: 2;
       pointer-events: none;
+    }
+    /* 色面裁切与边缘装饰共用父容器的 --sheet-seam；图片几何不动。 */
+    .page-bg__surface {
+      position: absolute;
+      inset: 0;
       background-image: var(--page-bg-image);
       background-size: var(--page-bg-size);
       background-position: var(--page-bg-pos);
       background-repeat: no-repeat;
       clip-path: inset(var(--sheet-seam, 100%) 0 0 0 round var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0);
+    }
+    .page-bg__edge {
+      position: absolute;
+      top: var(--sheet-seam, calc(100% + 128px));
+      right: 0;
+      bottom: 0;
+      left: 0;
+      border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
+      border-top: var(--md-divider-height) solid color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent);
+      box-shadow:
+        0 -1px 2px 0 rgba(0, 0, 0, 0.30),
+        0 -2px 6px 2px rgba(0, 0, 0, 0.15),
+        0 -16px 48px 12px rgba(0, 0, 0, 0.18);
+      /* 接缝位置禁止过渡；与 surface 的裁切同帧落定。 */
+      transition: border-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
     /* ============================================================
        内容面板（Sheet）：带着圆角的下页 —— 从露出的第一帧起就是
@@ -1151,19 +1171,15 @@
       /* 模糊图与 veil 都在 .page-bg 内，共用固定定位和单一裁切。
          本框只承载内容，避免原生滚动与 JS 裁切各自更新导致背景错位。 */
       border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
-      /* 柔和边界：1px outline-variant 细线（随主题） */
-      border-top: var(--md-divider-height) solid color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent);
-      /* 层级上投影：elevation 2 镜像 + 更深的外扩投影营造"拉起"感 */
-      box-shadow:
-        0 -1px 2px 0 rgba(0, 0, 0, 0.30),
-        0 -2px 6px 2px rgba(0, 0, 0, 0.15),
-        0 -16px 48px 12px rgba(0, 0, 0, 0.18);
+      /* 不再单独绘制边线与投影，所有接缝装饰由 page-bg 统一负责。
+         保留原 1px 边框占位，避免内容落点改变。 */
+      border-top: var(--md-divider-height) solid transparent;
       transition: var(--theme-shift);
     }
     /* 两张静态色面与模糊图都挂在 .page-bg，同一父层、同一尺寸、
        同一 clip-path；任何裁切更新会同时作用于三者。
        常规滚动无 opacity 过渡，主题切换仍沿用整页 VT/桌面渐变。 */
-    .page-bg::before {
+    .page-bg__surface::before {
       content: "";
       position: absolute;
       inset: 0;
@@ -1174,7 +1190,7 @@
       transition: none;
       pointer-events: none;
     }
-    .page-bg::after {
+    .page-bg__surface::after {
       content: "";
       position: absolute;
       inset: 0;
@@ -1185,8 +1201,8 @@
       transition: none;
       pointer-events: none;
     }
-    [data-theme="dark"] .page-bg::before { opacity: 0; }
-    [data-theme="dark"] .page-bg::after { opacity: 1; }
+    [data-theme="dark"] .page-bg__surface::before { opacity: 0; }
+    [data-theme="dark"] .page-bg__surface::after { opacity: 1; }
 
     /* ============ Sections ============ */
     .section {

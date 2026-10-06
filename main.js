@@ -526,7 +526,7 @@
       var ticking = false;
       var heroH = 0;             /* 缓存 hero 高度 —— 滚动热路径禁读 offsetHeight（强制布局） */
       var hintOpacity = -1;
-      /* 81 轮接缝裁切：.page-bg（视口冻结模糊层）以 clip-path 裁进 sheet
+      /* 接缝统一：.page-bg 给 surface 裁切和 edge 边线/投影共享同一变量
          圆角轮廓 —— --sheet-seam = sheet 顶边的视口 y（iOS WebKit 无
          background-attachment: fixed，此为跨平台等效）。滚动热路径禁读
          offsetTop（强制布局）→ 缓存 + resize/load 重测 */
