@@ -933,13 +933,6 @@
        封面本体零平移 —— 没有随滚动的位移，就没有层间剪切；
        交接 = 圆角下页从其上滑过物理覆盖（封面照片自始至终原图，
        零淡出、零位移、零模糊、零烘焙）。 */
-    @font-face {
-      font-family: "MineCGS Display";
-      src: url("./fonts/bodoni-moda.ttf") format("truetype");
-      font-style: normal;
-      font-weight: 400;
-      font-display: swap;
-    }
     .hero {
       position: sticky;
       top: 0;
@@ -1023,7 +1016,7 @@
     .hero h1 {
       margin: 14px 0 0;
       color: var(--md-ref-palette-neutral95);
-      font-family: "MineCGS Display", "Bodoni MT", "Didot", "Times New Roman", serif;
+      font-family: "Times New Roman", Times, serif;
       font-size: clamp(64px, 10.8vw, 136px);
       line-height: 1.04;
       letter-spacing: -0.045em;
