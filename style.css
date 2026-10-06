@@ -1123,7 +1123,12 @@
        ============================================================ */
     .page-bg {
       position: fixed;
-      inset: 0;
+      /* Safari 收起工具栏时可见视口增高；预先覆盖最大视口，
+         避免固定背景层扩容前露出与 footer 同色的 body 底色。
+         只扩大色面覆盖，图片 size/pos 仍走冻结几何，不随顶栏移动。 */
+      inset: 0 0 auto;
+      height: 100vh;
+      height: 100lvh;
       z-index: 2;
       pointer-events: none;
       background-image: var(--page-bg-image);
@@ -1726,22 +1731,9 @@
       z-index: 5;
       padding: 28px clamp(16px, 4vw, 32px) 36px;
       border-top: var(--md-divider-height) solid var(--md-divider-color);
-      /* 色面单独裁切，避免滚动时高层级 footer 背景溢绘到内容区。
-         footer 本体不裁切，保留向上展开的致谢菜单。 */
-      isolation: isolate;
-      color: var(--md-sys-color-on-surface-variant);
-      transition: var(--theme-shift);
-    }
-    .site-footer::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
+      /* 遮住页脚下方未经 veil 染色的固定背景。 */
       background: var(--md-sys-color-surface);
-      /* 裁切只约束背景色面，不影响菜单和 FAB 避让布局。 */
-      contain: paint;
-      clip-path: inset(0);
+      color: var(--md-sys-color-on-surface-variant);
       transition: var(--theme-shift);
     }
     .site-footer__inner {
