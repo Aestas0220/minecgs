@@ -515,6 +515,7 @@
        -> N10（surface-container-low 档），压住照片亮部 */
     [data-theme="dark"] .hero h1 {
       color: var(--md-ref-palette-neutral10);
+      text-shadow: none;
     }
     [data-theme="dark"] .hero__subtitle {
       color: color-mix(in srgb, var(--md-ref-palette-neutral10) 88%, transparent);
@@ -942,6 +943,13 @@
        封面本体零平移 —— 没有随滚动的位移，就没有层间剪切；
        交接 = 圆角下页从其上滑过物理覆盖（封面照片自始至终原图，
        零淡出、零位移、零模糊、零烘焙）。 */
+    @font-face {
+      font-family: "MineCGS Display";
+      src: url("./fonts/bodoni-moda.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+    }
     .hero {
       position: sticky;
       top: 0;
@@ -1004,11 +1012,11 @@
       display: flex;
       align-items: flex-start;
       justify-content: center;
-      padding: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + clamp(28px, 6vh, 60px)) 24px 0;
+      padding: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + clamp(32px, 5svh, 52px)) 24px 0;
     }
     .hero__cover {
       position: relative;
-      width: min(920px, 100%);
+      width: min(1040px, 100%);
       text-align: center;
     }
     /* 柔光底板：inverse-surface 无硬边径向渐变压在照片上保对比度 */
@@ -1026,20 +1034,31 @@
         transparent 60%);
       pointer-events: none;
     }
-    .hero h1 {
+    .hero__eyebrow {
       margin: 0;
+      color: color-mix(in srgb, var(--md-sys-color-inverse-on-surface) 82%, transparent);
+      font-family: var(--md-typescale-label-small-font-family);
+      font-size: 11px;
+      line-height: 20px;
+      letter-spacing: 0.16em;
+      font-weight: 400;
+    }
+    .hero__eyebrow span { margin-inline: 0.35em; }
+    .hero h1 {
+      margin: 14px 0 0;
       color: var(--md-sys-color-inverse-on-surface);
-      font-family: var(--md-typescale-display-large-font-family);
-      font-size: var(--md-typescale-display-large-font-size);
-      line-height: var(--md-typescale-display-large-line-height);
-      letter-spacing: var(--md-typescale-display-large-letter-spacing);
-      font-weight: var(--md-typescale-display-large-font-weight);
+      font-family: "MineCGS Display", "Bodoni MT", "Didot", "Times New Roman", serif;
+      font-size: clamp(72px, 13.2vw, 168px);
+      line-height: 1.04;
+      letter-spacing: -0.045em;
+      font-weight: 400;
+      font-optical-sizing: auto;
       text-shadow:
         0 2px 26px color-mix(in srgb, var(--md-sys-color-inverse-surface) 55%, transparent),
         0 1px 4px color-mix(in srgb, var(--md-sys-color-inverse-surface) 42%, transparent);
     }
     .hero__subtitle {
-      margin: 14px 0 0;
+      margin: 22px 0 0;
       color: color-mix(in srgb, var(--md-sys-color-inverse-on-surface) 88%, transparent);
       font-family: var(--md-typescale-title-large-font-family);
       font-size: var(--md-typescale-title-large-font-size);
@@ -1049,6 +1068,19 @@
       text-shadow:
         0 1px 18px color-mix(in srgb, var(--md-sys-color-inverse-surface) 50%, transparent),
         0 1px 3px color-mix(in srgb, var(--md-sys-color-inverse-surface) 40%, transparent);
+    }
+    .hero__subtitle-place {
+      display: block;
+      font-size: clamp(17px, 1.65vw, 21px);
+      line-height: 1.7;
+      letter-spacing: 0.12em;
+    }
+    .hero__subtitle-project {
+      display: block;
+      margin-top: 3px;
+      font-size: 14px;
+      line-height: 1.7;
+      letter-spacing: 0.04em;
     }
     .hero__actions {
       display: flex;
@@ -1951,10 +1983,6 @@
       .brand__name { display: none; }
       .tabs__tab { min-width: 48px; padding: 0 12px; }   /* tab 收紧 */
       /* 小屏字阶自适应：display/headline 降档（只改 token） */
-      .hero h1 {
-        --md-typescale-display-large-font-size: var(--md-typescale-display-medium-font-size);
-        --md-typescale-display-large-line-height: var(--md-typescale-display-medium-line-height);
-      }
       .section-kicker h2 {
         --md-typescale-headline-large-font-size: var(--md-typescale-headline-medium-font-size);
         --md-typescale-headline-large-line-height: var(--md-typescale-headline-medium-line-height);
@@ -1962,10 +1990,9 @@
     }
     @media (max-width: 600px) {
       .hero { min-height: 560px; }
-      .hero h1 {
-        --md-typescale-display-large-font-size: var(--md-typescale-display-small-font-size);
-        --md-typescale-display-large-line-height: var(--md-typescale-display-small-line-height);
-      }
+      .hero h1 { font-size: clamp(56px, 18vw, 80px); }
+      .hero__eyebrow { font-size: 9px; letter-spacing: 0.11em; }
+      .hero__subtitle { margin-top: 18px; }
       /* 手机字阶自适应：headline-large 降到 headline-small 档 */
       .section-kicker h2 {
         --md-typescale-headline-large-font-size: var(--md-typescale-headline-small-font-size);
@@ -1977,6 +2004,14 @@
       .fab-dock { --fab-safe: 16px; }   /* 手机安全边距 */
     }
 
+    @media (max-height: 540px) and (min-width: 601px) {
+      .hero__stage { padding-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + 12px); }
+      .hero h1 { font-size: 72px; margin-top: 8px; }
+      .hero__subtitle { margin-top: 12px; }
+      .hero__subtitle-place, .hero__subtitle-project { display: inline; }
+      .hero__subtitle-project { margin-left: 12px; }
+      .hero__actions { margin-top: 16px; }
+    }
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       .hero__visual, .hero__stage, .reveal, .theme-toggle__icon,

@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>MineCGS</title>
   <meta name="description" content="MineCGS —— 以 1:2 比例在 Minecraft 中严谨复刻广东碧桂园学校校园的学生自发项目。" />
+  <link rel="preload" href="fonts/bodoni-moda.ttf" as="font" type="font/ttf" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet" />
   <!-- ?v= 资源版本号：发布站无缓存响应头时击穿浏览器启发式缓存，改版即换号 -->
-  <link rel="stylesheet" href="style.css?v=96" />
+  <link rel="stylesheet" href="style.css?v=97" />
 
 </head>
 <body>
@@ -69,8 +70,9 @@
 
       <div class="hero__stage" id="heroStage">
         <article class="hero__cover" id="heroPanel">
+          <p class="hero__eyebrow">CAMPUS RECONSTRUCTION <span aria-hidden="true">·</span> EST. 2024</p>
           <h1>MineCGS</h1>
-          <p class="hero__subtitle">广东碧桂园学校Minecraft复刻企划</p>
+          <p class="hero__subtitle"><span class="hero__subtitle-place">广东碧桂园学校</span><span class="hero__subtitle-project">Minecraft 复刻企划</span></p>
           <div class="hero__actions">
             <!-- MD3 五色式按钮 · image 语境选型：Filled / Tonal / Elevated
                  （三者均自携容器色，压在照片上任何主题下都保对比度；
@@ -359,6 +361,7 @@
               <li><strong>Material Symbols</strong><span class="oss__by">Google</span><span class="oss__lic">Apache License 2.0</span></li>
               <li><strong>地图预览引擎</strong><span class="oss__by">BlueColored</span><span class="oss__lic">MIT License</span></li>
               <li><strong>Source Serif 4 · Noto Serif SC</strong><span class="oss__by">Google Fonts</span><span class="oss__lic">SIL Open Font License 1.1</span></li>
+              <li><strong>Bodoni Moda</strong><span class="oss__by">indestructible type*</span><span class="oss__lic">SIL Open Font License 1.1</span></li>
             </ul>
           </div>
         </details>
@@ -388,14 +391,14 @@
   </dialog>
 
   <!-- 开源库 libs.js：Material Color Utilities（Apache-2.0）—— simplex-noise 已随波场迭代移除 -->
-  <script src="libs.js?v=96"></script>
+  <script src="libs.js?v=97"></script>
   <!-- 站点逻辑 main.js：动态取色 + 主题切换 + 页面交互 -->
-  <script src="main.js?v=96"></script>
+  <script src="main.js?v=97"></script>
   <script>
     /* 仅诊断链接启用，不影响正常访问。 */
     if (new URLSearchParams(location.search).get("diagnose") === "layers") {
       var layerProbe = document.createElement("script");
-      layerProbe.src = "diagnostics.js?v=96";
+      layerProbe.src = "diagnostics.js?v=97";
       document.head.appendChild(layerProbe);
     }
   </script>
