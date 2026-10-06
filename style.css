@@ -293,11 +293,17 @@
       --md-sys-elevation-4: 0 2px 3px 0 rgba(0, 0, 0, 0.30), 0 6px 10px 4px rgba(0, 0, 0, 0.15);
       --md-sys-elevation-5: 0 4px 4px 0 rgba(0, 0, 0, 0.30), 0 8px 12px 6px rgba(0, 0, 0, 0.15);
 
-      /* —— Layer 1 · System motion（官方 emphasized/standard 曲线与时长）——
+      /* —— Layer 1 · System motion（时长 + Expressive Motion 曲线）——
          值 = 「时长 + 曲线」，可直接作 transition/animation 简写。
          容器展开/生长用 emphasized-decelerate（快→慢），收起/退出用
          emphasized-accelerate（慢→快），通用过渡用 emphasized。
-         禁弹簧过冲自定值——所有曲线与时长都是官方值 */
+         曲线 = 41 轮 Expressive Motion 体系原值（83 轮应用户要求恢复）：
+         曾在 42–79 轮 MD3 令牌重构中被无过冲的官方 standard 曲线
+         （cubic-bezier(0.2, 0, 0, 1)）替换，全站动画手感变得生硬；
+         现按用户偏好回滚为带回弹/过冲的旧版非线性曲线族
+         —— spatial 系过冲 y>1（滑块、胶囊等位移组件的弹性滑动，
+         tabs 指示器 left/width 即走 emphasized 的回弹曲线），
+         effects 系为快出缓收的非线性减速（色面、透明度类过渡）。 */
       --md-sys-motion-duration-short4: 200ms;
       --md-sys-motion-duration-medium1: 250ms;
       --md-sys-motion-duration-medium2: 300ms;
@@ -305,12 +311,12 @@
       --md-sys-motion-duration-medium4: 400ms;
       --md-sys-motion-duration-long1: 450ms;
       --md-sys-motion-duration-long2: 500ms;
-      --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
-      --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
-      --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
-      --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
-      --md-sys-motion-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
-      --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+      --md-sys-motion-easing-emphasized: cubic-bezier(0.42, 1.67, 0.21, 0.90);
+      --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.38, 1.21, 0.22, 1.00);
+      --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.34, 0.88, 0.34, 1.00);
+      --md-sys-motion-easing-standard: cubic-bezier(0.34, 0.80, 0.34, 1.00);
+      --md-sys-motion-easing-standard-decelerate: cubic-bezier(0.31, 0.94, 0.34, 1.00);
+      --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.34, 0.88, 0.34, 1.00);
 
       /* —— Layer 1 · System state layer（hover 8% / focus 12% / pressed 12% / dragged 16%）—— */
       --md-sys-state-hover-opacity: 0.08;
@@ -448,17 +454,21 @@
       --page-bg-veil-light: color-mix(in srgb, color-mix(in srgb, var(--md-ref-palette-neutral98) 88%, var(--md-ref-palette-primary40)) 58.15%, transparent);
       --page-bg-veil-dark: color-mix(in srgb, var(--md-ref-palette-neutral6) 84%, transparent);
 
-      /* 三层共享背景几何（71 轮定案）：hero 原图（.hero__bg）与两层烘焙
-         模糊（.hero__bg / .page-sheet）用同一组 size+position、同为
-         视口锚定 fixed 附着 —— 位置、尺寸、裁切范围像素级重合。
+      /* 三层共享背景几何（71 轮定案 / 83 轮 vh→svh 冻结）：hero 原图
+         （.hero__bg）与两层烘焙模糊（.hero__bg / .page-sheet）用同一组
+         size+position、锚定视口顶（.hero__bg scroll 附着元素、.page-bg
+         fixed 层，落点逐像素重合）—— 位置、尺寸、裁切范围像素级一致。
          几何 = 16:9 源图 cover 再放大 1.08 的旧构图（旧 transform:
          scale(1.08) 使原图与模糊层裁切不一致，已废）的解析等价：
-           宽 w = max(1.08W, 1.92H) = max(108vw, 192vh)，高按 16:9 自动；
+           宽 w = max(1.08W, 1.92H) = max(108vw, 192svh)，高按 16:9 自动；
            左上角 = 绕视口中心缩放后落点：
              x = (W-w)/2（即 background-position 50%）；
-             y = 44.6vh - 0.45h = 44.6vh - max(27.3375vw, 48.6vh)。 */
-      --page-bg-size: max(108vw, 192vh) auto;
-      --page-bg-pos: 50% calc(44.6vh - max(27.3375vw, 48.6vh));
+             y = 44.6svh - 0.45h = 44.6svh - max(27.3375vw, 48.6svh)。
+         高度基准用 svh（小视口单位，恒等于地址栏/底栏全展开的视口高）：
+         自动隐藏底栏、地址栏收起导致的视口高度变化不再挪动背景图
+         ——"背景图固定位置"。JS 侧 alignPageBg 同步按宽度变化才重算。 */
+      --page-bg-size: max(108vw, 192svh) auto;
+      --page-bg-pos: 50% calc(44.6svh - max(27.3375vw, 48.6svh));
 
       /* 主题切换过渡（色面类属性，300ms standard 曲线） */
       --theme-shift: background-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
@@ -958,15 +968,21 @@
       height: 100%;
       /* 封面底色 = 遮罩同调暖黑（照片暗部基调），挂本层随视觉整体淡出 */
       background-color: #120e08;
-      /* 照片 = 封面底图：三层共享几何（--page-bg-size/pos + fixed 附着），
-         与 .page-sheet 的烘焙模糊层像素重合；等效旧构图
-         cover×1.08（旧 transform: scale(1.08) 与模糊层裁切不一致，已废）；
-         --hero-image 与主题源色同源 */
+      /* 照片 = 封面底图：三层共享几何（--page-bg-size/pos），与 .page-bg
+         的烘焙模糊层像素重合；等效旧构图 cover×1.08（旧 transform:
+         scale(1.08) 与模糊层裁切不一致，已废）；--hero-image 与主题源色同源。
+         附着 = scroll（83 轮，背景锚定绝对固定）：本层 absolute inset:0
+         铺满 sticky 钉顶的 .hero，元素框恒与视口顶对齐，scroll 附着下
+         背景落点与 attachment: fixed 逐像素等效，但锚定元素自身而非
+         visual viewport —— 移动端下拉橡皮筋回弹不再拉伸/位移主图
+         （fixed 附着锚 visual viewport，回弹时被整体缩放，主图"突然
+         变大又随之下沉缩小"），自动隐藏底栏的视口高度变化亦不再挪图
+         （80 轮 iOS WebKit 不支持 fixed 附着的同族缺陷，一并规避） */
       background-image: var(--hero-image);
       background-size: var(--page-bg-size);
       background-position: var(--page-bg-pos);
       background-repeat: no-repeat;
-      background-attachment: fixed;
+      background-attachment: scroll;
     }
     /* 可读性遮罩（scrim）：全部 stop 同一暖黑、只变 alpha，向内全透明收尾 */
     .hero__veil {

@@ -9,27 +9,38 @@
          --page-bg-size/pos 的 CSS 公式（vw/vh 组合）在分数 DPR 设备上
          产生非整数物理像素 —— 典型如小米平板 7 Ultra：3200×2136 @DPR3
          → CSS 视口 1066.67px，背景图几何落点 6151.68px / -128.16px
-         全是浮点；大图光栅化被迫线性过滤重采样，background-attachment:
-         fixed 又在滚动/重绘期反复重算这个浮点对齐 —— 同 SOC 整数视口
-         手机（小米 15S Pro 480px 宽）与整数网格桌面无此路径，故撕裂为
-         该类设备独有。JS 把宽/高/偏移四舍五入到 1/DPR 网格（物理像素
-         整数）后注入变量：光栅化落点整数对齐、滚动期纯整数 blit；
-         CSS 公式保留作无 JS 兜底；.hero__bg / .page-sheet 共享同变量，
-         对齐后两层像素重合不变。
-         ============================================================ */
+         全是浮点；大图光栅化被迫线性过滤重采样，滚动/重绘期反复重算
+         这个浮点对齐 —— 同 SOC 整数视口手机（小米 15S Pro 480px 宽）
+         与整数网格桌面无此路径，故撕裂为该类设备独有。JS 把宽/高/偏移
+         四舍五入到 1/DPR 网格（物理像素整数）后注入变量：光栅化落点
+         整数对齐、滚动期纯整数 blit；CSS 公式（83 轮已 vh→svh）保留作
+         无 JS 兜底；.hero__bg / .page-bg 共享同变量，对齐后两层像素
+         重合不变。
+         83 轮几何冻结（背景锚定绝对固定）：视口高度变化（自动隐藏
+         底栏、地址栏收起/展开、下拉橡皮筋回弹）不再触发重算 ——
+         否则 --page-bg-pos 按新高度重排，背景图"随底栏挪动/随回弹
+         下沉缩小"。仅当视口宽度变化（转屏、分屏、桌面缩窗）才重算
+         （构图按新宽度重新适配，属预期）；高度基准在首次计算时
+         按 svh 语义钉死。 */
       (function alignPageBg() {
-        function align() {
+        var lockedW = 0, lockedH = 0;
+        function align(force) {
           var dpr = window.devicePixelRatio || 1;
-          var W = window.innerWidth, H = window.innerHeight;
-          var wCss = Math.max(W * 1.08, H * 1.92);   /* = max(108vw, 192vh) */
+          var W = window.innerWidth;
+          if (!force && W === lockedW) { return; }   /* 宽度未变 → 几何不动 */
+          lockedW = W;
+          var H = window.innerHeight;
+          if (!lockedH) { lockedH = H; }             /* 首次钉死高度基准 */
+          else { H = lockedH; }
+          var wCss = Math.max(W * 1.08, H * 1.92);   /* = max(108vw, 192svh) */
           var hCss = wCss * 9 / 16;                  /* 16:9 源图 auto 高 */
           var xCss = (W - wCss) / 2;                 /* = 50% 背景定位 */
-          var yCss = H * 0.446 - hCss * 0.45;        /* = 44.6vh - 0.45h（与 CSS max 形式解析等价） */
+          var yCss = H * 0.446 - hCss * 0.45;        /* = 44.6svh - 0.45h（与 CSS max 形式解析等价） */
           var q = function (v) { return Math.round(v * dpr) / dpr; };
           root.style.setProperty("--page-bg-size", q(wCss) + "px " + q(hCss) + "px");
           root.style.setProperty("--page-bg-pos", q(xCss) + "px " + q(yCss) + "px");
         }
-        align();
+        align(true);
         window.addEventListener("resize", align, { passive: true });
         if (window.visualViewport) {
           window.visualViewport.addEventListener("resize", align, { passive: true });
