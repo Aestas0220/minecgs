@@ -307,9 +307,10 @@
          所有状态变更走唯一出口 setActive()，输入源分两路：
          · 滚动：检测线（视口 50% 处）落在哪个区段哪个激活，区界 20px 迟滞；
            hero 钉住 rect 恒在视口顶须特殊取 0，其余 rect.top+scrollY 稳定坐标
-         · 点击：原生锚点跳转（#hero 由 a[href=#hero] 处理器接管回顶）；
-           程序化跳转期间抑制滚动判定（suppressNavScroll），滚动停 280ms
-           后解除并重同步 —— 平滑滚动路过中间区段时不会逐个翻 tab
+         · 点击：jumpToSection 非线性缓动接管跳转（84 轮，hero 回顶
+           特判，pushState 同步 hash）；程序化跳转期间抑制滚动判定
+           （suppressNavScroll），滚动停 280ms 后解除并重同步 ——
+           平滑滚动路过中间区段时不会逐个翻 tab
          指示器动画只用 left/width 过渡（禁横向缩放伪影）
          ============================================================ */
       var tabsEl = document.getElementById("tabs");
@@ -383,6 +384,76 @@
         }, 280);
       }
 
+      /* ============================================================
+         84 轮：页面滚动非线性缓动引擎 —— 自写 rAF easeInOutCubic
+         （起止零速、中段加速，典型非线性观感）接管 tab/锚点跳转，
+         替换浏览器原生 smooth 的生硬匀速。时长按滚动距离自适应：
+         clamp(450, 450 + 距离 * 0.25, 900) 毫秒 —— 远距离不拖沓、
+         短距离不突兀。落点 = rect.top + scrollY 再按 CSS
+         scroll-margin-top 修正（与原生锚点落点一致），hero 回顶
+         特判 0；prefers-reduced-motion 直接瞬时跳转；新跳转先
+         取消进行中的旧动画再起新动画
+         ============================================================ */
+      var scrollAnimRaf = 0;   /* 进行中的滚动动画帧 id（0 = 无） */
+
+      function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+
+      /* 逐帧落点：behavior "instant" 绕过 html 的 scroll-behavior: smooth
+         （"auto" 会继承 CSS 平滑，逐帧目标被二次插值失真）；
+         老浏览器不识别 instant 枚举时回退两参形式 */
+      function scrollInstantTo(y) {
+        try {
+          window.scrollTo({ top: y, behavior: "instant" });
+        } catch (err) {
+          window.scrollTo(0, y);
+        }
+      }
+
+      function jumpToSection(id) {
+        if (scrollAnimRaf) { cancelAnimationFrame(scrollAnimRaf); scrollAnimRaf = 0; }
+
+        /* 目标位置：hero 回顶特判 0；其余 rect.top + scrollY 按
+           scroll-margin-top 修正；再 clamp 进合法滚动域 */
+        var targetY = 0;
+        if (id !== "hero") {
+          var el = document.getElementById(id);
+          if (!el) { return; }
+          var rect = el.getBoundingClientRect();
+          var margin = parseFloat(window.getComputedStyle(el).scrollMarginTop) || 0;
+          targetY = rect.top + (window.scrollY || 0) - margin;
+        }
+        var maxScroll = Math.max(0, (document.documentElement.scrollHeight || 0) - window.innerHeight);
+        if (targetY > maxScroll) { targetY = maxScroll; }
+        if (targetY < 0) { targetY = 0; }
+
+        suppressNavScroll();   /* 滚动开始即抑制 tab 判定 */
+        var startY = window.scrollY || 0;
+        var dist = targetY - startY;
+        if (reduceMotion || dist === 0) {
+          scrollInstantTo(targetY);
+          suppressNavScroll();   /* 完成即续期，覆盖停稳后 280ms 迟滞 */
+          return;
+        }
+
+        var dur = Math.min(900, Math.max(450, 450 + Math.abs(dist) * 0.25));
+        var startTime = 0;
+        function stepScroll(ts) {
+          if (!startTime) { startTime = ts; }
+          var t = Math.min((ts - startTime) / dur, 1);
+          scrollInstantTo(startY + dist * easeInOutCubic(t));
+          if (t < 1) {
+            scrollAnimRaf = requestAnimationFrame(stepScroll);
+          } else {
+            scrollAnimRaf = 0;
+            scrollInstantTo(targetY);   /* 落点精确对齐 */
+            suppressNavScroll();        /* 完成回调续期：280ms 定时器重置，覆盖停稳迟滞 */
+          }
+        }
+        scrollAnimRaf = requestAnimationFrame(stepScroll);
+      }
+
       function updateNav(y) {
         if (navSuppress) { return; }
         if (navTops.length !== navSections.length) { measureNav(); }
@@ -397,15 +468,18 @@
         setActive(rawIdx, false);
       }
 
-      /* tab 点击：立即切换激活态（原生锚点负责跳转）；
-         跳转飞行期间抑制滚动判定，防中途翻 tab 抖动 */
+      /* tab 点击：接管原生锚点（84 轮）—— preventDefault 后走
+         jumpToSection 非线性缓动滚动，pushState 同步 hash 保 URL
+         可分享；跳转飞行期间抑制滚动判定，防中途翻 tab 抖动 */
       tabLinks.forEach(function (link) {
-        link.addEventListener("click", function () {
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
           var id = link.getAttribute("data-section");
           for (var i = 0; i < navSections.length; i++) {
             if (navSections[i].id === id) { setActive(i, false); break; }
           }
-          suppressNavScroll();
+          jumpToSection(id);
+          if (window.history && window.history.pushState) { window.history.pushState(null, "", "#" + id); }
         });
       });
 
@@ -428,14 +502,14 @@
       measureTabs();
       placeIndicator(geomOfIdx(navActiveIdx), true);   /* 初始就位（零动画） */
 
-      /* 钉住封面的 rect 永远停在视口顶，浏览器做锚点跳转时误判
-         "已在视口内"而不滚动 —— #hero（品牌 LOGO / 首屏 tab）手动接管回顶 */
+      /* 钉住封面的 rect 永远停在视口顶，锚点跳转会误判
+         "已在视口内"而不滚动 —— #hero（品牌 LOGO / 首屏 tab）走
+         jumpToSection 回顶特判（84 轮：非线性缓动回顶） */
       Array.prototype.forEach.call(document.querySelectorAll('a[href="#hero"]'), function (link) {
         link.addEventListener("click", function (e) {
           e.preventDefault();
-          window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+          jumpToSection("hero");
           if (window.history && window.history.pushState) { window.history.pushState(null, "", "#hero"); }
-          suppressNavScroll();
         });
       });
 

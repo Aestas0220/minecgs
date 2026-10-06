@@ -293,17 +293,14 @@
       --md-sys-elevation-4: 0 2px 3px 0 rgba(0, 0, 0, 0.30), 0 6px 10px 4px rgba(0, 0, 0, 0.15);
       --md-sys-elevation-5: 0 4px 4px 0 rgba(0, 0, 0, 0.30), 0 8px 12px 6px rgba(0, 0, 0, 0.15);
 
-      /* —— Layer 1 · System motion（时长 + Expressive Motion 曲线）——
+      /* —— Layer 1 · System motion（时长 + MD3 官方曲线）——
          值 = 「时长 + 曲线」，可直接作 transition/animation 简写。
          容器展开/生长用 emphasized-decelerate（快→慢），收起/退出用
          emphasized-accelerate（慢→快），通用过渡用 emphasized。
-         曲线 = 41 轮 Expressive Motion 体系原值（83 轮应用户要求恢复）：
-         曾在 42–79 轮 MD3 令牌重构中被无过冲的官方 standard 曲线
-         （cubic-bezier(0.2, 0, 0, 1)）替换，全站动画手感变得生硬；
-         现按用户偏好回滚为带回弹/过冲的旧版非线性曲线族
-         —— spatial 系过冲 y>1（滑块、胶囊等位移组件的弹性滑动，
-         tabs 指示器 left/width 即走 emphasized 的回弹曲线），
-         effects 系为快出缓收的非线性减速（色面、透明度类过渡）。 */
+         曲线 = MD3 官方值（禁弹簧过冲自定值）：控件动画保持 MD3
+         平直标准曲线，83 轮误改的 Expressive Motion 回弹族已撤销；
+         页面滚动曲线另走 main.js 自定义缓动（84 轮），
+         与控件过渡无关。 */
       --md-sys-motion-duration-short4: 200ms;
       --md-sys-motion-duration-medium1: 250ms;
       --md-sys-motion-duration-medium2: 300ms;
@@ -311,12 +308,12 @@
       --md-sys-motion-duration-medium4: 400ms;
       --md-sys-motion-duration-long1: 450ms;
       --md-sys-motion-duration-long2: 500ms;
-      --md-sys-motion-easing-emphasized: cubic-bezier(0.42, 1.67, 0.21, 0.90);
-      --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.38, 1.21, 0.22, 1.00);
-      --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.34, 0.88, 0.34, 1.00);
-      --md-sys-motion-easing-standard: cubic-bezier(0.34, 0.80, 0.34, 1.00);
-      --md-sys-motion-easing-standard-decelerate: cubic-bezier(0.31, 0.94, 0.34, 1.00);
-      --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.34, 0.88, 0.34, 1.00);
+      --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+      --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+      --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+      --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+      --md-sys-motion-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+      --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
 
       /* —— Layer 1 · System state layer（hover 8% / focus 12% / pressed 12% / dragged 16%）—— */
       --md-sys-state-hover-opacity: 0.08;
