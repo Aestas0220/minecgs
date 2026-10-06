@@ -16,22 +16,33 @@
          整数对齐、滚动期纯整数 blit；CSS 公式（83 轮已 vh→svh）保留作
          无 JS 兜底；.hero__bg / .page-bg 共享同变量，对齐后两层像素
          重合不变。
-         83 轮几何冻结（背景锚定绝对固定）：视口高度变化（自动隐藏
-         底栏、地址栏收起/展开、下拉橡皮筋回弹）不再触发重算 ——
-         否则 --page-bg-pos 按新高度重排，背景图"随底栏挪动/随回弹
-         下沉缩小"。仅当视口宽度变化（转屏、分屏、桌面缩窗）才重算
-         （构图按新宽度重新适配，属预期）；高度基准在首次计算时
-         按 svh 语义钉死。 */
+         使用实际 100svh 测量值：桌面窗口改宽/高均重新适配，移动端
+         地址栏收起/展开不改变小视口高度，转屏和分屏仍会重新计算。
+         只有缺少 svh 支持的旧触屏浏览器继续使用宽度变化时重置高度
+         的兜底。三个背景层仍共享同一组几何，禁止各自移动。 */
       (function alignPageBg() {
-        var lockedW = 0, lockedH = 0;
-        function align(force) {
+        var lastW = 0, lastH = 0, lastDpr = 0, fallbackH = 0;
+        var frame = 0;
+        var touchViewport = window.matchMedia("(hover: none) and (pointer: coarse)");
+        var viewportProbe = null;
+        if (window.CSS && CSS.supports("height", "100svh")) {
+          viewportProbe = document.createElement("div");
+          viewportProbe.setAttribute("aria-hidden", "true");
+          viewportProbe.style.cssText = "position:absolute;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none;";
+          document.body.appendChild(viewportProbe);
+        }
+        function align() {
+          frame = 0;
           var dpr = window.devicePixelRatio || 1;
           var W = window.innerWidth;
-          if (!force && W === lockedW) { return; }   /* 宽度未变 → 几何不动 */
-          lockedW = W;
           var H = window.innerHeight;
-          if (!lockedH) { lockedH = H; }             /* 首次钉死高度基准 */
-          else { H = lockedH; }
+          if (viewportProbe) { H = viewportProbe.getBoundingClientRect().height; }
+          else if (touchViewport.matches) {
+            if (!fallbackH || W !== lastW) { fallbackH = H; }
+            H = fallbackH;
+          }
+          if (W === lastW && H === lastH && dpr === lastDpr) { return; }
+          lastW = W; lastH = H; lastDpr = dpr;
           var wCss = Math.max(W * 1.08, H * 1.92);   /* = max(108vw, 192svh) */
           var hCss = wCss * 9 / 16;                  /* 16:9 源图 auto 高 */
           var xCss = (W - wCss) / 2;                 /* = 50% 背景定位 */
@@ -40,10 +51,13 @@
           root.style.setProperty("--page-bg-size", q(wCss) + "px " + q(hCss) + "px");
           root.style.setProperty("--page-bg-pos", q(xCss) + "px " + q(yCss) + "px");
         }
-        align(true);
-        window.addEventListener("resize", align, { passive: true });
+        function requestAlign() {
+          if (!frame) { frame = window.requestAnimationFrame(align); }
+        }
+        align();
+        window.addEventListener("resize", requestAlign, { passive: true });
         if (window.visualViewport) {
-          window.visualViewport.addEventListener("resize", align, { passive: true });
+          window.visualViewport.addEventListener("resize", requestAlign, { passive: true });
         }
       })();
 
