@@ -1103,23 +1103,10 @@
     }
 
     /* ============================================================
-       页面模糊大背景（.page-bg，80 轮 iOS 修复 / 81 轮接缝裁切）：
-       烘焙模糊图的视口冻结层。此前由 .page-sheet 自带 background-
-       attachment: fixed 实现冻结 —— iOS 的 WebKit（Safari 与 iOS
-       微信共用内核）不支持该属性，静默降级为 scroll，模糊图被锚定
-       在几千像素高的 sheet 顶端随内容滚走（iOS 独有故障，与分辨率
-       无关）。改由真正的 position: fixed 全视口层承载：全平台冻结
-       语义一致、iOS 安全；几何仍走 --page-bg-size/pos，与 .hero__bg
-       逐像素重合不变（alignPageBg 分数 DPR 对齐照旧）。
-       层级 z2（hero z1 之上、sheet z3 之下）——首版压在 hero 之下，
-       钉住的封面原图整幅盖住模糊层，sheet 区只剩"半透明蒙版盖在
-       清晰照片上"（80 轮首版缺陷）。裁切：clip-path 以 --sheet-seam
-       （JS 滚动热路径维护 = sheet 顶边的视口 y，clamp ≥ -64）把本层
-       裁进 sheet 的圆角轮廓 —— 等效 desktop attachment:fixed 的
-       "冻结 + 按元素裁切"，接缝以上露出封面原图、圆角缺口亦然。
-       var 缺省 100%（无 JS 时整层隐去，安全降级）。
-       与 78 轮清退的区分：body::before/::after 是全程被遮挡的死重
-       层；本层经 veil 半透明染色全程可见，属渲染管线必要一层。
+       接缝背景：固定视口容器内的圆角窗口与阴影只做相同位移。
+       图片及色调做等量反向位移，保持视口构图冻结；窗口尺寸、
+       圆角、阴影几何不随滚动改变，避免每帧布局/重绘大阴影。
+       hero z1 < page-bg z2 < page-sheet z3；无 JS 时窗口藏于视口外。
        ============================================================ */
     .page-bg {
       position: fixed;
@@ -1131,23 +1118,39 @@
       height: calc(100lvh + env(safe-area-inset-bottom, 0px));
       z-index: 2;
       pointer-events: none;
+      overflow: clip;
     }
-    /* 色面裁切与边缘装饰共用父容器的 --sheet-seam；图片几何不动。 */
+    /* 窗口与边缘继承同一 --sheet-seam 位移；图片几何不动。 */
     .page-bg__surface {
+      position: absolute;
+      inset: 0 0 auto;
+      height: calc(100% + 64px);
+      border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
+      overflow: hidden;
+      /* 固定尺寸的圆角窗口只做位移，不逐帧改变 clip-path。 */
+      transform: translate3d(0, var(--sheet-seam, 150vh), 0);
+    }
+    .page-bg__image {
       position: absolute;
       inset: 0;
       background-image: var(--page-bg-image);
       background-size: var(--page-bg-size);
       background-position: var(--page-bg-pos);
       background-repeat: no-repeat;
-      clip-path: inset(var(--sheet-seam, 100%) 0 0 0 round var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0);
+      /* 窗口与图片等量反向位移：图片视口坐标始终为零。
+         veil 随图片一起反向位移，再由同一个圆角窗口裁切。 */
+      transform: translate3d(0, calc(0px - var(--sheet-seam, 150vh)), 0);
     }
     .page-bg__edge {
       position: absolute;
-      top: var(--sheet-seam, calc(100% + 128px));
+      top: 0;
       right: 0;
-      bottom: 0;
       left: 0;
+      /* 静态阴影载体。只留下顶部64px及其上方阴影，
+         下边缘远离裁切区，避免出现第二条阴影。 */
+      height: 256px;
+      clip-path: inset(-128px -128px 192px -128px);
+      transform: translate3d(0, var(--sheet-seam, 150vh), 0);
       border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
       border-top: var(--md-divider-height) solid color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent);
       box-shadow:
@@ -1177,9 +1180,9 @@
       transition: var(--theme-shift);
     }
     /* 两张静态色面与模糊图都挂在 .page-bg，同一父层、同一尺寸、
-       同一 clip-path；任何裁切更新会同时作用于三者。
+       同一圆角窗口；图片与色调一起反向位移，再被窗口统一裁切。
        常规滚动无 opacity 过渡，主题切换仍沿用整页 VT/桌面渐变。 */
-    .page-bg__surface::before {
+    .page-bg__image::before {
       content: "";
       position: absolute;
       inset: 0;
@@ -1190,7 +1193,7 @@
       transition: none;
       pointer-events: none;
     }
-    .page-bg__surface::after {
+    .page-bg__image::after {
       content: "";
       position: absolute;
       inset: 0;
@@ -1201,8 +1204,8 @@
       transition: none;
       pointer-events: none;
     }
-    [data-theme="dark"] .page-bg__surface::before { opacity: 0; }
-    [data-theme="dark"] .page-bg__surface::after { opacity: 1; }
+    [data-theme="dark"] .page-bg__image::before { opacity: 0; }
+    [data-theme="dark"] .page-bg__image::after { opacity: 1; }
 
     /* ============ Sections ============ */
     .section {

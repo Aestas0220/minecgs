@@ -551,6 +551,9 @@
           if (pageBgEl && sheetEl) {
             if (!sheetTop) { sheetTop = sheetEl.offsetTop || 0; }
             var seam = sheetTop - y;
+            /* 位移落到物理像素网格，避免高 DPR 设备每帧分数像素采样。 */
+            var seamDpr = window.devicePixelRatio || 1;
+            seam = Math.round(seam * seamDpr) / seamDpr;
             if (seam < -64) { seam = -64; }
             if (seam !== seamLast) {
               seamLast = seam;
