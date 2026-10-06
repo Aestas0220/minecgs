@@ -158,7 +158,7 @@
       --md-sys-color-inverse-surface: var(--md-ref-palette-neutral90);
       --md-sys-color-inverse-on-surface: var(--md-ref-palette-neutral20);
       --md-sys-color-inverse-primary: var(--md-ref-palette-primary40);
-      /* 深色蒙版 = .page-sheet::after 的 --page-bg-veil-dark 静态层（75 轮） */
+      /* 深色蒙版 = .page-bg::after 的 --page-bg-veil-dark 静态层（75 轮） */
     }
 
     /* ============ Layer 1 · Type scale（--md-typescale-* 系统 token）============
@@ -504,7 +504,7 @@
          深 84% → 背景最亮 0.14，on-surface ≥ 4.6:1，
          深色下裸背景辅助文字升 on-surface 保可读。 */
     /* （78 轮：原 [data-theme="dark"] --page-bg-veil 覆盖块随 body::after
-       一并退役 —— 深色蒙版由 .page-sheet::after 的 --page-bg-veil-dark
+       一并退役 —— 深色蒙版由 .page-bg::after 的 --page-bg-veil-dark
        静态层承担。） */
     [data-theme="dark"] .section-kicker p,
     [data-theme="dark"] .progress__note,
@@ -1139,7 +1139,7 @@
     }
     /* ============================================================
        内容面板（Sheet）：带着圆角的下页 —— 从露出的第一帧起就是
-       完整的烘焙模糊底（.page-bg 视口冻结层 + 本框 veil 双层染色，
+       完整的烘焙模糊底（.page-bg 视口冻结层内含 veil 双层染色，
        卡片浮于其上），由底部上滑物理覆盖封面完成交接（封面照片
        自始至终原图，不做淡出）。模糊图由 .page-bg 全幅绘制，经本
        框圆角裁出"只在 sheet 框内呈现"的观感 —— 圆角接缝以上露出
@@ -1148,9 +1148,8 @@
     .page-sheet {
       position: relative;
       z-index: 3;              /* 高于封面（z1）与模糊层（z2），滑过时完整遮住 */
-      /* 蒙版/氛围色由下方 ::before/::after veil 静态双层以 opacity
-         交叉淡变承担；模糊底图在 .page-bg（见上，z2、主题无关、永不
-         参与过渡），本框圆角轮廓由 .page-bg 的 clip-path 同形裁出 */
+      /* 模糊图与 veil 都在 .page-bg 内，共用固定定位和单一裁切。
+         本框只承载内容，避免原生滚动与 JS 裁切各自更新导致背景错位。 */
       border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
       /* 柔和边界：1px outline-variant 细线（随主题） */
       border-top: var(--md-divider-height) solid color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent);
@@ -1161,37 +1160,33 @@
         0 -16px 48px 12px rgba(0, 0, 0, 0.18);
       transition: var(--theme-shift);
     }
-    /* veil 静态双层（75 轮二版 / 76 轮动画架构）：浅/深两张固定色层
-       叠放，background-color 永不变化、零重绘。主题切换的渐变由动画
-       架构分级承担（76 轮）：VT 路径=快照 crossfade（双层 opacity 瞬时
-       落定进新快照，故常规 transition 必须为 none，避免快照捕获到
-       中间态）；桌面降级路径=is-theme-shifting 的 * 规则压平 opacity
-       300ms 交叉淡变；安卓无 VT=硬切。z-index -1 压在 sheet 内容
-       之下；染色对象（.page-bg 模糊层 z2）在本框 z3 上下文之下 */
-    .page-sheet::before {
+    /* 两张静态色面与模糊图都挂在 .page-bg，同一父层、同一尺寸、
+       同一 clip-path；任何裁切更新会同时作用于三者。
+       常规滚动无 opacity 过渡，主题切换仍沿用整页 VT/桌面渐变。 */
+    .page-bg::before {
       content: "";
       position: absolute;
       inset: 0;
-      z-index: -1;
+      z-index: 0;
       border-radius: inherit;
       background-color: var(--page-bg-veil-light);
       opacity: 1;
       transition: none;
       pointer-events: none;
     }
-    .page-sheet::after {
+    .page-bg::after {
       content: "";
       position: absolute;
       inset: 0;
-      z-index: -1;
+      z-index: 0;
       border-radius: inherit;
       background-color: var(--page-bg-veil-dark);
       opacity: 0;
       transition: none;
       pointer-events: none;
     }
-    [data-theme="dark"] .page-sheet::before { opacity: 0; }
-    [data-theme="dark"] .page-sheet::after { opacity: 1; }
+    [data-theme="dark"] .page-bg::before { opacity: 0; }
+    [data-theme="dark"] .page-bg::after { opacity: 1; }
 
     /* ============ Sections ============ */
     .section {

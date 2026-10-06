@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet" />
   <!-- ?v= 资源版本号：发布站无缓存响应头时击穿浏览器启发式缓存，改版即换号 -->
-  <link rel="stylesheet" href="style.css?v=91" />
+  <link rel="stylesheet" href="style.css?v=92" />
 
 </head>
 <body>
@@ -20,7 +20,8 @@
        background-attachment: fixed —— iOS WebKit 不支持该属性，会把模糊图
        锚定到 sheet 顶端滚走）；几何走 --page-bg-size/pos 与 .hero__bg
        像素重合。层级 z2（hero z1 之上、page-sheet z3 之下），以
-       clip-path + --sheet-seam（JS 维护的 sheet 顶边视口 y）裁进 sheet
+       内部同时承载模糊图与双色 veil，clip-path + --sheet-seam
+       （JS 维护的 sheet 顶边视口 y）统一裁切三个色面，避免相对错位
        圆角轮廓 —— 接缝以上与圆角缺口露出的仍是封面原图 -->
   <div class="page-bg" aria-hidden="true"></div>
 
@@ -387,14 +388,14 @@
   </dialog>
 
   <!-- 开源库 libs.js：Material Color Utilities（Apache-2.0）—— simplex-noise 已随波场迭代移除 -->
-  <script src="libs.js?v=91"></script>
+  <script src="libs.js?v=92"></script>
   <!-- 站点逻辑 main.js：动态取色 + 主题切换 + 页面交互 -->
-  <script src="main.js?v=91"></script>
+  <script src="main.js?v=92"></script>
   <script>
     /* 仅诊断链接启用，不影响正常访问。 */
     if (new URLSearchParams(location.search).get("diagnose") === "layers") {
       var layerProbe = document.createElement("script");
-      layerProbe.src = "diagnostics.js?v=91";
+      layerProbe.src = "diagnostics.js?v=92";
       document.head.appendChild(layerProbe);
     }
   </script>
