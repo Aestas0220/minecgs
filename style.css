@@ -1030,27 +1030,55 @@
       margin: 22px 0 0;
       color: color-mix(in srgb, var(--md-ref-palette-neutral95) 88%, transparent);
       font-family: var(--md-typescale-title-large-font-family);
-      font-size: var(--md-typescale-title-large-font-size);
-      line-height: var(--md-typescale-title-large-line-height);
-      letter-spacing: var(--md-typescale-title-large-letter-spacing);
+      font-size: clamp(16px, 1.5vw, 20px);
+      line-height: 1.7;
+      letter-spacing: 0.035em;
       font-weight: var(--md-typescale-title-large-font-weight);
       text-shadow:
         0 1px 18px color-mix(in srgb, var(--md-ref-palette-neutral20) 50%, transparent),
         0 1px 3px color-mix(in srgb, var(--md-ref-palette-neutral20) 40%, transparent);
     }
-    .hero__subtitle-place {
-      display: block;
-      font-size: clamp(17px, 1.65vw, 21px);
-      line-height: 1.7;
-      letter-spacing: 0.12em;
+    .hero__school-compact { display: none; }
+    .hero__subtitle-separator { margin-inline: 0.55em; }
+    .language-switch {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+      color: var(--md-ref-palette-neutral95);
     }
-    .hero__subtitle-project {
-      display: block;
-      margin-top: 3px;
-      font-size: 14px;
-      line-height: 1.7;
-      letter-spacing: 0.04em;
+    .language-switch__choice {
+      position: relative;
+      min-height: 44px;
+      padding: 0 8px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font-family: var(--md-typescale-label-large-font-family);
+      font-size: 13px;
+      line-height: 24px;
+      letter-spacing: 0.025em;
+      opacity: 0.65;
+      cursor: pointer;
+      transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
     }
+    .language-switch__choice::after {
+      content: "";
+      position: absolute;
+      bottom: 4px;
+      left: 8px;
+      right: 8px;
+      height: 2px;
+      background: currentColor;
+      opacity: 0;
+      transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    }
+    .language-switch__choice[aria-checked="true"],
+    .language-switch__choice:hover { opacity: 1; }
+    .language-switch__choice[aria-checked="true"]::after { opacity: 1; }
+    .language-switch__choice:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 4px; }
+    .language-switch__divider { width: 1px; height: 12px; background: currentColor; opacity: 0.35; }
     .hero__actions {
       display: flex;
       flex-wrap: wrap;
@@ -1961,7 +1989,22 @@
       .hero { min-height: 560px; }
       .hero h1 { font-size: clamp(48px, 15vw, 68px); }
       .hero__eyebrow { font-size: 9px; letter-spacing: 0.11em; }
-      .hero__subtitle { margin-top: 18px; }
+      .hero__subtitle { margin-top: 18px; font-size: 14px; letter-spacing: 0; }
+      .hero__school-full { display: none; }
+      .hero__school-compact { display: inline; }
+      .hero__subtitle-separator { margin-inline: 0.35em; }
+      html[lang="en"] .tabs { padding-inline: 4px; }
+      html[lang="en"] .tabs__tab { min-width: 0; padding-inline: 8px; font-size: 12px; }
+      html[lang="en"] .seg__btn { padding-inline: 4px; font-size: 12px; }
+      html[lang="en"] .clp__trigger { display: grid; grid-template-columns: minmax(0, 1fr) 24px; column-gap: 12px; row-gap: 4px; }
+      html[lang="en"] .clp__label { grid-column: 1; grid-row: 1; }
+      html[lang="en"] .clp__meta { grid-column: 1; grid-row: 2; white-space: normal; }
+      html[lang="en"] .clp__chev { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+      .todo-list__item { gap: 12px; padding-block: 8px; }
+      .todo-list__label { min-width: 0; }
+      .todo-list__status { flex: 0 0 auto; font-size: 12px; }
+      html[lang="en"] .spec-list__item { flex-wrap: wrap; gap: 8px 12px; padding-block: 8px; }
+      html[lang="en"] .spec-list__value { flex: 0 0 100%; padding-left: 36px; text-align: left; }
       /* 手机字阶自适应：headline-large 降到 headline-small 档 */
       .section-kicker h2 {
         --md-typescale-headline-large-font-size: var(--md-typescale-headline-small-font-size);
@@ -1975,10 +2018,10 @@
 
     @media (max-height: 540px) and (min-width: 601px) {
       .hero__stage { padding-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + 12px); }
-      .hero h1 { font-size: 64px; margin-top: 8px; }
-      .hero__subtitle { margin-top: 12px; }
-      .hero__subtitle-place, .hero__subtitle-project { display: inline; }
-      .hero__subtitle-project { margin-left: 12px; }
+      .hero__eyebrow { display: none; }
+      .hero h1 { font-size: 56px; margin-top: 0; }
+      .hero__subtitle { margin-top: 8px; }
+      .language-switch { margin-top: 0; }
       .hero__actions { margin-top: 16px; }
     }
     @media (prefers-reduced-motion: reduce) {

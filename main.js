@@ -2,6 +2,9 @@
       "use strict";
 
       var root = document.documentElement;
+      function translate(source, parameters) {
+        return window.MineCGSI18n ? window.MineCGSI18n.t(source, parameters) : source;
+      }
       var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       /* ============================================================
@@ -191,11 +194,18 @@
       var isAndroid = /Android/i.test(navigator.userAgent || "");
       var shiftTimer = null;
       var vtGen = 0;   /* 落定令牌：快速连点时只让最新一次 VT 摘除落定层 */
+      function updateThemeLabel() {
+        if (!themeToggle) return;
+        var label = translate(root.getAttribute("data-theme") === "dark" ? "切换为浅色模式" : "切换为深色模式");
+        themeToggle.setAttribute("aria-label", label);
+        themeToggle.setAttribute("title", label);
+      }
+      document.addEventListener("minecgs:languagechange", updateThemeLabel);
       function applyTheme(theme, animate) {
         function commit() {
           root.setAttribute("data-theme", theme);
           if (themeToggle) {
-            var label = theme === "dark" ? "切换为浅色模式" : "切换为深色模式";
+            var label = translate(theme === "dark" ? "切换为浅色模式" : "切换为深色模式");
             themeToggle.setAttribute("aria-label", label);
             themeToggle.setAttribute("title", label);
           }
@@ -282,6 +292,7 @@
         }
         measure();
         window.addEventListener("resize", measure, { passive: true });
+        document.addEventListener("minecgs:languagechange", measure);
         if (document.fonts && document.fonts.ready) { document.fonts.ready.then(measure); }
       })();
 
@@ -513,6 +524,11 @@
           measureNav(); measureTabs(); placeIndicator(geomOfIdx(navActiveIdx), true);
         });
       }
+      document.addEventListener("minecgs:languagechange", function () {
+        window.requestAnimationFrame(function () {
+          measureNav(); measureTabs(); placeIndicator(geomOfIdx(navActiveIdx), true);
+        });
+      });
       measureTabs();
       placeIndicator(geomOfIdx(navActiveIdx), true);   /* 初始就位（零动画） */
 
@@ -652,23 +668,35 @@
       var dlCancel = document.getElementById("dlDlgCancel");
       var dlCountdown = document.getElementById("dlDlgCountdown");
       var dlTimer = null;
+      var dlSecondsLeft = 3;
+      function updateCountdown() {
+        if (!dlCountdown) return;
+        dlCountdown.textContent = dlSecondsLeft > 0
+          ? translate("请阅读以上须知，{seconds} 秒后可确认", { seconds: dlSecondsLeft })
+          : translate("倒计时结束，现在可以确认下载");
+      }
+      document.addEventListener("minecgs:languagechange", function () {
+        if (dlDlg && dlDlg.open) updateCountdown();
+      });
 
       function dlStartCountdown() {
         var left = 3;
+        dlSecondsLeft = left;
         dlConfirm.disabled = true;
         dlConfirm.setAttribute("aria-disabled", "true");
-        dlCountdown.textContent = "请阅读以上须知，" + left + " 秒后可确认";
+        updateCountdown();
         window.clearInterval(dlTimer);
         dlTimer = window.setInterval(function () {
           left -= 1;
+          dlSecondsLeft = left;
           if (left > 0) {
-            dlCountdown.textContent = "请阅读以上须知，" + left + " 秒后可确认";
+            updateCountdown();
           } else {
             window.clearInterval(dlTimer);
             dlTimer = null;
             dlConfirm.disabled = false;
             dlConfirm.removeAttribute("aria-disabled");
-            dlCountdown.textContent = "倒计时结束，现在可以确认下载";
+            updateCountdown();
           }
         }, 1000);
       }
@@ -865,6 +893,7 @@
     (function () {
       var shell = document.querySelector(".map-shell");
       var btn = document.getElementById("mapFsBtn");
+      var translate = window.MineCGSI18n ? window.MineCGSI18n.t : function (source) { return source; };
       if (!shell || !btn) return;
       if (!shell.requestFullscreen) {
         /* 浏览器不支持 Fullscreen API（如 iOS Safari）：隐藏按钮，不留死键 */
@@ -878,11 +907,13 @@
           shell.requestFullscreen();
         }
       });
-      document.addEventListener("fullscreenchange", function () {
+      function updateFullscreenLabel() {
         var on = document.fullscreenElement === shell;
-        btn.setAttribute("aria-label", on ? "退出全屏预览" : "全屏预览地图");
-        btn.setAttribute("title", on ? "退出全屏" : "全屏预览");
-      });
+        btn.setAttribute("aria-label", translate(on ? "退出全屏预览" : "全屏预览地图"));
+        btn.setAttribute("title", translate(on ? "退出全屏" : "全屏预览"));
+      }
+      document.addEventListener("fullscreenchange", updateFullscreenLabel);
+      document.addEventListener("minecgs:languagechange", updateFullscreenLabel);
     })();
 
     /* —— 地图预览：默认加载 + 空闲预渲染 + 缓存穿透 ——
