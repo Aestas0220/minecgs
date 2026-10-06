@@ -570,7 +570,7 @@
        抬升阴影层级。 */
     .top-bar {
       position: fixed;
-      inset: 0 0 auto 0;
+      inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) auto env(safe-area-inset-left, 0px);
       z-index: 40;
       height: var(--md-top-app-bar-container-height);
       display: flex;
@@ -785,14 +785,14 @@
       --fab-safe: 24px;                       /* 静息安全边距（手机 16px） */
       --fab-gap: 12px;                        /* 被顶起后与 footer 顶边的间隙 */
       position: sticky;
-      bottom: calc(var(--fab-safe) - var(--fab-gap));
+      bottom: calc(var(--fab-safe) + env(safe-area-inset-bottom, 0px) - var(--fab-gap));
       height: 0;
       display: flow-root;
       z-index: 30;
     }
     .fab {
       position: absolute;
-      right: var(--fab-safe);
+      right: max(var(--fab-safe), env(safe-area-inset-right, 0px));
       bottom: var(--fab-gap);
       z-index: 30;
       display: inline-flex;
@@ -1004,7 +1004,7 @@
       display: flex;
       align-items: flex-start;
       justify-content: center;
-      padding: calc(var(--nav-h) + clamp(28px, 6vh, 60px)) 24px 0;
+      padding: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + clamp(28px, 6vh, 60px)) 24px 0;
     }
     .hero__cover {
       position: relative;
@@ -1128,7 +1128,7 @@
          只扩大色面覆盖，图片 size/pos 仍走冻结几何，不随顶栏移动。 */
       inset: 0 0 auto;
       height: 100vh;
-      height: 100lvh;
+      height: calc(100lvh + env(safe-area-inset-bottom, 0px));
       z-index: 2;
       pointer-events: none;
       background-image: var(--page-bg-image);
@@ -1199,7 +1199,7 @@
       z-index: 5;
       padding: 96px clamp(16px, 4vw, 32px);
       background: transparent;
-      scroll-margin-top: calc(var(--nav-h) + 12px);
+      scroll-margin-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + 12px);
       overflow: clip;
     }
     .section__inner { max-width: 1120px; margin: 0 auto; }
@@ -1729,7 +1729,7 @@
     .site-footer {
       position: relative;
       z-index: 5;
-      padding: 28px clamp(16px, 4vw, 32px) 36px;
+      padding: 28px clamp(16px, 4vw, 32px) calc(36px + env(safe-area-inset-bottom, 0px));
       border-top: var(--md-divider-height) solid var(--md-divider-color);
       /* 遮住页脚下方未经 veil 染色的固定背景。 */
       background: var(--md-sys-color-surface);
