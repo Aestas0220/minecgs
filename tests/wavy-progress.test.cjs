@@ -5,7 +5,7 @@ const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '../main.js'), 'utf8');
 const start = source.indexOf('    /* —— MD3 Wavy Linear Progress：');
 const end = source.indexOf('    /* —— 建造清单折叠面板', start);
-const code = source.slice(start, end);
+const code = source.slice(start, source.indexOf('    /* —— 地图全屏键', end));
 assert(start >= 0 && end > start);
 assert(!/stroke-dash|pathLength|getTotalLength/.test(code.replace(/\/\*[\s\S]*?\*\//g, '')));
 let checks = 0;
@@ -17,15 +17,32 @@ for (const width of [320, 768, 1024, 1366]) {
       const lp = { clientWidth: width, closest: () => card, querySelector: () => svg };
       const card = { classList: { contains: () => visible } };
       const svg = { setAttribute() {}, appendChild: el => children.push(el) };
+      let toggleChecklist;
+      const checklistClasses = new Set();
+      const trigger = { attrs: {}, addEventListener(event, cb) { if (event === 'click') toggleChecklist = cb; }, setAttribute(k,v) { this.attrs[k] = v; } };
+      const checklist = {
+        querySelector: () => trigger,
+        classList: {
+          contains: c => checklistClasses.has(c),
+          toggle(c,on) { if (on) checklistClasses.add(c); else checklistClasses.delete(c); },
+        },
+      };
       vm.runInNewContext(code, {
-        reduceMotion: reduced,
-        document: { querySelector: () => lp, createElementNS: (ns, tag) => ({ tag, attrs: {}, style: {}, setAttribute(k,v) { this.attrs[k] = v; } }) },
+        window: { matchMedia: () => ({ matches: reduced }) },
+        document: { querySelector: selector => selector === '.clp' ? checklist : lp, createElementNS: (ns, tag) => ({ tag, attrs: {}, style: {}, setAttribute(k,v) { this.attrs[k] = v; } }) },
         getComputedStyle: () => ({ getPropertyValue: k => ({ '--lp-value': value, '--md-linear-progress-wave-amplitude': '2.5px', '--md-linear-progress-wave-length': '16px', '--md-linear-progress-track-height': '4px', '--md-linear-progress-stop-indicator-size': '8px', '--md-sys-motion-duration-medium3': '350ms' })[k] }),
         MutationObserver: function(cb) { mutation = cb; this.observe = () => {}; },
         ResizeObserver: function(cb) { resize = cb; this.observe = () => {}; },
         requestAnimationFrame: cb => { frames.set(++frameId, cb); return frameId; },
         cancelAnimationFrame: id => frames.delete(id),
       });
+      assert.equal(typeof toggleChecklist, 'function', 'progress initialization must not prevent checklist binding');
+      toggleChecklist();
+      assert(checklistClasses.has('is-open'));
+      assert.equal(trigger.attrs['aria-expanded'], 'true');
+      toggleChecklist();
+      assert(!checklistClasses.has('is-open'));
+      assert.equal(trigger.attrs['aria-expanded'], 'false');
       const parsed = parseFloat(value);
       const percent = Number.isFinite(parsed) ? Math.max(0,Math.min(100,parsed)) : 15;
       const active = children[1], stop = children[2];

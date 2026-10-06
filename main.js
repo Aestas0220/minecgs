@@ -755,6 +755,7 @@
       var svg = lp.querySelector(".lp__svg");
       if (!svg) return;
       var card = lp.closest(".progress-card");
+      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       var NS = "http://www.w3.org/2000/svg";
       function shape(tag, cls) {
         var el = document.createElementNS(NS, tag);
