@@ -46,8 +46,9 @@
           }
           if (W === lastW && H === lastH && dpr === lastDpr) { return; }
           lastW = W; lastH = H; lastDpr = dpr;
-          var wCss = Math.max(W * 1.08, H * 1.92);   /* = max(108vw, 192svh) */
-          var hCss = wCss * 9 / 16;                  /* 16:9 源图 auto 高 */
+          var imageRatio = 2560 / 1410;
+          var wCss = Math.max(W * 1.08, H * 1.08 * imageRatio);
+          var hCss = wCss / imageRatio;
           var xCss = (W - wCss) / 2;                 /* = 50% 背景定位 */
           var yCss = H * 0.446 - hCss * 0.45;        /* = 44.6svh - 0.45h（与 CSS max 形式解析等价） */
           var q = function (v) { return Math.round(v * dpr) / dpr; };
