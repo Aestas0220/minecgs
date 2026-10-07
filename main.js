@@ -838,10 +838,15 @@
         var target = visible() ? value : 0;
         if (reduceMotion || target === 0 || target === shown) { draw(target); return; }
         var from = shown, start = null;
-        var duration = num(getComputedStyle(lp).getPropertyValue("--md-sys-motion-duration-medium3")) || 350;
+        // Wait for the card's staggered reveal, so the fill remains visible throughout.
+        var delay = card ? getComputedStyle(card).transitionDelay.split(",").reduce(function (max, part) {
+          var seconds = parseFloat(part) || 0;
+          return Math.max(max, part.trim().slice(-2) === "ms" ? seconds : seconds * 1000);
+        }, 0) : 0;
+        var duration = 900;
         function step(now) {
-          if (start === null) start = now;
-          var t = Math.min(1, (now - start) / duration);
+          if (start === null) start = now + delay;
+          var t = Math.max(0, Math.min(1, (now - start) / duration));
           draw(from + (target - from) * (1 - Math.pow(1 - t, 3)));
           frame = t < 1 ? requestAnimationFrame(step) : 0;
         }
