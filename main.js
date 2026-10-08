@@ -78,6 +78,90 @@
          —— 加载路径零采样开销。CSS Layer 0/1 静态
          兜底与 THEME_SOURCE 同源生成（r70_reseed.js 逐值断言）。
          ============================================================ */
+      /* Sample the actual crop beneath each hero text group, including the scrim.
+         No scroll listener or persistent animation loop is needed. */
+      (function adaptiveHeroInk() {
+        var bg = document.querySelector(".hero__bg");
+        var groups = [document.querySelector(".hero h1"), document.querySelector(".hero__subtitle"), document.querySelector(".language-switch")].filter(Boolean);
+        if (!bg || !groups.length) return;
+        var canvas = document.createElement("canvas");
+        canvas.width = canvas.height = 1;
+        var ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return;
+        var image = new Image(), ready = false, frame = 0, geometry = "";
+        function linear(channel) {
+          channel /= 255;
+          return channel <= 0.04045 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+        }
+        function update() {
+          frame = 0;
+          if (!ready) return;
+          var cs = getComputedStyle(bg), bounds = bg.getBoundingClientRect();
+          var size = cs.backgroundSize.split(" "), pos = cs.backgroundPosition.split(" ");
+          var w = parseFloat(size[0]), h = size[1] === "auto" ? w * image.naturalHeight / image.naturalWidth : parseFloat(size[1]);
+          var x = pos[0].includes("%") ? (bounds.width - w) * parseFloat(pos[0]) / 100 : parseFloat(pos[0]);
+          var y = pos[1].includes("%") ? (bounds.height - h) * parseFloat(pos[1]) / 100 : parseFloat(pos[1]);
+          if (!(w > 0 && h > 0 && bounds.height > 0)) return;
+          var stops = [[0, .60], [.28, .30], [.52, .12], [.76, .22], [1, .48]];
+          groups.forEach(function (group) {
+            var boxes;
+            if (group.classList.contains("language-switch")) {
+              boxes = Array.from(group.querySelectorAll(".language-switch__choice")).map(function (el) { return el.getBoundingClientRect(); });
+            } else {
+              var range = document.createRange(); range.selectNodeContents(group);
+              boxes = Array.from(range.getClientRects());
+            }
+            var total = 0, count = 0;
+            try {
+              boxes.forEach(function (box) {
+                if (!box.width || !box.height) return;
+                for (var row = 0; row < 4; row++) for (var col = 0; col < 16; col++) {
+                  var px = box.left - bounds.left + box.width * (col + .5) / 16;
+                  var py = box.top - bounds.top + box.height * (row + .5) / 4;
+                  var sx = (px - x) / w * image.naturalWidth, sy = (py - y) / h * image.naturalHeight;
+                  var rgb = [18, 14, 8];
+                  if (sx >= 0 && sy >= 0 && sx < image.naturalWidth && sy < image.naturalHeight) {
+                    ctx.clearRect(0, 0, 1, 1);
+                    ctx.drawImage(image, sx, sy, 1, 1, 0, 0, 1, 1);
+                    rgb = ctx.getImageData(0, 0, 1, 1).data;
+                  }
+                  var vertical = Math.max(0, Math.min(1, py / bounds.height)), alpha = .48;
+                  for (var i = 1; i < stops.length; i++) if (vertical <= stops[i][0]) {
+                    var fraction = (vertical - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0]);
+                    alpha = stops[i - 1][1] + fraction * (stops[i][1] - stops[i - 1][1]); break;
+                  }
+                  var radial = Math.sqrt(Math.pow((px / bounds.width - .5) / .88, 2) + Math.pow((py / bounds.height - .30) / .58, 2));
+                  var radialAlpha = Math.max(0, Math.min(1, (radial - .46) / .54)) * .34;
+                  var channels = [18, 14, 8].map(function (shade, channel) {
+                    var under = rgb[channel] * (1 - radialAlpha) + [14, 10, 5][channel] * radialAlpha;
+                    return linear(under * (1 - alpha) + shade * alpha);
+                  });
+                  total += .2126 * channels[0] + .7152 * channels[1] + .0722 * channels[2]; count++;
+                }
+              });
+            } catch (error) { return; } // Preserve readable CSS fallback if sampling is unavailable.
+            if (!count) return;
+            var dark = total / count > .179;
+            group.style.setProperty("--hero-ink", dark ? "#000000" : "#ffffff");
+            group.style.setProperty("--hero-ink-shadow", dark ? "rgba(255,255,255,0.24)" : "rgba(0,0,0,0.42)");
+          });
+        }
+        function schedule() { if (!frame) frame = requestAnimationFrame(update); }
+        image.onload = function () { ready = true; schedule(); };
+        var url = getComputedStyle(bg).backgroundImage.match(/url\(["']?(.*?)["']?\)/);
+        if (url) image.src = url[1];
+        window.addEventListener("resize", schedule, { passive: true });
+        document.addEventListener("minecgs:languagechange", schedule);
+        if (window.visualViewport) window.visualViewport.addEventListener("resize", schedule, { passive: true });
+        if (document.fonts) document.fonts.ready.then(schedule);
+        if (typeof ResizeObserver !== "undefined") {
+          var observer = new ResizeObserver(schedule); groups.forEach(function (group) { observer.observe(group); });
+        }
+        new MutationObserver(function () {
+          var next = root.style.getPropertyValue("--page-bg-size") + root.style.getPropertyValue("--page-bg-pos");
+          if (next !== geometry) { geometry = next; schedule(); }
+        }).observe(root, { attributes: true, attributeFilter: ["style"] });
+      })();
       var THEME_SOURCE = 0xffB4552F;
       var ROLES = [
         "primary", "onPrimary", "primaryContainer", "onPrimaryContainer",

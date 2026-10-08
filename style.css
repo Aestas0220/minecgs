@@ -1002,10 +1002,10 @@
       width: min(1040px, 100%);
       text-align: center;
     }
-    /* 首屏文字固定为浅色主题的色对，避免照片上的对比度随主题改变。 */
+    /* 图片局部亮度决定黑/白文字；未完成采样时保留浅色兜底。 */
     .hero h1 {
       margin: 14px 0 0;
-      color: var(--md-ref-palette-neutral95);
+      color: var(--hero-ink, var(--md-ref-palette-neutral95));
       font-family: "Times New Roman", Times, serif;
       font-size: clamp(64px, 10.8vw, 136px);
       line-height: 1.04;
@@ -1013,20 +1013,20 @@
       font-weight: 400;
       font-optical-sizing: auto;
       text-shadow:
-        0 2px 26px color-mix(in srgb, var(--md-ref-palette-neutral20) 55%, transparent),
-        0 1px 4px color-mix(in srgb, var(--md-ref-palette-neutral20) 42%, transparent);
+        0 2px 26px var(--hero-ink-shadow, rgba(0, 0, 0, 0.42)),
+        0 1px 4px var(--hero-ink-shadow, rgba(0, 0, 0, 0.42));
     }
     .hero__subtitle {
       margin: 0;
-      color: color-mix(in srgb, var(--md-ref-palette-neutral95) 88%, transparent);
+      color: var(--hero-ink, var(--md-ref-palette-neutral95));
       font-family: var(--md-typescale-title-large-font-family);
       font-size: clamp(16px, 1.5vw, 20px);
       line-height: 1.7;
       letter-spacing: 0.035em;
       font-weight: var(--md-typescale-title-large-font-weight);
       text-shadow:
-        0 1px 18px color-mix(in srgb, var(--md-ref-palette-neutral20) 50%, transparent),
-        0 1px 3px color-mix(in srgb, var(--md-ref-palette-neutral20) 40%, transparent);
+        0 1px 18px var(--hero-ink-shadow, rgba(0, 0, 0, 0.42)),
+        0 1px 3px var(--hero-ink-shadow, rgba(0, 0, 0, 0.42));
     }
     .hero__school-compact { display: none; }
     .hero__subtitle-separator { margin-inline: 0.55em; }
@@ -1036,7 +1036,7 @@
       align-items: center;
       gap: 12px;
       margin-top: 8px;
-      color: var(--md-ref-palette-neutral95);
+      color: var(--hero-ink, var(--md-ref-palette-neutral95));
     }
     .language-switch__choice {
       position: relative;
@@ -1049,7 +1049,7 @@
       font-size: 13px;
       line-height: 24px;
       letter-spacing: 0.025em;
-      opacity: 0.65;
+      opacity: 0.82;
       cursor: pointer;
       transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
     }
