@@ -428,12 +428,12 @@
 
       --font-ui: "Source Serif 4", "Noto Serif SC", Georgia, serif;
       --nav-h: var(--md-top-app-bar-container-height);
-      --hero-image: url("./image.webp?v=105");
+      --hero-image: url("./image.webp?v=106");
       /* hero 以下页面大背景 = 主图预烘焙模糊版（image-blur.webp，构建期
          烘焙落盘，零运行时模糊），铺满 hero 以下除卡片外的全部背景
          （替代旧波场的位置）；浅色蒙版（表面 55% 半透明，模糊图 45%
          可见，对比度预算见 2026-10-05 日志），深色蒙版见下方覆盖块 */
-      --page-bg-image: url("./image-blur.webp?v=105");
+      --page-bg-image: url("./image-blur.webp?v=106");
       /* 主题色蒙版 = 旧「55% surface 蒙版 + 7% primary 氛围 tint」双层的
          数学合成：alpha 0.5815 = 0.07+0.55×0.93，色 =
          88% surface + 12% primary = (0.55×0.93·S+0.07·P)/0.5815 ——
@@ -457,14 +457,14 @@
          fixed 层，落点逐像素重合）—— 位置、尺寸、裁切范围像素级一致。
          几何 = 16:9 源图 cover 再放大 1.08 的旧构图（旧 transform:
          scale(1.08) 使原图与模糊层裁切不一致，已废）的解析等价：
-           宽 w = max(1.08W, 1.08H × 2560/1410)，高按源图比例自动；
+           宽 w = max(1.08W, 1.08H × 2522/1410)，高按源图比例自动；
            左上角 = 绕视口中心缩放后落点：
              x = (W-w)/2（即 background-position 50%）；
              y = 44.6svh - 0.45h = 44.6svh - max(27.3375vw, 48.6svh)。
          高度基准用 svh（小视口单位，恒等于地址栏/底栏全展开的视口高）：
          自动隐藏底栏、地址栏收起导致的视口高度变化不再挪动背景图
          ——"背景图固定位置"。JS 侧 alignPageBg 同步按宽度变化才重算。 */
-      --page-bg-size: max(108vw, 196.085106svh) auto;
+      --page-bg-size: max(108vw, 193.174468svh) auto;
       --page-bg-pos: 50% calc(44.6svh - max(27.3375vw, 48.6svh));
 
       /* 主题切换过渡（色面类属性，300ms standard 曲线） */

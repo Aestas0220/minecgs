@@ -46,7 +46,7 @@
           }
           if (W === lastW && H === lastH && dpr === lastDpr) { return; }
           lastW = W; lastH = H; lastDpr = dpr;
-          var imageRatio = 2560 / 1410;
+          var imageRatio = 2522 / 1410;
           var wCss = Math.max(W * 1.08, H * 1.08 * imageRatio);
           var hCss = wCss / imageRatio;
           var xCss = (W - wCss) / 2;                 /* = 50% 背景定位 */
