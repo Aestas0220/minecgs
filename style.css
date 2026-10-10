@@ -1139,7 +1139,7 @@
       pointer-events: none;
       overflow: clip;
     }
-    /* 窗口与边缘继承同一 --sheet-seam 位移；图片几何不动。 */
+    /* 窗口与边缘共享同一滚动时间轴；图片几何不动。 */
     .page-bg__surface {
       position: absolute;
       inset: 0 0 auto;
@@ -1147,7 +1147,7 @@
       border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
       overflow: hidden;
       /* 固定尺寸的圆角窗口只做位移，不逐帧改变 clip-path。 */
-      transform: translate3d(0, var(--sheet-seam, 150vh), 0);
+      transform: translate3d(0, 150vh, 0);
     }
     .page-bg__image {
       position: absolute;
@@ -1158,7 +1158,7 @@
       background-repeat: no-repeat;
       /* 窗口与图片等量反向位移：图片视口坐标始终为零。
          veil 随图片一起反向位移，再由同一个圆角窗口裁切。 */
-      transform: translate3d(0, calc(0px - var(--sheet-seam, 150vh)), 0);
+      transform: translate3d(0, -150vh, 0);
     }
     .page-bg__edge {
       position: absolute;
@@ -1169,7 +1169,7 @@
          下边缘远离裁切区，避免出现第二条阴影。 */
       height: 256px;
       clip-path: inset(-128px -128px 192px -128px);
-      transform: translate3d(0, var(--sheet-seam, 150vh), 0);
+      transform: translate3d(0, 150vh, 0);
       border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
       border-top: var(--md-divider-height) solid color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent);
       box-shadow:
@@ -1178,6 +1178,27 @@
         0 -16px 48px 12px rgba(0, 0, 0, 0.18);
       /* 接缝位置禁止过渡；与 surface 的裁切同帧落定。 */
       transition: border-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    /* Animate transform itself, not an inherited custom property. The three
+       layers share the root scroll timeline and identical absolute range. */
+    @keyframes sheet-window-scroll {
+      from { transform: translate3d(0, var(--sheet-start), 0); }
+      to { transform: translate3d(0, -64px, 0); }
+    }
+    @keyframes sheet-image-scroll {
+      from { transform: translate3d(0, calc(0px - var(--sheet-start)), 0); }
+      to { transform: translate3d(0, 64px, 0); }
+    }
+    .page-bg.has-scroll-timeline .page-bg__surface,
+    .page-bg.has-scroll-timeline .page-bg__edge {
+      animation: sheet-window-scroll linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0px var(--sheet-scroll-range);
+    }
+    .page-bg.has-scroll-timeline .page-bg__image {
+      animation: sheet-image-scroll linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0px var(--sheet-scroll-range);
     }
     /* ============================================================
        内容面板（Sheet）：带着圆角的下页 —— 从露出的第一帧起就是

@@ -76,7 +76,7 @@
         canvas.width = canvas.height = 1;
         var ctx = canvas.getContext("2d", { willReadFrequently: true });
         if (!ctx) return;
-        var image = new Image(), ready = false, frame = 0, geometry = "";
+        var image = new Image(), ready = false, frame = 0, geometry = "", sampleGeometry = "";
         function linear(channel) {
           channel /= 255;
           return channel <= 0.04045 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
@@ -91,14 +91,27 @@
           var y = pos[1].includes("%") ? (bounds.height - h) * parseFloat(pos[1]) / 100 : parseFloat(pos[1]);
           if (!(w > 0 && h > 0 && bounds.height > 0)) return;
           var stops = [[0, .60], [.28, .30], [.52, .12], [.76, .22], [1, .48]];
-          groups.forEach(function (group) {
-            var boxes;
+          /* Safari toolbar animation emits viewport resize events. Reuse the
+             existing ink if the stable photo/text geometry did not change;
+             otherwise these events perform hundreds of canvas readbacks. */
+          var groupBoxes = groups.map(function (group) {
             if (group.classList.contains("language-switch")) {
-              boxes = Array.from(group.querySelectorAll(".language-switch__choice")).map(function (el) { return el.getBoundingClientRect(); });
-            } else {
-              var range = document.createRange(); range.selectNodeContents(group);
-              boxes = Array.from(range.getClientRects());
+              return Array.from(group.querySelectorAll(".language-switch__choice")).map(function (el) { return el.getBoundingClientRect(); });
             }
+            var range = document.createRange(); range.selectNodeContents(group);
+            return Array.from(range.getClientRects());
+          });
+          var nextSampleGeometry = JSON.stringify([w, h, x, y, bounds.width, bounds.height,
+            groupBoxes.map(function (boxes) {
+              return boxes.map(function (box) {
+                return [box.left - bounds.left, box.top - bounds.top, box.width, box.height];
+              });
+            })]);
+          if (nextSampleGeometry === sampleGeometry) return;
+          sampleGeometry = nextSampleGeometry;
+          var inks = [];
+          groups.forEach(function (group, groupIndex) {
+            var boxes = groupBoxes[groupIndex];
             var total = 0, count = 0;
             try {
               boxes.forEach(function (box) {
@@ -130,8 +143,12 @@
             } catch (error) { return; } // Preserve readable CSS fallback if sampling is unavailable.
             if (!count) return;
             var dark = total / count > .179;
-            group.style.setProperty("--hero-ink", dark ? "#000000" : "#ffffff");
-            group.style.setProperty("--hero-ink-shadow", dark ? "rgba(255,255,255,0.24)" : "rgba(0,0,0,0.42)");
+            inks.push({ group: group, dark: dark });
+          });
+          /* Batch writes after all geometry reads and sampling. */
+          inks.forEach(function (ink) {
+            ink.group.style.setProperty("--hero-ink", ink.dark ? "#000000" : "#ffffff");
+            ink.group.style.setProperty("--hero-ink-shadow", ink.dark ? "rgba(255,255,255,0.24)" : "rgba(0,0,0,0.42)");
           });
         }
         function schedule() { if (!frame) frame = requestAnimationFrame(update); }
@@ -364,7 +381,9 @@
         var tabs = topBar.querySelector(".tabs");
         var toggle = topBar.querySelector(".theme-toggle");
         if (!brand || !tabs || !toggle) return;
+        var measuredWidth = 0;
         function measure() {
+          measuredWidth = window.innerWidth;
           brand.classList.remove("is-hidden");
           var cs = window.getComputedStyle(topBar);
           var avail = topBar.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
@@ -372,7 +391,9 @@
           if (needed > avail) { brand.classList.add("is-hidden"); }
         }
         measure();
-        window.addEventListener("resize", measure, { passive: true });
+        window.addEventListener("resize", function () {
+          if (window.innerWidth !== measuredWidth) measure();
+        }, { passive: true });
         document.addEventListener("minecgs:languagechange", measure);
         if (document.fonts && document.fonts.ready) { document.fonts.ready.then(measure); }
       })();
@@ -626,14 +647,40 @@
       var ticking = false;
       var heroH = 0;             /* 缓存 hero 高度 —— 滚动热路径禁读 offsetHeight（强制布局） */
       var hintOpacity = -1;
-      /* 接缝统一：.page-bg 给 surface 裁切和 edge 边线/投影共享同一变量
-         圆角轮廓 —— --sheet-seam = sheet 顶边的视口 y（iOS WebKit 无
-         background-attachment: fixed，此为跨平台等效）。滚动热路径禁读
-         offsetTop（强制布局）→ 缓存 + resize/load 重测 */
+      /* Background handoff: compositor scroll timeline where available;
+         direct transform fallback without inherited per-frame CSS variables. */
       var pageBgEl = document.querySelector(".page-bg");
       var sheetEl = document.getElementById("pageSheet");
+      var seamSurface = pageBgEl && pageBgEl.querySelector(".page-bg__surface");
+      var seamImage = pageBgEl && pageBgEl.querySelector(".page-bg__image");
+      var seamEdge = pageBgEl && pageBgEl.querySelector(".page-bg__edge");
+      var nativeSeam = !!(seamSurface && seamImage && seamEdge && window.CSS &&
+        CSS.supports("animation-timeline", "scroll(root block)") &&
+        CSS.supports("animation-range", "0px 100px"));
       var sheetTop = 0;
       var seamLast = null;
+      var geometryFrame = 0;
+
+      function measureHandoff() {
+        geometryFrame = 0;
+        if (!heroSection || !sheetEl) return;
+        /* All reads precede writes. Toolbar resize events do not invalidate the
+           stable svh geometry or write styles unless the actual geometry changes. */
+        var nextHeroH = heroSection.offsetHeight;
+        var nextSheetTop = sheetEl.offsetTop;
+        var changed = nextHeroH !== heroH || nextSheetTop !== sheetTop;
+        heroH = nextHeroH;
+        sheetTop = nextSheetTop;
+        if (nativeSeam && changed) {
+          pageBgEl.style.setProperty("--sheet-start", sheetTop + "px");
+          pageBgEl.style.setProperty("--sheet-scroll-range", (sheetTop + 64) + "px");
+          pageBgEl.classList.add("has-scroll-timeline");
+        }
+        requestParallax();
+      }
+      function requestHandoffMeasure() {
+        if (!geometryFrame) geometryFrame = requestAnimationFrame(measureHandoff);
+      }
       /* Extended FAB「下载进服包」：滚过 hero 封面后自右下浮现（阈值迟滞防临界闪烁）。
          页底 footer 避让 = .fab-dock 纯布局（sticky 被顶起），JS 只管显隐 */
       var fabEl = document.getElementById("fabDownload");
@@ -643,21 +690,17 @@
         var y = window.scrollY || 0;
         if (navSuppress) { suppressNavScroll(); }   /* 程序化飞行中滚动仍在发生 → 续期抑制 */
         if (heroSection) {
-          if (!heroH) { heroH = heroSection.offsetHeight || window.innerHeight; measureNav(); }
+          if (!heroH) { ticking = false; requestHandoffMeasure(); return; }
           var p = Math.min(Math.max(y / heroH, 0), 1);
 
-          /* 81 轮：接缝 = sheet 顶边视口 y，clamp ≥ -64（28px 圆角推出视口
-             即足，更深滚动值恒定零抖动）；值不变不动 style */
-          if (pageBgEl && sheetEl) {
-            if (!sheetTop) { sheetTop = sheetEl.offsetTop || 0; }
-            var seam = sheetTop - y;
-            /* 位移落到物理像素网格，避免高 DPR 设备每帧分数像素采样。 */
-            var seamDpr = window.devicePixelRatio || 1;
-            seam = Math.round(seam * seamDpr) / seamDpr;
-            if (seam < -64) { seam = -64; }
+          if (!nativeSeam && seamSurface && seamImage && seamEdge) {
+            var seam = Math.max(sheetTop - y, -64);
             if (seam !== seamLast) {
               seamLast = seam;
-              pageBgEl.style.setProperty("--sheet-seam", seam + "px");
+              var move = "translate3d(0," + seam + "px,0)";
+              seamSurface.style.transform = move;
+              seamImage.style.transform = "translate3d(0," + (-seam) + "px,0)";
+              seamEdge.style.transform = move;
             }
           }
 
@@ -698,8 +741,12 @@
         if (!ticking) { ticking = true; window.requestAnimationFrame(updateParallax); }
       }
       window.addEventListener("scroll", requestParallax, { passive: true });
-      window.addEventListener("resize", function () { heroH = 0; sheetTop = 0; requestParallax(); }, { passive: true });
-      window.addEventListener("load", function () { heroH = 0; sheetTop = 0; requestParallax(); });  /* 图片/字体落位后重测 */
+      window.addEventListener("resize", requestHandoffMeasure, { passive: true });
+      window.addEventListener("load", requestHandoffMeasure);
+      if (window.ResizeObserver && heroSection) {
+        new ResizeObserver(requestHandoffMeasure).observe(heroSection);
+      }
+      measureHandoff();
       updateParallax();
 
       /* ============================================================
