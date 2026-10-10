@@ -132,7 +132,7 @@
           var nextSampleGeometry = JSON.stringify([w, h, x, y, bounds.width, bounds.height,
             groupBoxes.map(function (boxes) {
               return boxes.map(function (box) {
-                return [box.left - bounds.left, box.top - bounds.top, box.width, box.height];
+                return [box.left - bounds.left, box.top - bounds.top, box.width, box.height].map(function (v) { return Math.round(v * 4) / 4; });
               });
             })]);
           if (nextSampleGeometry === sampleGeometry) return;
@@ -183,9 +183,8 @@
         image.onload = function () { ready = true; schedule(); };
         var url = getComputedStyle(bg).backgroundImage.match(/url\(["']?(.*?)["']?\)/);
         if (url) image.src = url[1];
-        window.addEventListener("resize", schedule, { passive: true });
+        document.addEventListener("minecgs:viewportchange", schedule);
         document.addEventListener("minecgs:languagechange", schedule);
-        if (window.visualViewport) window.visualViewport.addEventListener("resize", schedule, { passive: true });
         if (document.fonts) document.fonts.ready.then(schedule);
         if (typeof ResizeObserver !== "undefined") {
           var observer = new ResizeObserver(schedule); groups.forEach(function (group) { observer.observe(group); });
@@ -675,19 +674,17 @@
       var ticking = false;
       var heroH = 0;             /* 缓存 hero 高度 —— 滚动热路径禁读 offsetHeight（强制布局） */
       var hintOpacity = -1;
-      /* Background handoff: compositor scroll timeline where available;
-         direct transform fallback without inherited per-frame CSS variables. */
+      /* Direct transforms share one scroll sample. Geometry stays cached;
+         no native timeline or inherited per-frame CSS custom properties. */
       var pageBgEl = document.querySelector(".page-bg");
       var sheetEl = document.getElementById("pageSheet");
       var seamSurface = pageBgEl && pageBgEl.querySelector(".page-bg__surface");
       var seamImage = pageBgEl && pageBgEl.querySelector(".page-bg__image");
       var seamEdge = pageBgEl && pageBgEl.querySelector(".page-bg__edge");
-      var nativeSeam = !!(seamSurface && seamImage && seamEdge && window.CSS &&
-        CSS.supports("animation-timeline", "scroll(root block)") &&
-        CSS.supports("animation-range", "0px 100px"));
       var sheetTop = 0;
       var seamLast = null;
       var geometryFrame = 0;
+      var handoffActive = false;
 
       function measureHandoff() {
         geometryFrame = 0;
@@ -696,14 +693,8 @@
            stable svh geometry or write styles unless the actual geometry changes. */
         var nextHeroH = heroSection.offsetHeight;
         var nextSheetTop = sheetEl.offsetTop;
-        var changed = nextHeroH !== heroH || nextSheetTop !== sheetTop;
         heroH = nextHeroH;
         sheetTop = nextSheetTop;
-        if (nativeSeam && changed) {
-          pageBgEl.style.setProperty("--sheet-start", sheetTop + "px");
-          pageBgEl.style.setProperty("--sheet-scroll-range", (sheetTop + 64) + "px");
-          pageBgEl.classList.add("has-scroll-timeline");
-        }
         requestParallax();
       }
       function requestHandoffMeasure() {
@@ -713,6 +704,16 @@
          页底 footer 避让 = .fab-dock 纯布局（sticky 被顶起），JS 只管显隐 */
       var fabEl = document.getElementById("fabDownload");
       var fabShown = false;
+      /* Touch FAB uses a stable top coordinate instead of a dvh-dependent
+         sticky bottom. Hide once the footer enters; no per-scroll measurements. */
+      var fabDock = document.querySelector(".fab-dock");
+      var footer = document.querySelector(".site-footer");
+      if (fabDock && footer && window.IntersectionObserver &&
+          window.matchMedia("(hover: none) and (pointer: coarse)").matches) {
+        new IntersectionObserver(function (entries) {
+          fabDock.classList.toggle("is-at-footer", entries[0].isIntersecting);
+        }).observe(footer);
+      }
 
       function updateParallax() {
         var y = window.scrollY || 0;
@@ -721,8 +722,13 @@
           if (!heroH) { ticking = false; requestHandoffMeasure(); return; }
           var p = Math.min(Math.max(y / heroH, 0), 1);
 
-          if (!nativeSeam && seamSurface && seamImage && seamEdge) {
+          if (seamSurface && seamImage && seamEdge) {
             var seam = Math.max(sheetTop - y, -64);
+            var moving = y > 0 && seam > -64;
+            if (moving !== handoffActive) {
+              handoffActive = moving;
+              pageBgEl.classList.toggle("is-handoff-active", moving);
+            }
             if (seam !== seamLast) {
               seamLast = seam;
               var move = "translate3d(0," + seam + "px,0)";
@@ -769,7 +775,7 @@
         if (!ticking) { ticking = true; window.requestAnimationFrame(updateParallax); }
       }
       window.addEventListener("scroll", requestParallax, { passive: true });
-      window.addEventListener("resize", requestHandoffMeasure, { passive: true });
+      document.addEventListener("minecgs:viewportchange", requestHandoffMeasure);
       window.addEventListener("load", requestHandoffMeasure);
       if (window.ResizeObserver && heroSection) {
         new ResizeObserver(requestHandoffMeasure).observe(heroSection);

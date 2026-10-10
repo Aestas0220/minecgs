@@ -478,14 +478,10 @@
       --stable-viewport-height: 100svh;
       --stable-viewport-unit: 1svh;
       --large-viewport-height: 100lvh;
-      --viewport-bottom-extension: 0px;
       --viewport-safe-top: env(safe-area-inset-top, 0px);
       --viewport-safe-right: env(safe-area-inset-right, 0px);
       --viewport-safe-bottom: env(safe-area-inset-bottom, 0px);
       --viewport-safe-left: env(safe-area-inset-left, 0px);
-    }
-    @supports (height: 100dvh) {
-      :root { --viewport-bottom-extension: calc(100dvh - var(--stable-viewport-height)); }
     }
     html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
@@ -788,7 +784,7 @@
       --fab-safe: 24px;                       /* 静息安全边距（手机 16px） */
       --fab-gap: 12px;                        /* 被顶起后与 footer 顶边的间隙 */
       position: sticky;
-      bottom: calc(var(--fab-safe) + var(--viewport-safe-bottom) - var(--fab-gap) + var(--viewport-bottom-extension));
+      bottom: calc(var(--fab-safe) + var(--viewport-safe-bottom) - var(--fab-gap));
       height: 0;
       display: flow-root;
       z-index: 30;
@@ -938,6 +934,22 @@
     .chip__val--pending {
       color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
       font-style: italic;
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      .fab-dock {
+        position: fixed;
+        top: calc(var(--stable-viewport-height) - var(--fab-safe) - var(--viewport-safe-bottom));
+        right: 0;
+        left: 0;
+        bottom: auto;
+      }
+      .fab-dock .fab { bottom: 0; }
+      .fab-dock.is-at-footer .fab {
+        opacity: 0;
+        transform: translateY(88px);
+        pointer-events: none;
+      }
     }
 
     /* ============ Hero · 独立封面页 ============
@@ -1151,8 +1163,9 @@
       z-index: 2;
       pointer-events: none;
       overflow: clip;
+      contain: layout paint;
     }
-    /* 窗口与边缘共享同一滚动时间轴；图片几何不动。 */
+    /* 窗口与边缘共用同一次滚动采样；图片几何不动。 */
     .page-bg__surface {
       position: absolute;
       inset: 0 0 auto;
@@ -1192,27 +1205,10 @@
       /* 接缝位置禁止过渡；与 surface 的裁切同帧落定。 */
       transition: border-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
-    /* Animate transform itself, not an inherited custom property. The three
-       layers share the root scroll timeline and identical absolute range. */
-    @keyframes sheet-window-scroll {
-      from { transform: translate3d(0, var(--sheet-start), 0); }
-      to { transform: translate3d(0, -64px, 0); }
-    }
-    @keyframes sheet-image-scroll {
-      from { transform: translate3d(0, calc(0px - var(--sheet-start)), 0); }
-      to { transform: translate3d(0, 64px, 0); }
-    }
-    .page-bg.has-scroll-timeline .page-bg__surface,
-    .page-bg.has-scroll-timeline .page-bg__edge {
-      animation: sheet-window-scroll linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 0px var(--sheet-scroll-range);
-    }
-    .page-bg.has-scroll-timeline .page-bg__image {
-      animation: sheet-image-scroll linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 0px var(--sheet-scroll-range);
-    }
+    /* Promote only during the handoff; release the extra textures afterwards. */
+    .page-bg.is-handoff-active .page-bg__surface,
+    .page-bg.is-handoff-active .page-bg__image,
+    .page-bg.is-handoff-active .page-bg__edge { will-change: transform; }
     /* ============================================================
        内容面板（Sheet）：带着圆角的下页 —— 从露出的第一帧起就是
        完整的烘焙模糊底（.page-bg 视口冻结层内含 veil 双层染色，
