@@ -150,7 +150,7 @@
           if (next !== geometry) { geometry = next; schedule(); }
         }).observe(root, { attributes: true, attributeFilter: ["style"] });
       })();
-      var THEME_SOURCE = 0xff2463eb;
+      var THEME_SOURCE = 0xff637c98;
       var ROLES = [
         "primary", "onPrimary", "primaryContainer", "onPrimaryContainer",
         "secondary", "onSecondary", "secondaryContainer", "onSecondaryContainer",
@@ -189,9 +189,9 @@
       function buildThemes(seedArgb) {
         var hct = MCU.Hct.fromInt(seedArgb);
         var palettes = {
-          primary: MCU.TonalPalette.fromInt(0xff2463eb),
-          secondary: MCU.TonalPalette.fromInt(0xff596579),
-          tertiary: MCU.TonalPalette.fromInt(0xff193859),
+          primary: MCU.TonalPalette.fromInt(0xff637c98),
+          secondary: MCU.TonalPalette.fromInt(0xff69727e),
+          tertiary: MCU.TonalPalette.fromInt(0xff596c80),
           neutral: MCU.TonalPalette.fromHueAndChroma(hct.hue, 0),
           neutralVariant: MCU.TonalPalette.fromHueAndChroma(hct.hue, 4),
           error: MCU.TonalPalette.fromHueAndChroma(25, 84)
