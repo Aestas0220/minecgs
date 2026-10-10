@@ -1,5 +1,7 @@
 .guide-page { background: var(--md-sys-color-surface); color: var(--md-sys-color-on-surface); }
 .guide-page .brand { opacity: 1; transform: none; pointer-events: auto; }
+.guide-page .brand { padding: 0 18px 0 12px; gap: 8px; }
+.guide-page .brand__name { display: inline; }
 .guide-shell { max-width: 1120px; margin: auto; padding: 120px 32px 80px; }
 .guide-heading { margin: 0 0 48px 248px; }
 .guide-back, .guide-link, .dlg__help { color: var(--md-sys-color-primary); text-underline-offset: 4px; }
