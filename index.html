@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet" />
   <!-- ?v= 资源版本号：发布站无缓存响应头时击穿浏览器启发式缓存，改版即换号 -->
-  <link rel="stylesheet" href="style.css?v=108" />
+  <link rel="stylesheet" href="style.css?v=109" />
 
 </head>
 <body>
@@ -130,7 +130,7 @@
 
         <div class="intro__layout reveal" data-delay="1">
           <p class="intro__lead body-large">MineCGS 是一项始于 2024 年 9 月的校园建筑复刻工程：以 <span class="accent">1:2 比例</span>在 Minecraft 中严谨重建广东碧桂园学校，两格方块对应现实中的一米。项目起源于一次突发奇想，2026 学年重启后持续推进。</p>
-          <p class="intro__body body-large">建模以 Google Earth 高清卫星图为底图，投射到超平坦地形上作为平面基准；其余数据来自现场测绘——拍照、量取尺寸，记录每栋建筑的轴线、层高与立面做法，再逐块在游戏中对齐。</p>
+          <p class="intro__body body-large">建模以 Google Earth 高清卫星图为底图，投射到超平坦地形上作为平面基准；其余数据来自现场测绘——拍照、量取尺寸，记录每栋建筑的轴线、层高与立面做法，再逐块在 Minecraft 中对齐。</p>
           <p class="intro__body body-large">1:2 的尺度意味着持续的换算与取舍，也让许多平日被忽略的细节进入记录——不同年代翻新留下的墙面色差、连廊的宽度、台阶的高度。这座校园的形体与它的细节，都将在 Minecraft 中被一并留存。</p>
 
           <div class="disclaimer">
@@ -140,14 +140,14 @@
           </div>
         </div>
 
-        <!-- 补充信息卡（MD3 List · one-line list item）：游戏版本 / 服务端 / 建造工具 -->
+        <!-- 补充信息卡（MD3 List · one-line list item）：版本 / 服务端 / 建造工具 -->
         <div class="spec-card reveal" data-delay="2">
           <p class="spec-card__title title-large">项目规格</p>
           <ul class="spec-list">
             <li class="spec-list__item">
               <!-- Material Symbols Rounded · sports_esports -->
               <svg class="spec-list__icon" viewBox="0 -960 960 960" aria-hidden="true"><path d="M147-200q-38 0-59.5-25.5T72-296l48-335q8-53 49.5-91t94.5-38h433q53 0 94.5 38t49.5 91l47 335q6 45-15.5 70.5T813-200q-23 0-39-7.5T747-226L643-330H317L213-226q-11 11-27 18.5t-39 7.5Zm18-64 126-126h378l126 126q5 5 18 9 9 0 13.5-9t2.5-18l-48-339q-5-35-29.5-57T697-700H263q-30 0-54.5 22T179-621l-48 339q-2 9 2.5 18t13.5 9q7 0 18-9Zm535-176q16 0 28-12t12-28q0-16-12-28t-28-12q-16 0-28 12t-12 28q0 16 12 28t28 12Zm-85-130q16 0 28-12t12-28q0-16-12-28t-28-12q-16 0-28 12t-12 28q0 16 12 28t28 12Zm-135 92Zm-180-42v50q0 10.83 7.12 17.92 7.11 7.08 18 7.08 10.88 0 17.88-7.08 7-7.09 7-17.92v-50h50q10.83 0 17.92-7.12 7.08-7.11 7.08-18 0-10.88-7.08-17.88-7.09-7-17.92-7h-50v-50q0-10.83-7.12-17.92-7.11-7.08-18-7.08-10.88 0-17.88 7.08-7 7.09-7 17.92v50h-50q-10.83 0-17.92 7.12-7.08 7.11-7.08 18 0 10.88 7.08 17.88 7.09 7 17.92 7h50Z"/></svg>
-              <span class="spec-list__name body-large">当前游戏版本</span>
+              <span class="spec-list__name body-large">当前版本</span>
               <span class="spec-list__value title-medium">Minecraft 26.2</span>
             </li>
             <li class="spec-list__item">
@@ -396,15 +396,15 @@
   </dialog>
 
   <!-- 开源库 libs.js：Material Color Utilities（Apache-2.0）—— simplex-noise 已随波场迭代移除 -->
-  <script src="libs.js?v=108"></script>
+  <script src="libs.js?v=109"></script>
   <!-- 站点逻辑 main.js：动态取色 + 主题切换 + 页面交互 -->
-  <script src="i18n.js?v=108"></script>
-  <script src="main.js?v=108"></script>
+  <script src="i18n.js?v=109"></script>
+  <script src="main.js?v=109"></script>
   <script>
     /* 仅诊断链接启用，不影响正常访问。 */
     if (new URLSearchParams(location.search).get("diagnose") === "layers") {
       var layerProbe = document.createElement("script");
-      layerProbe.src = "diagnostics.js?v=108";
+      layerProbe.src = "diagnostics.js?v=109";
       document.head.appendChild(layerProbe);
     }
   </script>
