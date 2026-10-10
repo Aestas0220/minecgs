@@ -10,7 +10,7 @@
     if (!last || !shell) return;
     var bottom = parseFloat(getComputedStyle(shell).paddingBottom) || 0;
     var margin = parseFloat(getComputedStyle(last).marginBottom) || 0;
-    var tail = Math.max(0, window.innerHeight - 96 - last.getBoundingClientRect().height - bottom - margin - (footer ? footer.getBoundingClientRect().height : 0));
+    var tail = Math.max(0, (window.MineCGSViewport ? window.MineCGSViewport.getCoverHeight() : window.innerHeight) - 96 - last.getBoundingClientRect().height - bottom - margin - (footer ? footer.getBoundingClientRect().height : 0));
     document.documentElement.style.setProperty("--guide-tail-space", Math.ceil(tail) + "px");
   }
   function update() {
@@ -29,7 +29,7 @@
   }, { passive: true });
   measureTail();
   update();
-  window.addEventListener("resize", measureTail, { passive: true });
+  document.addEventListener("minecgs:viewportchange", measureTail);
   if (document.fonts) document.fonts.ready.then(measureTail);
   if (typeof ResizeObserver !== "undefined") new ResizeObserver(measureTail).observe(sections[sections.length - 1]);
   links.forEach(function (link, index) {

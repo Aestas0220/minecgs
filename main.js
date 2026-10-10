@@ -19,33 +19,59 @@
          整数对齐、滚动期纯整数 blit；CSS 公式（83 轮已 vh→svh）保留作
          无 JS 兜底；.hero__bg / .page-bg 共享同变量，对齐后两层像素
          重合不变。
-         使用实际 100svh 测量值：桌面窗口改宽/高均重新适配，移动端
-         地址栏收起/展开不改变小视口高度，转屏和分屏仍会重新计算。
-         只有缺少 svh 支持的旧触屏浏览器继续使用宽度变化时重置高度
-         的兜底。三个背景层仍共享同一组几何，禁止各自移动。 */
+         初始捕获小视口与安全边距为固定像素；触屏设备仅宽度、方向
+         或 DPR 改变时重算，防止浏览器工具栏连同 svh/env 一起变化。
+         桌面仍响应窗口宽高变化。图片、首屏和控件共用稳定坐标。 */
       (function alignPageBg() {
-        var lastW = 0, lastH = 0, lastDpr = 0, fallbackH = 0;
+        var lastW = 0, lastH = 0, lastDpr = 0, lastOrientation = "", coverH = 0;
         var frame = 0;
         var touchViewport = window.matchMedia("(hover: none) and (pointer: coarse)");
-        var viewportProbe = null;
+        var viewportProbe = null, coverProbe = null;
+        function orientationKey() {
+          return window.screen.orientation ? window.screen.orientation.type : String(window.orientation || 0);
+        }
+        window.MineCGSViewport = {
+          getHeight: function () { return lastH || window.innerHeight; },
+          getCoverHeight: function () { return coverH || lastH || window.innerHeight; }
+        };
         if (window.CSS && CSS.supports("height", "100svh")) {
           viewportProbe = document.createElement("div");
           viewportProbe.setAttribute("aria-hidden", "true");
-          viewportProbe.style.cssText = "position:absolute;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none;";
+          viewportProbe.style.cssText = "position:absolute;top:0;left:0;width:0;box-sizing:content-box;height:100svh;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);visibility:hidden;pointer-events:none;";
           document.body.appendChild(viewportProbe);
+          coverProbe = document.createElement("div");
+          coverProbe.style.cssText = "position:absolute;top:0;left:0;width:0;height:100lvh;visibility:hidden;pointer-events:none;";
+          coverProbe.setAttribute("aria-hidden", "true");
+          document.body.appendChild(coverProbe);
         }
         function align() {
           frame = 0;
           var dpr = window.devicePixelRatio || 1;
           var W = window.innerWidth;
+          var orientation = orientationKey();
+          /* On touch devices height-only resize is browser chrome/keyboard.
+             Do not even remeasure svh/safe-area while bars animate. */
+          if (touchViewport.matches && lastH && W === lastW && orientation === lastOrientation && dpr === lastDpr) return;
           var H = window.innerHeight;
-          if (viewportProbe) { H = viewportProbe.getBoundingClientRect().height; }
-          else if (touchViewport.matches) {
-            if (!fallbackH || W !== lastW) { fallbackH = H; }
-            H = fallbackH;
+          var safe = null;
+          if (viewportProbe) {
+            safe = getComputedStyle(viewportProbe);
+            H = parseFloat(safe.height) || H;
           }
-          if (W === lastW && H === lastH && dpr === lastDpr) { return; }
-          lastW = W; lastH = H; lastDpr = dpr;
+          var nextCoverH = coverProbe ? coverProbe.getBoundingClientRect().height : H;
+          if (W === lastW && H === lastH && dpr === lastDpr && orientation === lastOrientation) return;
+          lastW = W; lastH = H; lastDpr = dpr; lastOrientation = orientation;
+          /* Reserve enough coverage/end spacing for either toolbar state. */
+          coverH = Math.max(H, nextCoverH, touchViewport.matches ? window.screen.height : H);
+          root.style.setProperty("--stable-viewport-height", H + "px");
+          root.style.setProperty("--stable-viewport-unit", (H / 100) + "px");
+          root.style.setProperty("--large-viewport-height", coverH + "px");
+          root.classList.toggle("is-short-wide", H <= 540 && W >= 601);
+          if (safe) {
+            ["top", "right", "bottom", "left"].forEach(function (side) {
+              root.style.setProperty("--viewport-safe-" + side, safe.getPropertyValue("padding-" + side));
+            });
+          }
           var imageRatio = 2522 / 1410;
           var wCss = Math.max(W * 1.08, H * 1.08 * imageRatio);
           var hCss = wCss / imageRatio;
@@ -54,12 +80,14 @@
           var q = function (v) { return Math.round(v * dpr) / dpr; };
           root.style.setProperty("--page-bg-size", q(wCss) + "px " + q(hCss) + "px");
           root.style.setProperty("--page-bg-pos", q(xCss) + "px " + q(yCss) + "px");
+          document.dispatchEvent(new Event("minecgs:viewportchange"));
         }
         function requestAlign() {
           if (!frame) { frame = window.requestAnimationFrame(align); }
         }
         align();
         window.addEventListener("resize", requestAlign, { passive: true });
+        window.addEventListener("orientationchange", requestAlign, { passive: true });
         if (window.visualViewport) {
           window.visualViewport.addEventListener("resize", requestAlign, { passive: true });
         }
@@ -573,7 +601,7 @@
       function updateNav(y) {
         if (navSuppress) { return; }
         if (navTops.length !== navSections.length) { measureNav(); }
-        var line = y + window.innerHeight * 0.5;
+        var line = y + window.MineCGSViewport.getHeight() * 0.5;
         var rawIdx = 0;
         for (var i = 0; i < navTops.length; i++) {
           if (navTops[i] <= line) { rawIdx = i; } else { break; }
