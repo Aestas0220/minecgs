@@ -159,98 +159,98 @@
     }
 
     /* ============ Layer 1 · Type scale（--md-typescale-* 系统 token）============
-       字体红线：全站衬线 —— Source Serif 4 + Chill JinshuSong Text（400/500）。
+       字体红线：全站衬线 —— Source Serif 4 + Chill JinshuSong Text（300/400）。
        字号 px、行高 px、字重/字距全按 md3_spec 字阶表（57/64 … 11/16）。 */
     :root {
       --md-ref-typeface-brand: "Source Serif 4", "Chill JinshuSong Text", "Noto Serif SC", "Songti SC", SimSun, Georgia, serif;
       --md-ref-typeface-plain: "Source Serif 4", "Chill JinshuSong Text", "Noto Serif SC", "Songti SC", SimSun, Georgia, serif;
 
       --md-typescale-display-large-font-family: var(--md-ref-typeface-brand);
-      --md-typescale-display-large-font-weight: 400;
+      --md-typescale-display-large-font-weight: 300;
       --md-typescale-display-large-font-size: 57px;
       --md-typescale-display-large-line-height: 64px;
       --md-typescale-display-large-letter-spacing: -0.25px;
 
       --md-typescale-display-medium-font-family: var(--md-ref-typeface-brand);
-      --md-typescale-display-medium-font-weight: 400;
+      --md-typescale-display-medium-font-weight: 300;
       --md-typescale-display-medium-font-size: 45px;
       --md-typescale-display-medium-line-height: 52px;
       --md-typescale-display-medium-letter-spacing: 0;
 
       --md-typescale-display-small-font-family: var(--md-ref-typeface-brand);
-      --md-typescale-display-small-font-weight: 400;
+      --md-typescale-display-small-font-weight: 300;
       --md-typescale-display-small-font-size: 36px;
       --md-typescale-display-small-line-height: 44px;
       --md-typescale-display-small-letter-spacing: 0;
 
       --md-typescale-headline-large-font-family: var(--md-ref-typeface-brand);
-      --md-typescale-headline-large-font-weight: 400;
+      --md-typescale-headline-large-font-weight: 300;
       --md-typescale-headline-large-font-size: 32px;
       --md-typescale-headline-large-line-height: 40px;
       --md-typescale-headline-large-letter-spacing: 0;
 
       --md-typescale-headline-medium-font-family: var(--md-ref-typeface-brand);
-      --md-typescale-headline-medium-font-weight: 400;
+      --md-typescale-headline-medium-font-weight: 300;
       --md-typescale-headline-medium-font-size: 28px;
       --md-typescale-headline-medium-line-height: 36px;
       --md-typescale-headline-medium-letter-spacing: 0;
 
       --md-typescale-headline-small-font-family: var(--md-ref-typeface-brand);
-      --md-typescale-headline-small-font-weight: 400;
+      --md-typescale-headline-small-font-weight: 300;
       --md-typescale-headline-small-font-size: 24px;
       --md-typescale-headline-small-line-height: 32px;
       --md-typescale-headline-small-letter-spacing: 0;
 
       --md-typescale-title-large-font-family: var(--md-ref-typeface-brand);
-      --md-typescale-title-large-font-weight: 400;
+      --md-typescale-title-large-font-weight: 300;
       --md-typescale-title-large-font-size: 22px;
       --md-typescale-title-large-line-height: 28px;
       --md-typescale-title-large-letter-spacing: 0;
 
       --md-typescale-title-medium-font-family: var(--md-ref-typeface-brand);
-      --md-typescale-title-medium-font-weight: 500;
+      --md-typescale-title-medium-font-weight: 400;
       --md-typescale-title-medium-font-size: 16px;
       --md-typescale-title-medium-line-height: 24px;
       --md-typescale-title-medium-letter-spacing: 0.15px;
 
       --md-typescale-title-small-font-family: var(--md-ref-typeface-brand);
-      --md-typescale-title-small-font-weight: 500;
+      --md-typescale-title-small-font-weight: 400;
       --md-typescale-title-small-font-size: 14px;
       --md-typescale-title-small-line-height: 20px;
       --md-typescale-title-small-letter-spacing: 0.1px;
 
       --md-typescale-body-large-font-family: var(--md-ref-typeface-plain);
-      --md-typescale-body-large-font-weight: 400;
+      --md-typescale-body-large-font-weight: 300;
       --md-typescale-body-large-font-size: 16px;
       --md-typescale-body-large-line-height: 24px;
       --md-typescale-body-large-letter-spacing: 0.5px;
 
       --md-typescale-body-medium-font-family: var(--md-ref-typeface-plain);
-      --md-typescale-body-medium-font-weight: 400;
+      --md-typescale-body-medium-font-weight: 300;
       --md-typescale-body-medium-font-size: 14px;
       --md-typescale-body-medium-line-height: 20px;
       --md-typescale-body-medium-letter-spacing: 0.25px;
 
       --md-typescale-body-small-font-family: var(--md-ref-typeface-plain);
-      --md-typescale-body-small-font-weight: 400;
+      --md-typescale-body-small-font-weight: 300;
       --md-typescale-body-small-font-size: 12px;
       --md-typescale-body-small-line-height: 16px;
       --md-typescale-body-small-letter-spacing: 0.4px;
 
       --md-typescale-label-large-font-family: var(--md-ref-typeface-plain);
-      --md-typescale-label-large-font-weight: 500;
+      --md-typescale-label-large-font-weight: 400;
       --md-typescale-label-large-font-size: 14px;
       --md-typescale-label-large-line-height: 20px;
       --md-typescale-label-large-letter-spacing: 0.1px;
 
       --md-typescale-label-medium-font-family: var(--md-ref-typeface-plain);
-      --md-typescale-label-medium-font-weight: 500;
+      --md-typescale-label-medium-font-weight: 400;
       --md-typescale-label-medium-font-size: 12px;
       --md-typescale-label-medium-line-height: 16px;
       --md-typescale-label-medium-letter-spacing: 0.5px;
 
       --md-typescale-label-small-font-family: var(--md-ref-typeface-plain);
-      --md-typescale-label-small-font-weight: 500;
+      --md-typescale-label-small-font-weight: 400;
       --md-typescale-label-small-font-size: 11px;
       --md-typescale-label-small-line-height: 16px;
       --md-typescale-label-small-letter-spacing: 0.5px;
@@ -473,10 +473,12 @@
 
     *, *::before, *::after { box-sizing: border-box; }
 
+    strong, b { font-weight: 400; }
     html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
     body {
       margin: 0;
+      font-weight: var(--md-typescale-body-large-font-weight);
       font-family: var(--font-ui);
       font-size: var(--md-typescale-body-large-font-size);
       line-height: var(--md-typescale-body-large-line-height);
@@ -1319,8 +1321,8 @@
     }
     .intro__copy { padding: var(--intro-inset); }
     .intro__card-heading { display: flex; align-items: center; min-height: 36px; margin-bottom: 24px; }
-    .intro__card-title { margin: 0; color: var(--md-sys-color-on-primary-container); font-size: 28px; line-height: 36px; font-weight: 400; }
-    .intro__layout p { margin: 0 0 24px; color: var(--md-sys-color-on-surface); font-size: 16px; line-height: 1.8; font-weight: 400; }
+    .intro__card-title { margin: 0; color: var(--md-sys-color-on-primary-container); font-size: 28px; line-height: 36px; font-weight: 300; }
+    .intro__layout p { margin: 0 0 24px; color: var(--md-sys-color-on-surface); font-size: 16px; line-height: 1.8; font-weight: 300; }
     .intro__layout p + p { padding-top: 24px; border-top: 1px solid var(--md-sys-color-outline-variant); }
     .intro__layout p:last-child { margin-bottom: 0; }
     .intro__ratio { white-space: nowrap; }
@@ -1418,7 +1420,7 @@
     /* Project specifications: four equally weighted facts. */
     .spec-card { display: flex; flex-direction: column; min-width: 0; padding: 0; text-align: left; background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline-variant); box-shadow: none; overflow: hidden; }
     .spec-card .intro__card-heading { min-height: 100px; box-sizing: border-box; margin: 0; padding: 32px var(--intro-inset); }
-    .spec-card__title { margin: 0; color: var(--md-sys-color-on-surface); font-size: 22px; line-height: 30px; font-weight: 400; }
+    .spec-card__title { margin: 0; color: var(--md-sys-color-on-surface); font-size: 22px; line-height: 30px; font-weight: 300; }
     .spec-list { display: grid; gap: 0; margin: 0 var(--intro-inset) 24px; padding: 0; }
     .spec-list__item { display: grid; gap: 6px; min-width: 0; padding: 16px 0; border-top: 1px solid var(--md-sys-color-outline-variant); }
     .spec-list__name { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--md-sys-color-on-surface-variant); font-size: 13px; line-height: 20px; }
@@ -1707,7 +1709,7 @@
     .join__requirement { margin: 0; max-width: 520px; }
     .join__requirement strong {
       color: var(--md-sys-color-primary);
-      font-weight: 500;
+      font-weight: 400;
       transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
     .join__note {
@@ -1845,7 +1847,7 @@
       gap: 1px;
       color: var(--md-sys-color-on-surface-variant);
     }
-    .oss__list strong { color: var(--md-sys-color-on-surface); font-weight: 500; }
+    .oss__list strong { color: var(--md-sys-color-on-surface); font-weight: 400; }
     .oss__by { color: var(--md-sys-color-on-surface-variant); }
     .oss__lic { color: var(--md-sys-color-outline); }
 
@@ -1995,3 +1997,4 @@
       }
       .reveal.reveal { opacity: 1; transform: none; }
     }
+
