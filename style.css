@@ -1351,7 +1351,7 @@
       margin-top: 48px;
       text-align: left;
     }
-    .intro__layout { min-width: 0; padding: 40px; }
+    .intro__layout { display: flex; flex-direction: column; justify-content: center; min-width: 0; padding: 40px; }
     .intro__card-heading { display: flex; align-items: center; min-height: 36px; margin-bottom: 32px; }
     .intro__layout p { margin: 0 0 28px; color: var(--md-sys-color-on-surface); font-size: 16px; line-height: 1.85; font-weight: 400; }
     .intro__layout p:last-child { margin-bottom: 0; }
