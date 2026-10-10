@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet" />
   <!-- ?v= 资源版本号：发布站无缓存响应头时击穿浏览器启发式缓存，改版即换号 -->
-  <link rel="stylesheet" href="style.css?v=126" />
+  <link rel="stylesheet" href="style.css?v=127" />
 
 </head>
 <body>
@@ -131,7 +131,6 @@
         <div class="intro__cards">
           <article class="intro__layout reveal" data-delay="1">
             <div class="intro__card-heading">
-              <span class="intro__card-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M2 21h20M7 10h2m6 0h2M7 14h2m6 0h2M10 21v-4h4v4M12 3v5"/></svg></span>
               <h3 class="intro__card-title">学生共建</h3>
             </div>
             <p class="intro__lead body-large">MineCGS 是一项始于 2024 年 9 月的校园建筑复刻工程：以 <span class="intro__ratio">1:2 比例</span>在 Minecraft 中严谨重建广东碧桂园学校，两格方块对应现实中的一米。项目起源于一次突发奇想，2026 学年重启后持续推进。</p>
@@ -140,7 +139,6 @@
           </article>
           <aside class="spec-card reveal" data-delay="2" aria-labelledby="spec-title">
             <div class="intro__card-heading">
-              <span class="intro__card-symbol intro__card-symbol--spec" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></svg></span>
               <h3 class="spec-card__title title-large" id="spec-title">项目规格</h3>
             </div>
             <dl class="spec-list">
@@ -389,15 +387,15 @@
   </dialog>
 
   <!-- 开源库 libs.js：Material Color Utilities（Apache-2.0）—— simplex-noise 已随波场迭代移除 -->
-  <script src="libs.js?v=126"></script>
+  <script src="libs.js?v=127"></script>
   <!-- 站点逻辑 main.js：动态取色 + 主题切换 + 页面交互 -->
-  <script src="i18n.js?v=126"></script>
-  <script src="main.js?v=126"></script>
+  <script src="i18n.js?v=127"></script>
+  <script src="main.js?v=127"></script>
   <script>
     /* 仅诊断链接启用，不影响正常访问。 */
     if (new URLSearchParams(location.search).get("diagnose") === "layers") {
       var layerProbe = document.createElement("script");
-      layerProbe.src = "diagnostics.js?v=126";
+      layerProbe.src = "diagnostics.js?v=127";
       document.head.appendChild(layerProbe);
     }
   </script>
