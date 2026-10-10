@@ -9,6 +9,7 @@
 .guide-lead { color: var(--md-sys-color-on-surface-variant); font-size: 18px; }
 .guide-page .language-switch { justify-content: flex-start; color: var(--md-sys-color-on-surface); margin-top: 20px; }
 .guide-layout { display: grid; grid-template-columns: 208px minmax(0, 1fr); gap: 40px; align-items: start; }
+#guide-content::after { content: ""; display: block; height: var(--guide-tail-space, 0px); }
 .guide-nav { position: sticky; top: 100px; padding: 16px 0; }
 .guide-nav p { color: var(--md-sys-color-on-surface-variant); margin: 0 0 12px 14px; }
 .guide-nav a { display: flex; gap: 12px; align-items: center; min-height: 48px; padding: 10px 14px; border-radius: 14px; text-decoration: none; color: var(--md-sys-color-on-surface-variant); }
