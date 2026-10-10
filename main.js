@@ -101,101 +101,19 @@
       })();
 
       /* Fixed ink blue / stone gray palettes, retaining Material role hierarchy. */
-      var THEME_SOURCE = 0xff5f7285;
-      var ROLES = [
-        "primary", "onPrimary", "primaryContainer", "onPrimaryContainer",
-        "secondary", "onSecondary", "secondaryContainer", "onSecondaryContainer",
-        "tertiary", "onTertiary", "tertiaryContainer", "onTertiaryContainer",
-        "error", "onError", "errorContainer", "onErrorContainer",
-        "background", "onBackground",
-        "surface", "onSurface", "surfaceVariant", "onSurfaceVariant",
-        "surfaceDim", "surfaceBright", "surfaceContainerLowest", "surfaceContainerLow",
-        "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest",
-        "outline", "outlineVariant", "shadow", "scrim",
-        "inverseSurface", "inverseOnSurface", "inversePrimary"
-      ];
-
-      function roleToVar(name) {
-        return "--md-sys-color-" + name.replace(/[A-Z]/g, function (m) { return "-" + m.toLowerCase(); });
-      }
-
-      function argbToHex(argb) {
-        var v = (argb & 0xFFFFFF).toString(16);
-        while (v.length < 6) { v = "0" + v; }
-        return "#" + v;
-      }
-
-      function extractRoles(scheme) {
-        var out = {};
-        ROLES.forEach(function (name) {
-          var dc = MCU.MaterialDynamicColors[name];
-          if (dc && typeof dc.getArgb === "function") {
-            out[roleToVar(name)] = argbToHex(dc.getArgb(scheme));
-          }
-        });
-        return out;
-      }
-
-      /* Fixed custom palettes; Material still resolves tonal surfaces and on-colors. */
-      function buildThemes(seedArgb) {
-        var hct = MCU.Hct.fromInt(seedArgb);
-        var palettes = {
-          primary: MCU.TonalPalette.fromInt(0xff5f7285),
-          secondary: MCU.TonalPalette.fromInt(0xff73777c),
-          tertiary: MCU.TonalPalette.fromInt(0xff6b7483),
-          neutral: MCU.TonalPalette.fromHueAndChroma(hct.hue, 0),
-          neutralVariant: MCU.TonalPalette.fromHueAndChroma(hct.hue, 4),
-          error: MCU.TonalPalette.fromHueAndChroma(25, 84)
-        };
-        function mk(isDark) {
-          return new MCU.DynamicScheme({
-            sourceColorHct: hct, variant: MCU.Variant.TONAL_SPOT,
-            isDark: isDark, contrastLevel: 0,
-            primaryPalette: palettes.primary, secondaryPalette: palettes.secondary,
-            tertiaryPalette: palettes.tertiary, neutralPalette: palettes.neutral,
-            neutralVariantPalette: palettes.neutralVariant, errorPalette: palettes.error
-          });
-        }
-        var scheme = mk(false);
-        var lightVars = extractRoles(scheme);
-        var referenceVars = {};
-        Object.keys(palettes).forEach(function (name) {
-          var cssName = name === "neutralVariant" ? "neutral-variant" : name;
-          [0, 4, 6, 10, 12, 17, 20, 22, 24, 30, 40, 50, 60, 80, 87, 90, 92, 94, 95, 96, 98, 100].forEach(function (tone) {
-            referenceVars["--md-ref-palette-" + cssName + tone] = argbToHex(palettes[name].tone(tone));
-          });
-        });
-        var darkVars = extractRoles(mk(true));
-        return { light: lightVars, dark: darkVars, palettes: palettes, reference: referenceVars };
-      }
-
-      /* 由种子色生成 light/dark 两套角色并写入样式表 */
-      function applyDynamicColor(seedArgb) {
-        var themes = buildThemes(seedArgb);
-
+      /* Fixed Material roles are calculated at build time, not on each visit. */
+      if (window.MineCGSTheme) {
+        var theme = window.MineCGSTheme;
         function block(vars) {
-          return Object.keys(vars).map(function (k) { return k + ":" + vars[k] + ";"; }).join("");
+          return Object.keys(vars).map(function (key) { return key + ':' + vars[key] + ';'; }).join('');
         }
-
-        var style = document.getElementById("dynamic-theme");
-        if (!style) {
-          style = document.createElement("style");
-          style.id = "dynamic-theme";
-          document.head.appendChild(style);
-        }
-        style.textContent =
-          ":root{" + block(themes.reference) + block(themes.light) + "}" +
-          '[data-theme="dark"]{' + block(themes.dark) + "}";
-
-        try { localStorage.setItem("gcgs-mc-seed", String(seedArgb)); } catch (e) {}
-        /* 导出口：CSS Layer 0/1 静态兜底由此同源生成（勿删） */
-        window.__mcTheme = { seed: seedArgb, light: themes.light, dark: themes.dark, palettes: themes.palettes };
+        var themeStyle = document.createElement('style');
+        themeStyle.id = 'dynamic-theme';
+        themeStyle.textContent = ':root{' + block(theme.reference) + block(theme.light) + '}' +
+          '[data-theme="dark"]{' + block(theme.dark) + '}';
+        document.head.appendChild(themeStyle);
+        window.__mcTheme = theme;
       }
-
-      if (window.MCU && MCU.MaterialDynamicColors) {
-        applyDynamicColor(THEME_SOURCE);
-      }
-
       /* ============================================================
          2. 深浅色切换（MD3 全局角色过渡）
          ============================================================ */
@@ -979,50 +897,38 @@
       document.addEventListener("minecgs:languagechange", updateFullscreenLabel);
     })();
 
-    /* —— 地图预览：默认加载 + 空闲预渲染 + 缓存穿透 ——
-       · 默认加载状态（71 轮定案）：预览页 URL 用裸地址，不带任何视角、
-         缩放或定位预设参数，降低默认渲染压力。
-       · 空闲预渲染：markup 保持 loading="lazy" 作无 JS 兜底；待 window
-         load（首屏资源已就绪）且浏览器空闲时再把 iframe 升为 eager 并
-         重设 src，提前拉起地图渲染 —— 滚动到地图区时基本零等待，且预
-         加载排队在首屏之后，不与首屏资源竞争。
-       · 缓存穿透：内嵌预览页曾被浏览器 HTTP 缓存钉在首次加载的旧版本，
-         故每次载入本页（及从 bfcache 恢复）都给预览页 URL 注入唯一时间
-         戳查询串 ?_ts=，强制回源取最新预览页（等效彻底禁用该内嵌页缓存）。
-       · 外链"在新窗口打开地图"在点击时同样注入，新窗口也拿最新。 */
+    /* Load the map only when its panel approaches the viewport. */
     (function () {
-      var frame = document.querySelector(".map-shell iframe");
+      var frame = document.querySelector('.map-shell iframe');
       if (!frame) return;
-      var noteLink = document.querySelector(".progress__note a");
-      var base = "https://map.minecgs.com/";
-      function bust() {
-        frame.src = base + "?_ts=" + Date.now();
+      var base = frame.getAttribute('data-src') || 'https://map.minecgs.com/';
+      var loaded = false;
+      function loadMap() {
+        if (loaded) return;
+        loaded = true;
+        frame.loading = 'eager';
+        frame.src = base + '?_ts=' + Date.now();
       }
-      bust();
-      if (noteLink) {
-        noteLink.addEventListener("click", function () {
-          noteLink.href = base + "?_ts=" + Date.now();
-        });
-      }
-      /* bfcache 恢复（关掉标签页再回来/前进后退）也算一次"打开"：强制重取 */
-      window.addEventListener("pageshow", function (e) {
-        if (e.persisted) bust();
-      });
-      /* 空闲预渲染：load 后浏览器空闲时升 eager 提前拉起地图渲染 */
-      function schedulePrerender() {
-        function prerender() {
-          frame.loading = "eager";
-          bust();
-        }
-        if (window.requestIdleCallback) {
-          window.requestIdleCallback(prerender, { timeout: 2000 });
-        } else {
-          window.setTimeout(prerender, 200);
-        }
-      }
-      if (document.readyState === "complete") {
-        schedulePrerender();
+      if (window.IntersectionObserver) {
+        var observer = new IntersectionObserver(function (entries) {
+          if (entries.some(function (entry) { return entry.isIntersecting; })) {
+            observer.disconnect();
+            loadMap();
+          }
+        }, { rootMargin: '300px 0px' });
+        observer.observe(frame);
       } else {
-        window.addEventListener("load", schedulePrerender);
+        function checkMap() {
+          if (frame.getBoundingClientRect().top <= window.innerHeight + 300) {
+            window.removeEventListener('scroll', checkMap);
+            loadMap();
+          }
+        }
+        window.addEventListener('scroll', checkMap, { passive: true });
+        checkMap();
       }
+      var noteLink = document.querySelector('.progress__note a');
+      if (noteLink) noteLink.addEventListener('click', function () {
+        noteLink.href = base + '?_ts=' + Date.now();
+      });
     })();

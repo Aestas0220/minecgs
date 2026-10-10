@@ -425,7 +425,7 @@
 
       --font-ui: "Source Serif 4", "Chill JinshuSong Text", "Noto Serif SC", "Songti SC", SimSun, Georgia, serif;
       --nav-h: var(--md-top-app-bar-container-height);
-      --hero-image: url("./image.webp?v=106");
+      --hero-image: url("./image.webp?v=140");
       /* hero 以下页面大背景 = 主图预烘焙模糊版（image-blur.webp，构建期
          烘焙落盘，零运行时模糊），铺满 hero 以下除卡片外的全部背景
          （替代旧波场的位置）；浅色蒙版（表面 55% 半透明，模糊图 45%
@@ -473,6 +473,12 @@
                      color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
                      border-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
                      box-shadow var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+
+    @supports (background-image: image-set(url("image.avif") type("image/avif"))) {
+      :root {
+        --hero-image: image-set(url("./image.avif?v=140") type("image/avif"), url("./image.webp?v=140") type("image/webp"));
+      }
     }
 
     *, *::before, *::after { box-sizing: border-box; }

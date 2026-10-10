@@ -8,13 +8,11 @@
   <link rel="icon" type="image/png" href="favicon.png?v=107" sizes="256x256" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=107" sizes="180x180" />
   <meta name="description" content="MineCGS —— 以 1:2 比例在 Minecraft 中严谨复刻广东碧桂园学校校园的学生自发项目。" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="fonts/jinshu.css?v=139" />
-  <link rel="preload" href="fonts/jinshu-light.woff2?v=139" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="fonts/jinshu.css?v=140" />
+  <link rel="preload" href="fonts/jinshu-light.woff2?v=140" as="font" type="font/woff2" crossorigin />
   <!-- ?v= 资源版本号：发布站无缓存响应头时击穿浏览器启发式缓存，改版即换号 -->
-  <link rel="stylesheet" href="style.css?v=139" />
+  <link rel="preload" href="image.avif?v=140" as="image" type="image/avif" fetchpriority="high" />
+  <link rel="stylesheet" href="style.min.css?v=140" />
 
 </head>
 <body>
@@ -180,7 +178,7 @@
                  降低默认渲染压力）。历史教训：src="#" 会把页面自身递归
                  载入 iframe（无限套娃），任何占位/内嵌都禁用 "#" -->
             <iframe
-              src="https://map.minecgs.com/"
+              data-src="https://map.minecgs.com/"
               title="MineCGS 校园地图预览"
               width="100%" height="100%" loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -389,16 +387,16 @@
     </div>
   </dialog>
 
-  <!-- 开源库 libs.js：Material Color Utilities（Apache-2.0）—— simplex-noise 已随波场迭代移除 -->
-  <script src="libs.js?v=139"></script>
-  <!-- 站点逻辑 main.js：动态取色 + 主题切换 + 页面交互 -->
-  <script src="i18n.js?v=139"></script>
-  <script src="main.js?v=139"></script>
+  <!-- Material 角色在构建时生成，访问时只加载固定令牌。 -->
+  <script defer src="theme-tokens.js?v=140"></script>
+  <!-- 站点逻辑：主题切换与页面交互。 -->
+  <script defer src="i18n.min.js?v=140"></script>
+  <script defer src="main.min.js?v=140"></script>
   <script>
     /* 仅诊断链接启用，不影响正常访问。 */
     if (new URLSearchParams(location.search).get("diagnose") === "layers") {
       var layerProbe = document.createElement("script");
-      layerProbe.src = "diagnostics.js?v=139";
+      layerProbe.src = "diagnostics.js?v=140";
       document.head.appendChild(layerProbe);
     }
   </script>
