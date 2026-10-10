@@ -461,8 +461,11 @@
          高度基准用 svh（小视口单位，恒等于地址栏/底栏全展开的视口高）：
          自动隐藏底栏、地址栏收起导致的视口高度变化不再挪动背景图
          ——"背景图固定位置"。JS 侧 alignPageBg 同步按宽度变化才重算。 */
-      --page-bg-size: max(108vw, 193.174468svh) auto;
-      --page-bg-pos: 50% calc(44.6svh - max(27.3375vw, 48.6svh));
+      /* No-JS geometry also covers the bitmap through the large viewport.
+         JS freezes these shared values to physical pixels after initial load. */
+      --page-bg-image-height: max(60.38065vw, 108svh, calc((var(--large-viewport-height) + var(--viewport-safe-bottom) + 64px - var(--stable-viewport-height) * .446) / .55));
+      --page-bg-size: auto var(--page-bg-image-height);
+      --page-bg-pos: 50% calc(var(--stable-viewport-height) * .446 - var(--page-bg-image-height) * .45);
 
       /* 主题切换过渡（色面类属性，300ms standard 曲线） */
       --theme-shift: background-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
@@ -1154,12 +1157,11 @@
        ============================================================ */
     .page-bg {
       position: fixed;
-      /* Safari 收起工具栏时可见视口增高；预先覆盖最大视口，
-         避免固定背景层扩容前露出与 footer 同色的 body 底色。
-         只扩大色面覆盖，图片 size/pos 仍走冻结几何，不随顶栏移动。 */
+      /* Reserve largest viewport plus overscan before any browser bars move.
+         Both bitmap and tints cover this area; no live viewport resizing. */
       inset: 0 0 auto;
       height: 100vh;
-      height: calc(max(var(--large-viewport-height), 100lvh) + var(--viewport-safe-bottom));
+      height: calc(var(--large-viewport-height) + var(--viewport-safe-bottom) + 64px);
       z-index: 2;
       pointer-events: none;
       overflow: clip;

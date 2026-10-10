@@ -73,7 +73,13 @@
             });
           }
           var imageRatio = 2522 / 1410;
-          var wCss = Math.max(W * 1.08, H * 1.08 * imageRatio);
+          /* The image, not just its container, must cover the largest viewport.
+             With y = .446H - .45h, its bottom is .446H + .55h.
+             Reserve the same 64px overscan as the fixed background container;
+             compute once so browser chrome never resizes/repositions the crop. */
+          var safeBottom = safe ? (parseFloat(safe.paddingBottom) || 0) : 0;
+          var minImageH = (coverH + safeBottom + 64 - H * 0.446) / 0.55;
+          var wCss = Math.max(W * 1.08, H * 1.08 * imageRatio, minImageH * imageRatio);
           var hCss = wCss / imageRatio;
           var xCss = (W - wCss) / 2;                 /* = 50% 背景定位 */
           var yCss = H * 0.446 - hCss * 0.45;        /* = 44.6svh - 0.45h（与 CSS max 形式解析等价） */
