@@ -1,6 +1,6 @@
-"""Build local Chinese-only WOFF2 subsets from official LXGW WenKai Lite TTFs.
-Usage: python fonts/build_wenkai.py --source-dir PATH --asset-version RELEASE_NUMBER
-Requires fonttools and brotli; original files may be named regular.ttf / medium.ttf.
+"""Build local Chinese-only WOFF2 subsets from official Chill JinshuSong CC Text OTFs.
+Usage: python fonts/build_jinshu.py --source-dir PATH --asset-version RELEASE_NUMBER
+Requires fonttools and brotli; original files may be named regular.otf / medium.otf.
 """
 from pathlib import Path
 import argparse
@@ -17,11 +17,11 @@ parser.add_argument('--asset-version', type=str, required=True)
 args = parser.parse_args()
 text = ''.join((root / name).read_text(encoding='utf-8-sig') for name in ['index.html', 'install.html', 'main.js', 'i18n.js', 'install.js', 'install-copy.js'])
 points = sorted({ord(ch) for ch in text if 0x2E80 <= ord(ch) <= 0x9FFF or 0xF900 <= ord(ch) <= 0xFAFF or 0xFF00 <= ord(ch) <= 0xFFEF})
-css = ['/* LXGW WenKai Lite v1.522. Chinese-only website subsets; OFL-1.1. */']
+css = ['/* Chill JinshuSong CC Text v1.7. Chinese-only website subsets; OFL-1.1. */']
 for weight, name in [(400, 'regular'), (500, 'medium')]:
-    src = args.source_dir / (name + '.ttf')
+    src = args.source_dir / (name + '.otf')
     if not src.exists():
-        src = args.source_dir / ('LXGWWenKaiLite-' + name.capitalize() + '.ttf')
+        src = args.source_dir / ('ChillJinshuSongCCText' + name.capitalize() + '.otf')
     font = TTFont(src)
     missing = set(points) - font.getBestCmap().keys()
     assert not missing, 'Missing website characters: ' + ''.join(chr(cp) for cp in sorted(missing))
@@ -32,9 +32,9 @@ for weight, name in [(400, 'regular'), (500, 'medium')]:
     sub.populate(unicodes=points)
     sub.subset(font)
     font.flavor = 'woff2'
-    target = root / 'fonts' / ('wenkai-' + name + '.woff2')
+    target = root / 'fonts' / ('jinshu-' + name + '.woff2')
     font.save(target)
     ranges = ','.join('U+' + format(cp, 'X') for cp in points)
-    css.append('@font-face { font-family: "LXGW WenKai Lite"; font-style: normal; font-weight: ' + str(weight) + '; font-display: swap; src: url("./' + target.name + '?v=' + args.asset_version + '") format("woff2"); unicode-range: ' + ranges + '; }')
+    css.append('@font-face { font-family: "Chill JinshuSong Text"; font-style: normal; font-weight: ' + str(weight) + '; font-display: swap; src: url("./' + target.name + '?v=' + args.asset_version + '") format("woff2"); unicode-range: ' + ranges + '; }')
     print(name, len(points), 'characters,', target.stat().st_size, 'bytes')
-(root / 'fonts/wenkai.css').write_text('\n'.join(css) + '\n', encoding='utf-8')
+(root / 'fonts/jinshu.css').write_text('\n'.join(css) + '\n', encoding='utf-8')
