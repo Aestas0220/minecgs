@@ -87,8 +87,10 @@
     "请阅读以上须知，{seconds} 秒后可确认": "Please read the notice above. Confirmation unlocks in {seconds}s.",
     "倒计时结束，现在可以确认下载": "You can now confirm the download.",
     "取消": "Cancel",
-    "我已知晓，下载mrpack": "I understand · Download mrpack"
+    "我已知晓，下载mrpack": "I understand · Download mrpack",
+    "我不知道如何安装 mrpack": "I don't know how to install an mrpack"
   };
+  Object.assign(english, window.MineCGSPageTranslations || {});
   var language = "zh";
   var root = document.documentElement;
   var textEntries = [], attributeEntries = [];

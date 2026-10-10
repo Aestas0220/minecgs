@@ -347,6 +347,7 @@
       /* ============================================================
          3. Top App Bar 滚动态（MD3：滚动后 surface-container + elevation 2）
          ============================================================ */
+      if (root.getAttribute("data-page") === "install") return;
       var topBar = document.getElementById("topBar");
       var barScrolled = false;
       function updateBar() {
