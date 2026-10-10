@@ -23,6 +23,7 @@
     "Modrinth 轻量包（约 324KB）：拖入 PCL 等 Java 版启动器，自动安装 MC 26.2 + Fabric 0.19.5 与全部模组、配置和服务器地址": "Lightweight Modrinth pack (about 324KB): import it into a Java Edition launcher such as PCL to automatically install MC 26.2, Fabric 0.19.5, all mods, settings and the server address.",
     "MineCGS-进服包-MC26.2-Fabric0.19.5.mrpack": "MineCGS-Modpack-MC26.2-Fabric0.19.5.mrpack",
     "项目简介": "Project overview",
+    "学生共建": "Built by students",
     "把母校建进 Minecraft": "Recreating our school in Minecraft",
     "MineCGS 是一项始于 2024 年 9 月的校园建筑复刻工程：以": "MineCGS is a campus architecture reconstruction project that began in September 2024. It faithfully recreates Guangdong Country Garden School in Minecraft at a ",
     "1:2 比例": "1:2 scale",
