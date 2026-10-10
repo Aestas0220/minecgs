@@ -461,11 +461,12 @@
          高度基准用 svh（小视口单位，恒等于地址栏/底栏全展开的视口高）：
          自动隐藏底栏、地址栏收起导致的视口高度变化不再挪动背景图
          ——"背景图固定位置"。JS 侧 alignPageBg 同步按宽度变化才重算。 */
-      /* No-JS geometry also covers the bitmap through the large viewport.
-         JS freezes these shared values to physical pixels after initial load. */
-      --page-bg-image-height: max(60.38065vw, 108svh, calc((var(--large-viewport-height) + var(--viewport-safe-bottom) + 64px - var(--stable-viewport-height) * .446) / .55));
-      --page-bg-size: auto var(--page-bg-image-height);
-      --page-bg-pos: 50% calc(var(--stable-viewport-height) * .446 - var(--page-bg-image-height) * .45);
+      --page-bg-size: max(108vw, 193.174468svh) auto;
+      --page-bg-pos: 50% calc(44.6svh - max(27.3375vw, 48.6svh));
+      /* Repeat the baked image's bottom row only beneath its original bounds.
+         The original photograph and its blur retain the exact same crop. */
+      --page-bg-extension-size: max(108vw, 193.174468svh) calc(var(--large-viewport-height) + var(--viewport-safe-bottom) + 64px);
+      --page-bg-extension-pos: 50% calc(44.6svh + max(33.4125vw, 59.4svh) - 1px);
 
       /* 主题切换过渡（色面类属性，300ms standard 曲线） */
       --theme-shift: background-color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
@@ -1180,9 +1181,9 @@
     .page-bg__image {
       position: absolute;
       inset: 0;
-      background-image: var(--page-bg-image);
-      background-size: var(--page-bg-size);
-      background-position: var(--page-bg-pos);
+      background-image: var(--page-bg-image), url("./image-blur-edge.svg?v=138");
+      background-size: var(--page-bg-size), var(--page-bg-extension-size);
+      background-position: var(--page-bg-pos), var(--page-bg-extension-pos);
       background-repeat: no-repeat;
       /* 窗口与图片等量反向位移：图片视口坐标始终为零。
          veil 随图片一起反向位移，再由同一个圆角窗口裁切。 */

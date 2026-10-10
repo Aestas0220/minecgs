@@ -73,19 +73,20 @@
             });
           }
           var imageRatio = 2522 / 1410;
-          /* The image, not just its container, must cover the largest viewport.
-             With y = .446H - .45h, its bottom is .446H + .55h.
-             Reserve the same 64px overscan as the fixed background container;
-             compute once so browser chrome never resizes/repositions the crop. */
+          /* Preserve the original crop. Only the baked background's last pixel
+             row extends into the extra area revealed by browser chrome. */
           var safeBottom = safe ? (parseFloat(safe.paddingBottom) || 0) : 0;
-          var minImageH = (coverH + safeBottom + 64 - H * 0.446) / 0.55;
-          var wCss = Math.max(W * 1.08, H * 1.08 * imageRatio, minImageH * imageRatio);
+          var wCss = Math.max(W * 1.08, H * 1.08 * imageRatio);
           var hCss = wCss / imageRatio;
           var xCss = (W - wCss) / 2;                 /* = 50% 背景定位 */
           var yCss = H * 0.446 - hCss * 0.45;        /* = 44.6svh - 0.45h（与 CSS max 形式解析等价） */
           var q = function (v) { return Math.round(v * dpr) / dpr; };
           root.style.setProperty("--page-bg-size", q(wCss) + "px " + q(hCss) + "px");
           root.style.setProperty("--page-bg-pos", q(xCss) + "px " + q(yCss) + "px");
+          var extensionTop = q(yCss) + q(hCss) - 1 / dpr;
+          root.style.setProperty("--page-bg-extension-size", q(wCss) + "px " +
+            q(Math.max(1, coverH + safeBottom + 64 - extensionTop)) + "px");
+          root.style.setProperty("--page-bg-extension-pos", q(xCss) + "px " + extensionTop + "px");
           document.dispatchEvent(new Event("minecgs:viewportchange"));
         }
         function requestAlign() {
