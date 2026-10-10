@@ -1312,28 +1312,29 @@
     .intro__body { color: var(--md-sys-color-on-surface-variant); }
     .accent { color: var(--md-sys-color-primary); transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard); }
 
-    /* 免责声明：软性 tonal 提示块（surface-container-high；圆角与弹窗同值 28） */
+    /* Project note: a quiet footer within the intro card. */
     .disclaimer {
       display: flex;
       align-items: flex-start;
       gap: 12px;
-      margin-top: 32px;
-      padding: 16px 20px;
-      border-radius: var(--md-dialog-container-shape);
-      background: var(--md-sys-color-surface-container-high);
-      color: var(--md-sys-color-on-surface);
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--md-sys-color-outline-variant);
+      color: var(--md-sys-color-on-surface-variant);
       text-align: left;
       transition: var(--theme-shift);
     }
     .disclaimer__icon {
       flex: none;
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       fill: currentColor;
-      color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-surface-variant);
       transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
     }
-    .disclaimer__text { margin: 0; font-weight: 500; }
+    .disclaimer__content { min-width: 0; }
+    .disclaimer .disclaimer__label { margin: 0 0 6px; color: var(--md-sys-color-on-surface); line-height: 20px; }
+    .disclaimer .disclaimer__text { margin: 0; font-weight: 400; line-height: 24px; }
 
     /* ============ Progress ============ */
     .progress__frame-wrap { display: flex; justify-content: center; margin-top: 48px; }
