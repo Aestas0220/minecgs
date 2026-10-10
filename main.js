@@ -331,6 +331,14 @@
         });
       }
 
+      // The shared footer year applies to the homepage and installation guide.
+      (function updateCopyright() {
+        var el = document.getElementById("copyright");
+        if (!el) return;
+        var year = new Date().getFullYear();
+        el.textContent = year > 2024 ? "@2024-" + year + " by Aestatis & LED" : "@2024 by Aestatis & LED";
+      })();
+
       /* ============================================================
          3. Top App Bar 滚动态（MD3：滚动后 surface-container + elevation 2）
          ============================================================ */
@@ -367,17 +375,6 @@
         window.addEventListener("resize", measure, { passive: true });
         document.addEventListener("minecgs:languagechange", measure);
         if (document.fonts && document.fonts.ready) { document.fonts.ready.then(measure); }
-      })();
-
-      /* ------------------------------------------------------------
-         版权行：项目年份区间 —— 首年 2024（动工年）固定，
-         末年取真实当前年份自动更新，无需改文件
-         ------------------------------------------------------------ */
-      (function updateCopyright() {
-        var el = document.getElementById("copyright");
-        if (!el) return;
-        var year = new Date().getFullYear();
-        el.textContent = year > 2024 ? "@2024-" + year + " by Aestatis & LED" : "@2024 by Aestatis & LED";
       })();
 
       /* ============================================================

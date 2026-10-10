@@ -57,3 +57,7 @@
 .guide-shell { position: relative; z-index: 1; }
 .guide-heading .guide-back, .guide-heading .guide-lead, .guide-heading .guide-eyebrow,
 .guide-nav p, .guide-nav a:not([aria-current]) { color: var(--md-sys-color-on-surface); }
+.guide-page .site-footer__contact { display: inline-flex; align-items: center; min-height: 48px; padding: 0 12px; border-radius: 999px; color: var(--md-sys-color-primary); }
+@media (hover: hover) and (pointer: fine) {
+  .guide-page .site-footer__contact:hover { background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent); }
+}
