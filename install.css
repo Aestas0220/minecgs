@@ -48,3 +48,10 @@
   .guide-card { padding: 24px; }
 }
 @media (max-width: 380px) { .guide-shell { padding-inline: 16px; } .guide-card { padding: 20px; } }
+
+/* Share the homepage's baked image, tint layers and stable viewport geometry. */
+.guide-page .guide-bg { z-index: 0; }
+.guide-page .guide-bg .page-bg__image { transform: none; background-color: var(--md-sys-color-surface); }
+.guide-shell { position: relative; z-index: 1; }
+.guide-heading .guide-back, .guide-heading .guide-lead, .guide-heading .guide-eyebrow,
+.guide-nav p, .guide-nav a:not([aria-current]) { color: var(--md-sys-color-on-surface); }
