@@ -65,7 +65,7 @@
         }
       })();
 
-      /* Fixed muted teal / sage / green palettes, retaining Material role hierarchy. */
+      /* Fixed ink blue / stone gray palettes, retaining Material role hierarchy. */
       /* Sample the actual crop beneath each hero text group, including the scrim.
          No scroll listener or persistent animation loop is needed. */
       (function adaptiveHeroInk() {
@@ -150,7 +150,7 @@
           if (next !== geometry) { geometry = next; schedule(); }
         }).observe(root, { attributes: true, attributeFilter: ["style"] });
       })();
-      var THEME_SOURCE = 0xff60958a;
+      var THEME_SOURCE = 0xff5f7285;
       var ROLES = [
         "primary", "onPrimary", "primaryContainer", "onPrimaryContainer",
         "secondary", "onSecondary", "secondaryContainer", "onSecondaryContainer",
@@ -189,9 +189,9 @@
       function buildThemes(seedArgb) {
         var hct = MCU.Hct.fromInt(seedArgb);
         var palettes = {
-          primary: MCU.TonalPalette.fromInt(0xff60958a),
-          secondary: MCU.TonalPalette.fromInt(0xff75847c),
-          tertiary: MCU.TonalPalette.fromInt(0xff7f9674),
+          primary: MCU.TonalPalette.fromInt(0xff5f7285),
+          secondary: MCU.TonalPalette.fromInt(0xff73777c),
+          tertiary: MCU.TonalPalette.fromInt(0xff6b7483),
           neutral: MCU.TonalPalette.fromHueAndChroma(hct.hue, 0),
           neutralVariant: MCU.TonalPalette.fromHueAndChroma(hct.hue, 4),
           error: MCU.TonalPalette.fromHueAndChroma(25, 84)
