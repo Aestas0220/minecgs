@@ -1031,10 +1031,10 @@
       width: min(1040px, 100%);
       text-align: center;
     }
-    /* 图片局部亮度决定黑/白文字；未完成采样时保留浅色兜底。 */
+    /* Hero text stays white in both themes. */
     .hero h1 {
       margin: 14px 0 0;
-      color: var(--hero-ink, var(--md-ref-palette-neutral95));
+      color: #ffffff;
       font-family: "Times New Roman", Times, serif;
       font-size: clamp(64px, 10.8vw, 136px);
       line-height: 1.04;
@@ -1042,20 +1042,20 @@
       font-weight: 400;
       font-optical-sizing: auto;
       text-shadow:
-        0 2px 26px var(--hero-ink-shadow, rgba(0, 0, 0, 0.42)),
-        0 1px 4px var(--hero-ink-shadow, rgba(0, 0, 0, 0.42));
+        0 2px 26px rgba(0, 0, 0, 0.42),
+        0 1px 4px rgba(0, 0, 0, 0.42);
     }
     .hero__subtitle {
       margin: 0;
-      color: var(--hero-ink, var(--md-ref-palette-neutral95));
+      color: #ffffff;
       font-family: var(--md-typescale-title-large-font-family);
       font-size: clamp(16px, 1.5vw, 20px);
       line-height: 1.7;
       letter-spacing: 0.035em;
       font-weight: var(--md-typescale-title-large-font-weight);
       text-shadow:
-        0 1px 18px var(--hero-ink-shadow, rgba(0, 0, 0, 0.42)),
-        0 1px 3px var(--hero-ink-shadow, rgba(0, 0, 0, 0.42));
+        0 1px 18px rgba(0, 0, 0, 0.42),
+        0 1px 3px rgba(0, 0, 0, 0.42);
     }
     .hero__school-compact { display: none; }
     .hero__subtitle-separator { margin-inline: 0.55em; }
@@ -1065,7 +1065,7 @@
       align-items: center;
       gap: 12px;
       margin-top: 8px;
-      color: var(--hero-ink, var(--md-ref-palette-neutral95));
+      color: #ffffff;
     }
     .language-switch__choice {
       position: relative;
