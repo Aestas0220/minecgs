@@ -828,12 +828,12 @@
         });
 
         /* Extended FAB「下载进服包」：与 hero 下载按钮同一免责弹窗流程 */
-        if (fabEl) {
-          fabEl.addEventListener("click", function () {
+        [fabEl, document.getElementById("joinDownload")].filter(Boolean).forEach(function (button) {
+          button.addEventListener("click", function () {
             dlDlg.showModal();
             dlStartCountdown();
           });
-        }
+        });
       }
     })();
 

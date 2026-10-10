@@ -1729,6 +1729,8 @@
       padding: clamp(24px, 4vw, 32px);
       text-align: left;
     }
+    .join__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+    @media (max-width: 600px) { .join__actions .btn { flex: 1 1 180px; } }
     .join__details-title { margin: 0 0 16px; }
     .join__requirement { margin: 0; max-width: 520px; }
     .join__requirement strong {
