@@ -65,19 +65,7 @@
         }
       })();
 
-      /* ============================================================
-         1. Dynamic Color —— 谷歌 Material Color Utilities 官方流水线
-         （主题源色固定 = 用户指定品牌色，不随主图漂移）
-           THEME_SOURCE（砖红 #B4552F，2026-10-05 用户定案）
-           -> TonalPalette.fromHueAndChroma 六色板（TonalSpot 语义
-              P36/S16/T+60,24/N10/NV14/E25,84）
-           -> DynamicScheme + MaterialDynamicColors -> 36 角色
-           -> #dynamic-theme 注入。角色 tone 严格取 MCU 标准 TonalSpot
-              真值表（contrastLevel 0），零手写偏移。
-         旧运行时取色管线（canvas 抽样取色）已随源色固定退役
-         —— 加载路径零采样开销。CSS Layer 0/1 静态
-         兜底与 THEME_SOURCE 同源生成（r70_reseed.js 逐值断言）。
-         ============================================================ */
+      /* Image-based Material You colors, using the official Expressive scheme. */
       /* Sample the actual crop beneath each hero text group, including the scrim.
          No scroll listener or persistent animation loop is needed. */
       (function adaptiveHeroInk() {
@@ -162,7 +150,7 @@
           if (next !== geometry) { geometry = next; schedule(); }
         }).observe(root, { attributes: true, attributeFilter: ["style"] });
       })();
-      var THEME_SOURCE = 0xffB4552F;
+      var THEME_SOURCE = 0xff566991;
       var ROLES = [
         "primary", "onPrimary", "primaryContainer", "onPrimaryContainer",
         "secondary", "onSecondary", "secondaryContainer", "onSecondaryContainer",
@@ -197,35 +185,26 @@
         return out;
       }
 
-      /* —— 色阶生成：取色种子 -> 浅/深两套 36 角色 ——
-         角色值直接取自 MCU 标准 tone 映射（与 _gen51_layer.js
-         LIGHT_MAP/DARK_MAP 真值表逐值一致），不做任何层级偏移 */
+      /* Official Expressive schemes retain paired, accessible on-color roles. */
       function buildThemes(seedArgb) {
         var hct = MCU.Hct.fromInt(seedArgb);
-        function P(h, c) { return MCU.TonalPalette.fromHueAndChroma(h, c); }
-        var neutral = P(hct.hue, 10), nvar = P(hct.hue, 14);
+        function mk(isDark) { return new MCU.SchemeExpressive(hct, isDark, 0); }
+        var scheme = mk(false);
         var palettes = {
-          primary: P(hct.hue, 36), secondary: P(hct.hue, 16),
-          tertiary: P(hct.hue + 60, 24), neutral: neutral,
-          neutralVariant: nvar, error: P(25, 84)
+          primary: scheme.primaryPalette, secondary: scheme.secondaryPalette,
+          tertiary: scheme.tertiaryPalette, neutral: scheme.neutralPalette,
+          neutralVariant: scheme.neutralVariantPalette, error: scheme.errorPalette
         };
-        function mk(isDark) {
-          return new MCU.DynamicScheme({
-            sourceColorHct: hct,
-            variant: MCU.Variant.TONAL_SPOT,
-            isDark: isDark,
-            contrastLevel: 0,
-            primaryPalette: palettes.primary,
-            secondaryPalette: palettes.secondary,
-            tertiaryPalette: palettes.tertiary,
-            neutralPalette: neutral,
-            neutralVariantPalette: nvar,
-            errorPalette: palettes.error
+        var lightVars = extractRoles(scheme);
+        var referenceVars = {};
+        Object.keys(palettes).forEach(function (name) {
+          var cssName = name === "neutralVariant" ? "neutral-variant" : name;
+          [0, 4, 6, 10, 12, 17, 20, 22, 24, 30, 40, 50, 60, 80, 87, 90, 92, 94, 95, 96, 98, 100].forEach(function (tone) {
+            referenceVars["--md-ref-palette-" + cssName + tone] = argbToHex(palettes[name].tone(tone));
           });
-        }
-        var lightVars = extractRoles(mk(false));
+        });
         var darkVars = extractRoles(mk(true));
-        return { light: lightVars, dark: darkVars, palettes: palettes };
+        return { light: lightVars, dark: darkVars, palettes: palettes, reference: referenceVars };
       }
 
       /* 由种子色生成 light/dark 两套角色并写入样式表 */
@@ -243,7 +222,7 @@
           document.head.appendChild(style);
         }
         style.textContent =
-          ":root{" + block(themes.light) + "}" +
+          ":root{" + block(themes.reference) + block(themes.light) + "}" +
           '[data-theme="dark"]{' + block(themes.dark) + "}";
 
         try { localStorage.setItem("gcgs-mc-seed", String(seedArgb)); } catch (e) {}
@@ -251,11 +230,39 @@
         window.__mcTheme = { seed: seedArgb, light: themes.light, dark: themes.dark, palettes: themes.palettes };
       }
 
-      /* 主题源色固定直达 buildThemes（旧 canvas 抽样取色管线已退役：
-         THEME_SOURCE 恒定，采样无消费方，删去省一条 3840x2160 全图
-         读像素热路径） */
-      if (window.MCU && MCU.MaterialDynamicColors) {
-        applyDynamicColor(THEME_SOURCE);
+      if (window.MCU && MCU.SchemeExpressive && MCU.MaterialDynamicColors) {
+        var themeImageURL = getComputedStyle(root).getPropertyValue("--hero-image").match(/url\(["']?(.*?)["']?\)/);
+        var cacheKey = "gcgs-expressive-v1:" + (themeImageURL ? themeImageURL[1] : "image.webp");
+        var cachedSeed = null;
+        try { cachedSeed = Number(localStorage.getItem(cacheKey)); } catch (error) {}
+        var hasCache = Number.isInteger(cachedSeed) && cachedSeed >= 0xff000000 && cachedSeed <= 0xffffffff;
+        applyDynamicColor(hasCache ? cachedSeed : THEME_SOURCE);
+        if (!hasCache && themeImageURL) {
+          var themeImage = new Image();
+          themeImage.onload = function () {
+            try {
+              var sample = document.createElement("canvas");
+              sample.width = 128;
+              sample.height = Math.max(1, Math.round(128 * themeImage.naturalHeight / themeImage.naturalWidth));
+              var context = sample.getContext("2d");
+              if (!context) return;
+              context.drawImage(themeImage, 0, 0, sample.width, sample.height);
+              var bytes = context.getImageData(0, 0, sample.width, sample.height).data;
+              var pixels = [];
+              for (var i = 0; i < bytes.length; i += 4) pixels.push(MCU.argbFromRgb(bytes[i], bytes[i + 1], bytes[i + 2]));
+              var quantized = MCU.QuantizerCelebi.quantize(pixels, 128);
+              var colorful = new Map();
+              quantized.forEach(function (population, color) {
+                var hct = MCU.Hct.fromInt(color);
+                if (hct.chroma >= 24 && hct.tone >= 25 && hct.tone <= 80) colorful.set(color, population);
+              });
+              var seed = colorful.size ? MCU.Score.score(colorful, { desired: 1 })[0] : MCU.sourceColorFromImageBytes(bytes);
+              applyDynamicColor(seed);
+              try { localStorage.setItem(cacheKey, String(seed)); } catch (error) {}
+            } catch (error) { /* Keep the precomputed Expressive fallback. */ }
+          };
+          themeImage.src = themeImageURL[1];
+        }
       }
 
       /* ============================================================
