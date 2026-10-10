@@ -9,7 +9,7 @@
          Material Color Utilities 统一生成层级与对应 on-* 角色；不从图片取色。
          静态与运行时同源，深浅主题保持相同强调色逻辑。
        · 对比度：全部 on-* 容器配对由 HCT tone 映射保障（ΔT ≥ 30 关口）
-       · 字阶：--md-typescale-*，Source Serif 4 + Noto Serif SC 全站衬线；
+       · 字阶：--md-typescale-*，Source Serif 4 + LXGW WenKai Lite 全站衬线；
          字号/行高/字距/字重全按 md3_spec 字阶表
        · 形状：--md-sys-shape-corner-*（none/extra-small/small/medium/
          large/extra-large/full = 0/4/8/12/16/28/full）
@@ -159,11 +159,11 @@
     }
 
     /* ============ Layer 1 · Type scale（--md-typescale-* 系统 token）============
-       字体红线：全站衬线 —— Source Serif 4 + Noto Serif SC（400/500）。
+       字体红线：全站衬线 —— Source Serif 4 + LXGW WenKai Lite（400/500）。
        字号 px、行高 px、字重/字距全按 md3_spec 字阶表（57/64 … 11/16）。 */
     :root {
-      --md-ref-typeface-brand: "Source Serif 4", "Noto Serif SC", Georgia, serif;
-      --md-ref-typeface-plain: "Source Serif 4", "Noto Serif SC", Georgia, serif;
+      --md-ref-typeface-brand: "Source Serif 4", "LXGW WenKai Lite", "Kaiti SC", "KaiTi", "STKaiti", Georgia, serif;
+      --md-ref-typeface-plain: "Source Serif 4", "LXGW WenKai Lite", "Kaiti SC", "KaiTi", "STKaiti", Georgia, serif;
 
       --md-typescale-display-large-font-family: var(--md-ref-typeface-brand);
       --md-typescale-display-large-font-weight: 400;
@@ -423,7 +423,7 @@
       --md-divider-color: var(--md-sys-color-outline-variant);
       --md-divider-height: 1px;
 
-      --font-ui: "Source Serif 4", "Noto Serif SC", Georgia, serif;
+      --font-ui: "Source Serif 4", "LXGW WenKai Lite", "Kaiti SC", "KaiTi", "STKaiti", Georgia, serif;
       --nav-h: var(--md-top-app-bar-container-height);
       --hero-image: url("./image.webp?v=106");
       /* hero 以下页面大背景 = 主图预烘焙模糊版（image-blur.webp，构建期

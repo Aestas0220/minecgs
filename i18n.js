@@ -81,6 +81,7 @@
     "联系方式": "Contact",
     "微信账号": "WeChat ID",
     "开源致谢": "Open-source credits",
+    "霞鹜文楷": "LXGW WenKai Lite",
     "本站使用的开源项目": "Open-source projects used on this site",
     "地图预览引擎": "Map preview engine",
     "下载前须知": "Before you download",
