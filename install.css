@@ -7,7 +7,7 @@
 .guide-back, .guide-link, .dlg__help { color: var(--md-sys-color-primary); text-underline-offset: 4px; }
 .guide-back { display: inline-block; padding-block: 8px; }
 .guide-eyebrow { margin: 32px 0 12px; letter-spacing: .12em; font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
-.guide-heading h1 { font-size: clamp(36px, 4vw, 56px); line-height: 1.2; font-weight: 300; margin: 0 0 16px; }
+.guide-heading h1 { font-size: clamp(36px, 4vw, 56px); line-height: 1.2; font-weight: 400; margin: 0 0 16px; }
 .guide-lead { color: var(--md-sys-color-on-surface-variant); font-size: 18px; }
 .guide-page .language-switch { justify-content: flex-start; color: var(--md-sys-color-on-surface); margin-top: 20px; }
 .guide-layout { display: grid; grid-template-columns: 208px minmax(0, 1fr); gap: 40px; align-items: start; }
@@ -17,7 +17,7 @@
 .guide-nav a { display: flex; gap: 12px; align-items: center; min-height: 48px; padding: 10px 14px; border-radius: 14px; text-decoration: none; color: var(--md-sys-color-on-surface-variant); }
 .guide-nav a span { font-size: 12px; opacity: .7; }
 /* Selection is persistent; hover adds a separate, subtle state layer. */
-.guide-nav a[aria-current="location"] { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); font-weight: 400; }
+.guide-nav a[aria-current="location"] { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); font-weight: 500; }
 .guide-nav a { position: relative; }
 .guide-nav a::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; opacity: 0; pointer-events: none; transition: opacity 150ms ease; }
 @media (hover: hover) and (pointer: fine) { .guide-nav a:hover::before { opacity: var(--md-sys-state-hover-opacity); } }
@@ -26,7 +26,7 @@
 @media (prefers-reduced-motion: reduce) { .guide-nav a::before { transition: none; } }
 .guide-card { background: var(--md-sys-color-surface-container-low); border-radius: var(--md-dialog-container-shape); box-shadow: var(--md-sys-elevation-1); padding: 32px; margin-bottom: 24px; scroll-margin-top: 96px; }
 .guide-step { color: var(--md-sys-color-primary); font-size: 12px; letter-spacing: .12em; }
-.guide-card h2 { margin: 10px 0 20px; font-size: 26px; font-weight: 300; line-height: 1.35; }
+.guide-card h2 { margin: 10px 0 20px; font-size: 26px; font-weight: 400; line-height: 1.35; }
 .guide-card p, .guide-card li { line-height: 1.85; font-size: 16px; }
 .guide-card p { margin: 0 0 16px; }
 .guide-card ol { padding-left: 24px; margin: 24px 0 0; }

@@ -16,4 +16,4 @@ After adding new Chinese copy, regenerate the subsets:
 
 Full source OTFs are intentionally omitted from the website to keep downloads small. Fonts fall back to installed Song/serif fonts while the webfont loads or if it is unavailable.
 
-Reading text uses weight 300 (official Light); controls and emphasis use weight 400 (Text Regular). Latin Source Serif 4 follows the same 300/400 hierarchy. The Hero Times title retains weight 400.
+Shared CSS weights are 400 for reading and 500 for controls/emphasis. Chinese font-face descriptors map those weights to the official Light and Text Regular files, preserving the lighter Chinese appearance. Latin Source Serif 4 uses actual 400/500 weights independently. The Hero Times title retains weight 400.

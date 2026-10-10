@@ -18,7 +18,7 @@ args = parser.parse_args()
 text = ''.join((root / name).read_text(encoding='utf-8-sig') for name in ['index.html', 'install.html', 'main.js', 'i18n.js', 'install.js', 'install-copy.js'])
 points = sorted({ord(ch) for ch in text if 0x2E80 <= ord(ch) <= 0x9FFF or 0xF900 <= ord(ch) <= 0xFAFF or 0xFF00 <= ord(ch) <= 0xFFEF})
 css = ['/* Chill JinshuSong CC v1.7, Light / Text Regular. Chinese-only website subsets; OFL-1.1. */']
-for weight, name in [(300, 'light'), (400, 'regular')]:
+for weight, name in [(400, 'light'), (500, 'regular')]:
     src = args.source_dir / (name + '.otf')
     if not src.exists():
         src = args.source_dir / (('ChillJinshuSongCCLight' if name == 'light' else 'ChillJinshuSongCCTextRegular') + '.otf')
