@@ -65,7 +65,7 @@
         }
       })();
 
-      /* Image-based Material You colors, using the official Expressive scheme. */
+      /* Fixed blue / slate / navy palettes, retaining Material role hierarchy. */
       /* Sample the actual crop beneath each hero text group, including the scrim.
          No scroll listener or persistent animation loop is needed. */
       (function adaptiveHeroInk() {
@@ -150,7 +150,7 @@
           if (next !== geometry) { geometry = next; schedule(); }
         }).observe(root, { attributes: true, attributeFilter: ["style"] });
       })();
-      var THEME_SOURCE = 0xff566991;
+      var THEME_SOURCE = 0xff2463eb;
       var ROLES = [
         "primary", "onPrimary", "primaryContainer", "onPrimaryContainer",
         "secondary", "onSecondary", "secondaryContainer", "onSecondaryContainer",
@@ -185,16 +185,27 @@
         return out;
       }
 
-      /* Official Expressive schemes retain paired, accessible on-color roles. */
+      /* Fixed custom palettes; Material still resolves tonal surfaces and on-colors. */
       function buildThemes(seedArgb) {
         var hct = MCU.Hct.fromInt(seedArgb);
-        function mk(isDark) { return new MCU.SchemeExpressive(hct, isDark, 0); }
-        var scheme = mk(false);
         var palettes = {
-          primary: scheme.primaryPalette, secondary: scheme.secondaryPalette,
-          tertiary: scheme.tertiaryPalette, neutral: scheme.neutralPalette,
-          neutralVariant: scheme.neutralVariantPalette, error: scheme.errorPalette
+          primary: MCU.TonalPalette.fromInt(0xff2463eb),
+          secondary: MCU.TonalPalette.fromInt(0xff596579),
+          tertiary: MCU.TonalPalette.fromInt(0xff193859),
+          neutral: MCU.TonalPalette.fromHueAndChroma(hct.hue, 0),
+          neutralVariant: MCU.TonalPalette.fromHueAndChroma(hct.hue, 4),
+          error: MCU.TonalPalette.fromHueAndChroma(25, 84)
         };
+        function mk(isDark) {
+          return new MCU.DynamicScheme({
+            sourceColorHct: hct, variant: MCU.Variant.TONAL_SPOT,
+            isDark: isDark, contrastLevel: 0,
+            primaryPalette: palettes.primary, secondaryPalette: palettes.secondary,
+            tertiaryPalette: palettes.tertiary, neutralPalette: palettes.neutral,
+            neutralVariantPalette: palettes.neutralVariant, errorPalette: palettes.error
+          });
+        }
+        var scheme = mk(false);
         var lightVars = extractRoles(scheme);
         var referenceVars = {};
         Object.keys(palettes).forEach(function (name) {
@@ -230,39 +241,8 @@
         window.__mcTheme = { seed: seedArgb, light: themes.light, dark: themes.dark, palettes: themes.palettes };
       }
 
-      if (window.MCU && MCU.SchemeExpressive && MCU.MaterialDynamicColors) {
-        var themeImageURL = getComputedStyle(root).getPropertyValue("--hero-image").match(/url\(["']?(.*?)["']?\)/);
-        var cacheKey = "gcgs-expressive-v1:" + (themeImageURL ? themeImageURL[1] : "image.webp");
-        var cachedSeed = null;
-        try { cachedSeed = Number(localStorage.getItem(cacheKey)); } catch (error) {}
-        var hasCache = Number.isInteger(cachedSeed) && cachedSeed >= 0xff000000 && cachedSeed <= 0xffffffff;
-        applyDynamicColor(hasCache ? cachedSeed : THEME_SOURCE);
-        if (!hasCache && themeImageURL) {
-          var themeImage = new Image();
-          themeImage.onload = function () {
-            try {
-              var sample = document.createElement("canvas");
-              sample.width = 128;
-              sample.height = Math.max(1, Math.round(128 * themeImage.naturalHeight / themeImage.naturalWidth));
-              var context = sample.getContext("2d");
-              if (!context) return;
-              context.drawImage(themeImage, 0, 0, sample.width, sample.height);
-              var bytes = context.getImageData(0, 0, sample.width, sample.height).data;
-              var pixels = [];
-              for (var i = 0; i < bytes.length; i += 4) pixels.push(MCU.argbFromRgb(bytes[i], bytes[i + 1], bytes[i + 2]));
-              var quantized = MCU.QuantizerCelebi.quantize(pixels, 128);
-              var colorful = new Map();
-              quantized.forEach(function (population, color) {
-                var hct = MCU.Hct.fromInt(color);
-                if (hct.chroma >= 24 && hct.tone >= 25 && hct.tone <= 80) colorful.set(color, population);
-              });
-              var seed = colorful.size ? MCU.Score.score(colorful, { desired: 1 })[0] : MCU.sourceColorFromImageBytes(bytes);
-              applyDynamicColor(seed);
-              try { localStorage.setItem(cacheKey, String(seed)); } catch (error) {}
-            } catch (error) { /* Keep the precomputed Expressive fallback. */ }
-          };
-          themeImage.src = themeImageURL[1];
-        }
+      if (window.MCU && MCU.MaterialDynamicColors) {
+        applyDynamicColor(THEME_SOURCE);
       }
 
       /* ============================================================
