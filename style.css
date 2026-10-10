@@ -1299,42 +1299,34 @@
       transition: var(--theme-shift);
     }
 
-    /* ============ Intro ============ */
-    .intro__layout {
+    /* Overview: a reading card paired with a compact project fact sheet. */
+    .intro__cards {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+      align-items: start;
+      gap: 24px;
+      width: 100%;
+      max-width: 1040px;
       margin-top: 48px;
-      max-width: 760px;
-      padding: 24px;
-      text-align: left;   /* 卡片居中、文字靠左 */
-    }
-    .intro__layout p { margin: 0 0 24px; }
-    .intro__layout p:last-child { margin-bottom: 0; }
-    .intro__lead { color: var(--md-sys-color-on-surface); }
-    .intro__body { color: var(--md-sys-color-on-surface-variant); }
-    .accent { color: var(--md-sys-color-primary); transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard); }
-
-    /* Project note: a quiet footer within the intro card. */
-    .disclaimer {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-top: 28px;
-      padding-top: 20px;
-      border-top: 1px solid var(--md-sys-color-outline-variant);
-      color: var(--md-sys-color-on-surface-variant);
       text-align: left;
-      transition: var(--theme-shift);
     }
-    .disclaimer__icon {
-      flex: none;
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
-      color: var(--md-sys-color-on-surface-variant);
-      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    .intro__layout { min-width: 0; padding: 36px; }
+    .intro__layout p { margin: 0; }
+    .intro__lead { color: var(--md-sys-color-on-surface); font-size: 20px; line-height: 1.75; }
+    .intro__lead .accent { white-space: nowrap; }
+    .intro__body { color: var(--md-sys-color-on-surface-variant); line-height: 1.8; }
+    .intro__details { display: grid; gap: 28px; margin-top: 32px; padding-top: 28px; border-top: 1px solid var(--md-sys-color-outline-variant); }
+    .intro__detail-title { margin: 0 0 10px; color: var(--md-sys-color-primary); }
+    .accent { color: var(--md-sys-color-primary); transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard); }
+    @media (max-width: 840px) {
+      .intro__cards { grid-template-columns: minmax(0, 1fr); max-width: 680px; gap: 20px; margin-top: 32px; }
+      .intro__layout { padding: 28px; }
     }
-    .disclaimer__content { min-width: 0; }
-    .disclaimer .disclaimer__label { margin: 0 0 6px; color: var(--md-sys-color-on-surface); line-height: 20px; }
-    .disclaimer .disclaimer__text { margin: 0; font-weight: 400; line-height: 24px; }
+    @media (max-width: 600px) {
+      .intro__layout { padding: 24px; }
+      .intro__lead { font-size: 18px; }
+      .intro__details { margin-top: 24px; padding-top: 24px; gap: 24px; }
+    }
 
     /* ============ Progress ============ */
     .progress__frame-wrap { display: flex; justify-content: center; margin-top: 48px; }
@@ -1418,47 +1410,30 @@
       background-color: color-mix(in srgb, var(--md-sys-color-primary) var(--md-sys-state-hover-opacity), transparent);
     }
 
-    /* ============ 补充信息卡（MD3 List · one-line list item） ============ */
-    .spec-card {
-      width: min(760px, 100%);
-      margin: 48px auto 0;
-      padding: 24px;
-      text-align: left;
+    /* Project specifications: proportion first, then scannable facts. */
+    .spec-card { min-width: 0; padding: 32px; text-align: left; background: var(--md-sys-color-surface-container); }
+    .spec-card__title { margin: 0; color: var(--md-sys-color-on-surface); font-size: 22px; line-height: 30px; font-weight: 400; }
+    .spec-card__scale { margin: 28px 0; }
+    .spec-card__scale-label { margin: 0; color: var(--md-sys-color-on-surface-variant); }
+    .spec-card__scale-value { margin: 8px 0; color: var(--md-sys-color-primary); font-size: 64px; line-height: 1; letter-spacing: -.04em; font-weight: 400; font-variant-numeric: lining-nums; }
+    .spec-card__scale-note { margin: 12px 0 0; color: var(--md-sys-color-on-surface-variant); line-height: 24px; }
+    .spec-list { display: grid; gap: 20px; margin: 0; padding: 24px 0 0; border-top: 1px solid var(--md-sys-color-outline-variant); }
+    .spec-list__item { display: grid; gap: 6px; min-width: 0; }
+    .spec-list__name { margin: 0; color: var(--md-sys-color-on-surface-variant); font-size: 13px; line-height: 20px; }
+    .spec-list__value { margin: 0; color: var(--md-sys-color-on-surface); font-size: 18px; line-height: 26px; overflow-wrap: anywhere; }
+    .spec-card .disclaimer__text { margin: 28px 0 0; padding-top: 20px; border-top: 1px solid var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-surface-variant); font-size: 13px; line-height: 22px; }
+    @media (max-width: 840px) {
+      .spec-card { padding: 28px; }
+      .spec-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
     }
-    .spec-card__title {
-      margin: 0 0 8px;
-      color: var(--md-sys-color-on-surface);
+    @media (max-width: 600px) {
+      .spec-card { padding: 24px; }
+      .spec-card__scale-value { font-size: 56px; }
+      .spec-list { grid-template-columns: minmax(0, 1fr); gap: 20px; }
     }
-    .spec-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-    .spec-list__item {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      min-height: var(--md-list-item-one-line-container-height);
-    }
-    .spec-list__icon {
-      flex: none;
-      width: var(--md-list-item-leading-icon-size);
-      height: var(--md-list-item-leading-icon-size);
-      fill: currentColor;
-      color: var(--md-list-item-leading-icon-color);
-      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
-    }
-    .spec-list__name {
-      flex: 1 1 auto;
-      margin: 0;
-      color: var(--md-sys-color-on-surface-variant);
-      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
-    }
-    .spec-list__value {
-      margin: 0;
-      color: var(--md-list-item-label-text-color);
-      text-align: right;
-      transition: color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    @media (min-width: 360px) and (max-width: 600px) {
+      .spec-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .spec-list__item:last-child { grid-column: 1 / -1; }
     }
 
     /* ============ 建造进度卡（Wavy Linear Progress + 折叠面板
@@ -1994,8 +1969,6 @@
       .todo-list__item { gap: 12px; padding-block: 8px; }
       .todo-list__label { min-width: 0; }
       .todo-list__status { flex: 0 0 auto; font-size: 12px; }
-      html[lang="en"] .spec-list__item { flex-wrap: wrap; gap: 8px 12px; padding-block: 8px; }
-      html[lang="en"] .spec-list__value { flex: 0 0 100%; padding-left: 36px; text-align: left; }
       /* 手机字阶自适应：headline-large 降到 headline-small 档 */
       .section-kicker h2 {
         --md-typescale-headline-large-font-size: var(--md-typescale-headline-small-font-size);
