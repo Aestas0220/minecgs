@@ -153,5 +153,7 @@
   window.MineCGSI18n = { t: t, setLanguage: setLanguage, getLanguage: function () { return language; } };
   var saved;
   try { saved = localStorage.getItem("gcgs-language"); } catch (e) {}
-  setLanguage(saved, false);
+  var preferred = (navigator.languages && navigator.languages[0]) || navigator.language || "zh";
+  var initial = saved === "zh" || saved === "en" ? saved : (/^zh(?:-|_|$)/i.test(preferred) ? "zh" : "en");
+  setLanguage(initial, false);
 })();
